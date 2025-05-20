@@ -1,0 +1,19 @@
+{
+  "name": "mithril-try2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc --outDir ./build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx tsc --outDir ./build && esbuild ./build/index.js --bundle --outfile=./build/main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/mithril": "^2.2.7",
+    "esbuild": "^0.25.4",
+    "mithril": "^2.3.0",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "include": ["src/", "libs/*.ts", "types/*.d.ts"],
+  "compilerOptions": {
+    "lib": ["es2021", "webworker", "dom"],
+    "allowJs": true,
+    "checkJs": false,
+    "target": "es2021",
+    "module": "es2022",
+    // We need either node16/nodenext or bundler to support export maps from modules but most of our imports don't
+    // contain the file extensions, so we can't use node16 as is. Bundler allows extensionless paths.
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "declaration": true,
+    "noEmitOnError": true,
+    "noErrorTruncation": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noStrictGenericChecks": false,
+    "strictNullChecks": true,
+    "useUnknownInCatchVariables": false,
+  }
+}
