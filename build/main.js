@@ -1649,10 +1649,13 @@
       const state = vnode.state;
       if (state.currentIndex >= questions.length) {
         state.plan = state.evaluatePlan(state.answers);
-        return (0, import_mithril.default)("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+        return (0, import_mithril.default)("div", {
+          style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+        }, [
           (0, import_mithril.default)("h2", "Recommended plan is:"),
           (0, import_mithril.default)("p", state.plan),
           (0, import_mithril.default)("button", {
+            style: "cursor: pointer",
             onclick: () => {
               state.currentIndex = 0;
               state.answers = [];
@@ -1661,15 +1664,24 @@
         ]);
       }
       const current = questions[state.currentIndex];
-      return (0, import_mithril.default)("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
-        (0, import_mithril.default)("h2", current.question),
-        ...current.choices.map((choice) => (0, import_mithril.default)("button", {
-          style: "margin: 5px;",
-          onclick: () => {
-            state.answers.push(choice);
-            state.currentIndex++;
-          }
-        }, choice))
+      return (0, import_mithril.default)("div", {
+        style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em;"
+      }, [
+        (0, import_mithril.default)("p", { style: "text-align: center;" }, current.question),
+        ...current.choices.map((choice) => (0, import_mithril.default)("div", (0, import_mithril.default)("label", {
+          style: "display: block; padding:0 20px; margin: 10px 0; cursor: pointer;"
+        }, [
+          (0, import_mithril.default)("input[type=checkbox]", {
+            name: `choice-${state.currentIndex}`,
+            value: choice,
+            onclick: () => {
+              state.answers.push(choice);
+              state.currentIndex++;
+            }
+          }),
+          " ",
+          choice
+        ])))
       ]);
     }
   };
@@ -1679,11 +1691,13 @@
     },
     view(vnode) {
       return (0, import_mithril.default)("div", { style: "padding: 20px; font-family: sans-serif;" }, [
-        vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+        vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", {
+          style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+        }, [
           (0, import_mithril.default)("h2", "Not sure which plan is right for you?"),
           (0, import_mithril.default)("p", "Take the test to find out which plan you need."),
           (0, import_mithril.default)("button", {
-            style: "display: block; margin: 0 auto;",
+            style: "display: block; margin: 0 auto; cursor: pointer;",
             onclick: () => {
               vnode.state.started = true;
               import_mithril.default.redraw();

@@ -1,5 +1,6 @@
 import m from "mithril";
 m.render(document.body, m("h1", "Hello from Mithril + ESBuild!"));
+// Вопросы
 const questions = [
     {
         question: "Do you want to use this mailbox for business or for yourself?",
@@ -26,6 +27,7 @@ const questions = [
         choices: ["1 GB", "20 GB", "50 GB", "500 GB", "1000 GB"],
     }
 ];
+// Компонент Questionnaire
 const Questionnaire = {
     oninit(vnode) {
         vnode.state.currentIndex = 0;
@@ -81,10 +83,13 @@ const Questionnaire = {
         const state = vnode.state;
         if (state.currentIndex >= questions.length) {
             state.plan = state.evaluatePlan(state.answers);
-            return m("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+            return m("div", {
+                style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+            }, [
                 m("h2", "Recommended plan is:"),
                 m("p", state.plan),
                 m("button", {
+                    style: "cursor: pointer",
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
@@ -93,18 +98,28 @@ const Questionnaire = {
             ]);
         }
         const current = questions[state.currentIndex];
-        return m("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
-            m("h2", current.question),
-            ...current.choices.map(choice => m("button", {
-                style: "margin: 5px;",
-                onclick: () => {
-                    state.answers.push(choice);
-                    state.currentIndex++;
-                }
-            }, choice))
+        return m("div", {
+            style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em;"
+        }, [
+            m("p", { style: "text-align: center;" }, current.question),
+            ...current.choices.map(choice => m("div", m("label", {
+                style: "display: block; padding:0 20px; margin: 10px 0; cursor: pointer;"
+            }, [
+                m("input[type=checkbox]", {
+                    name: `choice-${state.currentIndex}`,
+                    value: choice,
+                    onclick: () => {
+                        state.answers.push(choice);
+                        state.currentIndex++;
+                    }
+                }),
+                " ",
+                choice
+            ])))
         ]);
     }
 };
+// Компонент App
 const App = {
     oninit(vnode) {
         vnode.state.started = false;
@@ -113,11 +128,13 @@ const App = {
         return m("div", { style: "padding: 20px; font-family: sans-serif;" }, [
             vnode.state.started
                 ? m(Questionnaire)
-                : m("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+                : m("div", {
+                    style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+                }, [
                     m("h2", "Not sure which plan is right for you?"),
                     m("p", "Take the test to find out which plan you need."),
                     m("button", {
-                        style: "display: block; margin: 0 auto;",
+                        style: "display: block; margin: 0 auto; cursor: pointer;",
                         onclick: () => {
                             vnode.state.started = true;
                             m.redraw();
@@ -127,6 +144,7 @@ const App = {
         ]);
     }
 };
+// Точка входа
 m.mount(document.body, App);
 /*
 const App = {
