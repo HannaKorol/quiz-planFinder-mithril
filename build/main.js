@@ -1598,4 +1598,100 @@
   // build/index.js
   var import_mithril = __toESM(require_mithril());
   import_mithril.default.render(document.body, (0, import_mithril.default)("h1", "Hello from Mithril + ESBuild!"));
+  var questions = [
+    {
+      question: "Do you want to use this mailbox for business or for yourself?",
+      choices: ["Business", "Personal"]
+    },
+    {
+      question: "Do you need extra email addresses in your mailbox?",
+      choices: ["Yes", "No"]
+    },
+    {
+      question: "How many extra email addresses do you need?",
+      choices: ["15", "30"]
+    },
+    {
+      question: "Do you need custom domains? If yes, how many?",
+      choices: ["3", "10", "unlimited"]
+    },
+    {
+      question: "Do you need one calendar or more?",
+      choices: ["One", "More"]
+    },
+    {
+      question: "How much storage space do you need to save your emails?",
+      choices: ["1 GB", "20 GB", "50 GB", "500 GB", "1000 GB"]
+    }
+  ];
+  var Questionnaire = {
+    oninit(vnode) {
+      vnode.state.currentIndex = 0;
+      vnode.state.answers = [];
+      vnode.state.plan = "";
+      vnode.state.evaluatePlan = (answers) => {
+        if (answers.includes("Personal") && answers.includes("Yes") && answers.includes("15") && answers.includes("3") && answers.includes("More") && answers.includes("20 GB")) {
+          return "Revolutionary";
+        } else if (answers.includes("Personal") && answers.includes("Yes") && answers.includes("30") && answers.includes("10") && answers.includes("More") && answers.includes("500 GB")) {
+          return "Legend";
+        } else if (answers.includes("Business") && answers.includes("Yes") && answers.includes("15") && answers.includes("3") && answers.includes("More") && answers.includes("50 GB")) {
+          return "Essential";
+        } else if (answers.includes("Business") && answers.includes("Yes") && answers.includes("30") && answers.includes("10") && answers.includes("More") && answers.includes("500 GB")) {
+          return "Advanced";
+        } else if (answers.includes("Business") && answers.includes("Yes") && answers.includes("30") && answers.includes("unlimited") && answers.includes("More") && answers.includes("1000 GB")) {
+          return "Unlimited";
+        } else {
+          return "Basic";
+        }
+      };
+    },
+    view(vnode) {
+      const state = vnode.state;
+      if (state.currentIndex >= questions.length) {
+        state.plan = state.evaluatePlan(state.answers);
+        return (0, import_mithril.default)("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+          (0, import_mithril.default)("h2", "Recommended plan is:"),
+          (0, import_mithril.default)("p", state.plan),
+          (0, import_mithril.default)("button", {
+            onclick: () => {
+              state.currentIndex = 0;
+              state.answers = [];
+            }
+          }, "Try again")
+        ]);
+      }
+      const current = questions[state.currentIndex];
+      return (0, import_mithril.default)("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+        (0, import_mithril.default)("h2", current.question),
+        ...current.choices.map((choice) => (0, import_mithril.default)("button", {
+          style: "margin: 5px;",
+          onclick: () => {
+            state.answers.push(choice);
+            state.currentIndex++;
+          }
+        }, choice))
+      ]);
+    }
+  };
+  var App = {
+    oninit(vnode) {
+      vnode.state.started = false;
+    },
+    view(vnode) {
+      return (0, import_mithril.default)("div", { style: "padding: 20px; font-family: sans-serif;" }, [
+        vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", { style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; " }, [
+          (0, import_mithril.default)("h2", "Not sure which plan is right for you?"),
+          (0, import_mithril.default)("p", "Take the test to find out which plan you need."),
+          (0, import_mithril.default)("button", {
+            style: "display: block; margin: 0 auto;",
+            onclick: () => {
+              vnode.state.started = true;
+              import_mithril.default.redraw();
+            }
+          }, "Start test")
+        ])
+      ]);
+    }
+  };
+  import_mithril.default.mount(document.body, App);
 })();

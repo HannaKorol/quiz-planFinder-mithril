@@ -7,11 +7,17 @@ m.render(document.body, m("h1", "Hello from Mithril + ESBuild!"))
 //     Questionnaire: логика опроса
 //     Result: вывод подходящего тарифа
 
-
 //Step(1): Questions and choices
-const questions = [
+type Choice = string;
+
+interface Question {
+    question: string;
+    choices: Choice[];
+}
+
+const questions: Question [] = [
     {
-        question: "Do you want to use this mailbox  for business or for yourself?",
+        question: "Do you want to use this mailbox for business or for yourself?",
         choices: ["Business", "Personal"],
     },
     {
@@ -34,67 +40,135 @@ const questions = [
         question: "How much storage space do you need to save your emails?",
         choices: ["1 GB", "20 GB", "50 GB", "500 GB", "1000 GB"],
     }
-]
+];
 
+interface QuestionnaireState {
+    currentIndex: number;
+    answers: Choice [];
+    plan: string;
 
-const Questionnaire = {
-    currentIndex: 0,
-    answers: [],
-    plan: "",
+    evaluatePlan(answers: Choice[]): string;
 }
 
-evaluatePlan(answers)
-{
-    if (answers.includes("Personal") && answers.include("Yes") && answers.include("15") && answers.include("3") && answers.include("More") && answers.include("20 GB")) {
-        return "Revolutionary";
-    } else if (answers.includes("Personal") && answers.include("Yes") && answers.include("30") && answers.include("10") && answers.include("More") && answers.include("500 GB")) {
-        return "Legend";
-    } else if (answers.includes("Business") && answers.include("Yes") && answers.include("15") && answers.include("3") && answers.include("More") && answers.include("50 GB")) {
-        return "Essential";
-    } else if (answers.includes("Business") && answers.include("Yes") && answers.include("30") && answers.include("10") && answers.include("More") && answers.include("500 GB")) {
-        return "Advanced";
-    } else if (answers.includes("Business") && answers.include("Yes") && answers.include("30") && answers.include("unlimited") && answers.include("More") && answers.include("1000 GB")) {
-        return "Unlimited";
-    } else {
-        return "Basic"
-    }
-},
+const Questionnaire: m.Component<{}, QuestionnaireState> = {
+    oninit(vnode) {
+        vnode.state.currentIndex = 0;
+        vnode.state.answers = [];
+        vnode.state.plan = "";
 
-view()
-{
-    if (Questionnaire.currentIndex >= questions.length) {
-        Questionnaire.plan = Questionnaire.evaluatePlan(Questionnaire.answers);
-        return m("div", [
-            m("h2", "Recommended plan is:"),
-            m("p", Questionnaire.plan),
-            m("button", {
-                onClick: () => {
-                    Questionnaire.currentIndex = 0;
-                    Questionnaire.answers = [];
-                }
-            }, "Try again"),
+        vnode.state.evaluatePlan = (answers: Choice[]): string => {
+            if (
+                answers.includes("Personal") &&
+                answers.includes("Yes") &&
+                answers.includes("15") &&
+                answers.includes("3") &&
+                answers.includes("More") &&
+                answers.includes("20 GB")
+            ) {
+                return "Revolutionary";
+            } else if (
+                answers.includes("Personal") &&
+                answers.includes("Yes") &&
+                answers.includes("30") &&
+                answers.includes("10") &&
+                answers.includes("More") &&
+                answers.includes("500 GB")
+            ) {
+                return "Legend";
+            } else if (
+                answers.includes("Business") &&
+                answers.includes("Yes") &&
+                answers.includes("15") &&
+                answers.includes("3") &&
+                answers.includes("More") &&
+                answers.includes("50 GB")
+            ) {
+                return "Essential";
+            } else if (
+                answers.includes("Business") &&
+                answers.includes("Yes") &&
+                answers.includes("30") &&
+                answers.includes("10") &&
+                answers.includes("More") &&
+                answers.includes("500 GB")
+            ) {
+                return "Advanced";
+            } else if (
+                answers.includes("Business") &&
+                answers.includes("Yes") &&
+                answers.includes("30") &&
+                answers.includes("unlimited") &&
+                answers.includes("More") &&
+                answers.includes("1000 GB")
+            ) {
+                return "Unlimited";
+            } else {
+                return "Basic";
+            }
+        };
+    },
+    view(vnode) {
+        const state = vnode.state;
+
+        if (state.currentIndex >= questions.length) {
+            state.plan = state.evaluatePlan(state.answers);
+            return m("div", {style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; "},[
+                m("h2", "Recommended plan is:"),
+                m("p", state.plan),
+                m("button", {
+                    onclick: () => {
+                        state.currentIndex = 0;
+                        state.answers = [];
+                    }
+                }, "Try again"),
+            ]);
+        }
+
+        const current = questions[state.currentIndex];
+        return m("div",{style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; "}, [
+            m("h2", current.question),
+            ...current.choices.map(choice =>
+                m("button", {
+                    style: "margin: 5px;",
+                    onclick: () => {
+                        state.answers.push(choice);
+                        state.currentIndex++;
+                    }
+                }, choice)
+            )
         ]);
     }
+};
+
+interface AppState {
+    started: boolean;
 }
 
-const App = {
-    started: false,
-    view() {
-        return m("div", {style: "padding: 20px; font-family: sans - serif;"}, [
-            !App.started ? m("button", {
-                    onclick: () => (App.started = true)
-                }, "Start test")
-                : m(Questionnaire)
+const App: m.Component<{}, AppState> = {
+    oninit(vnode) {
+        vnode.state.started = false;
+    },
+
+    view(vnode) {
+        return m("div", {style: "padding: 20px; font-family: sans-serif;"}, [
+            vnode.state.started
+                ? m(Questionnaire)
+                : m("div", {style: "max-width: 1170px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center; "}, [
+                    m("h2", "Not sure which plan is right for you?"),
+                    m("p", "Take the test to find out which plan you need."),
+                    m("button", {
+                        style: "display: block; margin: 0 auto;",
+                        onclick: () => {
+                            vnode.state.started = true;
+                            m.redraw();
+                        }
+                    }, "Start test")
+                ])
         ]);
     }
-    };
+};
 
-
-m.mount(document.body, App)
-
-
-
-
+m.mount(document.body, App);
 
 
 /*
