@@ -33,6 +33,7 @@ const Questionnaire = {
         state.currentIndex = 0;
         state.answers = [];
         state.plan = "";
+        state.hoverStates = {};
         state.evaluatePlan = (answers) => {
             if (answers.includes("Personal") &&
                 answers.includes("Yes") &&
@@ -97,7 +98,7 @@ const Questionnaire = {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, "Recommended plan is:"),
                 m("p", {
-                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
+                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, state.plan),
                 m("button", { style: {
                         width: "200px",
@@ -134,22 +135,24 @@ const Questionnaire = {
                     padding: "0"
                 }
             }, [
-                ...current.choices.map(choice => {
+                ...current.choices.map((choice, index) => {
                     const inputId = `choice-${state.currentIndex}-${choice}`;
-                    const liState = { hover: false };
+                    const hoverKey = `${state.currentIndex}-${index}`;
+                    const isHovered = state.hoverStates[hoverKey];
                     return m("li", {
                         onmouseover: () => {
-                            liState.hover = true;
+                            state.hoverStates[hoverKey] = true;
                             m.redraw();
                         },
                         onmouseout: () => {
-                            liState.hover = false;
+                            state.hoverStates[hoverKey] = false;
+                            m.redraw();
                         },
                         style: {
                             listStyle: "none",
                             position: "relative",
                             borderTop: "1px solid #eee",
-                            backgroundColor: liState.hover ? "red" : "transparent",
+                            backgroundColor: isHovered ? "#ffedea" : "transparent",
                             transition: "background-color 0.2s"
                         }
                     }, m("label", {
@@ -205,7 +208,7 @@ const App = {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, [
                     m("p", "Having trouble choosing the right plan?"),
-                    m("h2", "Take our 1-minute quiz to find yours."),
+                    m("h2", "Take our 1-minute quiz to find your plan."),
                     m("button", {
                         style: {
                             width: "200px",
