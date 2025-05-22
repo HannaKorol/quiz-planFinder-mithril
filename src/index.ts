@@ -126,8 +126,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     maxWidth: "800px",
                    padding: "10px",
                     margin: "0 auto",
-                    /*border: "1px solid black",
-                    borderRadius: "1em",*/
                     textAlign: "center",
                     fontFamily: "sans-serif"
                 }
@@ -139,7 +137,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, state.plan),
                 m("button", {style: {
-                width: "300px",
+                width: "200px",
                     fontWeight: "700",
                     color: "#fff",
                     padding: "10px 0",
@@ -166,10 +164,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         return m("div", {
             style: {
                 maxWidth: "800px",
-              /*  padding: "20px",*/
                 margin: "0 auto",
-                /*border: "1px solid",
-                borderRadius: "1em",*/
                 fontFamily: "sans-serif"
             }
         }, [
@@ -177,10 +172,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 style: {
                     listStyle: "none",
                     position: "relative",
-                    /* marginBottom: "20px",*/
-                    /* borderTop: "1px solid #eee",
-                     transition: "background-color 0.2s"*/
-
+                    padding:"0"
                 }
             }, [
                 ...current.choices.map(choice => {
@@ -198,7 +190,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                             style: {
                                 listStyle: "none",
                                 position: "relative",
-                                /* marginBottom: "20px",*/
                                 borderTop: "1px solid #eee",
                                 backgroundColor: liState.hover ? "red" : "transparent",
                                 transition: "background-color 0.2s"
@@ -206,10 +197,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         }, m("label", {
                             for: inputId,
                             style: {
-                                /*display: "flex",
-                                alignItems: "center",*/
                                 cursor: "pointer",
-                                /*paddingLeft: "35px",*/
                                 padding: "1.5rem 2.5rem 1.5rem 5rem",
                                 position: "relative",
                                 width: "100%",
@@ -262,11 +250,11 @@ const App: m.Component<{}, AppState> = {
                 : m("div", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, [
-                    m("h2", "Not sure which plan is right for you?"),
-                    m("p", "Take the test to find out which plan you need."),
+                    m("p", "Having trouble choosing the right plan?"),
+                    m("h2", "Take our 1-minute quiz to find yours."),
                     m("button", {
                         style: {
-                            width: "300px",
+                            width: "200px",
                             fontWeight: "700",
                             color: "#fff",
                             padding: "10px 0",
@@ -281,7 +269,7 @@ const App: m.Component<{}, AppState> = {
                             vnode.state.started = true;
                             m.redraw();
                         }
-                    }, "Start test")
+                    }, "Start Now")
                 ])
         ]);
     }
