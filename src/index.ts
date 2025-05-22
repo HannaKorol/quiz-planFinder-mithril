@@ -1,6 +1,6 @@
 import m from "mithril";
 
-m.render(document.body, m("h1", "Hello from Mithril + ESBuild!"))
+/*m.render(document.body, m("h1", "Hello from Mithril + ESBuild!"))*/
 
 //Компоненты:
 //     App: основной контейнер
@@ -20,6 +20,7 @@ interface QuestionnaireState {
     currentIndex: number;
     answers: Choice[];
     plan: string;
+
     evaluatePlan(answers: Choice[]): string;
 }
 
@@ -58,11 +59,12 @@ const questions: Question[] = [
 // Компонент Questionnaire
 const Questionnaire: m.Component<{}, QuestionnaireState> = {
     oninit(vnode) {
-        vnode.state.currentIndex = 0;
-        vnode.state.answers = [];
-        vnode.state.plan = "";
+        const state = vnode.state;
+        state.currentIndex = 0;
+        state.answers = [];
+        state.plan = "";
 
-        vnode.state.evaluatePlan = (answers: Choice[]): string => {
+        state.evaluatePlan = (answers: Choice[]): string => {
             if (
                 answers.includes("Personal") &&
                 answers.includes("Yes") &&
@@ -116,16 +118,38 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 
     view(vnode) {
         const state = vnode.state;
-
+//result to show
         if (state.currentIndex >= questions.length) {
             state.plan = state.evaluatePlan(state.answers);
             return m("div", {
-                style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+                style: {
+                    maxWidth: "800px",
+                   padding: "10px",
+                    margin: "0 auto",
+                    /*border: "1px solid black",
+                    borderRadius: "1em",*/
+                    textAlign: "center",
+                    fontFamily: "sans-serif"
+                }
             }, [
-                m("h2", "Recommended plan is:"),
-                m("p", state.plan),
-                m("button", {
-                    style: "cursor: pointer",
+                m("h2", {
+                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
+                }, "Recommended plan is:"),
+                m("p", {
+                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
+                }, state.plan),
+                m("button", {style: {
+                width: "300px",
+                    fontWeight: "700",
+                    color: "#fff",
+                    padding: "10px 0",
+                    background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+                    borderRadius: "5px",
+                    margin: "0 auto",
+                    cursor: "pointer",
+                    fontSize: "17px",
+                    textAlign: "center"
+            },
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
@@ -134,48 +158,125 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             ]);
         }
 
+
+// Current questions with options
         const current = questions[state.currentIndex];
+
+
         return m("div", {
-            style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em;"
+            style: {
+                maxWidth: "800px",
+              /*  padding: "20px",*/
+                margin: "0 auto",
+                /*border: "1px solid",
+                borderRadius: "1em",*/
+                fontFamily: "sans-serif"
+            }
         }, [
-            m("p", {style: "text-align: center;"}, current.question),
-            ...current.choices.map(choice => m("div",
-                m("label", {
-                    style: "display: block; padding:0 20px; margin: 10px 0; cursor: pointer;"
-                }, [
-                    m("input[type=checkbox]", {
-                        name: `choice-${state.currentIndex}`,
-                        value: choice,
-                        onclick: () => {
-                            state.answers.push(choice);
-                            state.currentIndex++;
-                        }
-                    }),
-                    " ",
-                    choice
-                ]))
-            )
-        ]);
-    }
+            m("h2", {style: {padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px"}}, current.question), m("ul", {
+                style: {
+                    listStyle: "none",
+                    position: "relative",
+                    /* marginBottom: "20px",*/
+                    /* borderTop: "1px solid #eee",
+                     transition: "background-color 0.2s"*/
+
+                }
+            }, [
+                ...current.choices.map(choice => {
+                    const inputId = `choice-${state.currentIndex}-${choice}`;
+                    const liState = {hover: false};
+
+                    return m("li", {
+                            onmouseover: () => {
+                                liState.hover = true;
+                                m.redraw();
+                            },
+                            onmouseout: () => {
+                                liState.hover = false;
+                            },
+                            style: {
+                                listStyle: "none",
+                                position: "relative",
+                                /* marginBottom: "20px",*/
+                                borderTop: "1px solid #eee",
+                                backgroundColor: liState.hover ? "red" : "transparent",
+                                transition: "background-color 0.2s"
+                            }
+                        }, m("label", {
+                            for: inputId,
+                            style: {
+                                /*display: "flex",
+                                alignItems: "center",*/
+                                cursor: "pointer",
+                                /*paddingLeft: "35px",*/
+                                padding: "1.5rem 2.5rem 1.5rem 5rem",
+                                position: "relative",
+                                width: "100%",
+                                margin: "0",
+                                fontSize: "16px",
+                                display: "inline-block",
+                                verticalAlign: "middle",
+                                lineHeight: "1.5"
+                            }
+                        }, [m("input[type=radio]", {
+                            id: inputId,
+                            name: `choice-${state.currentIndex}`,
+                            value: choice,
+                            style: {
+                                position: "absolute",
+                                opacity: 0,
+                                cursor: "pointer"
+                            },
+                            onclick: () => {
+                                state.answers.push(choice);
+                                state.currentIndex++;
+                            }
+                        }),
+                            m("span",
+                                choice)])
+                    )
+                })])]);
+    },
 };
 
-// Компонент App
+//  Старт или продолжение
 const App: m.Component<{}, AppState> = {
     oninit(vnode) {
         vnode.state.started = false;
+
+        //styles to body
+        Object.assign(document.body.style, {
+            margin: "0",
+            padding: "0",
+            background: "#eee",
+            fontFamily: "sans-serif"
+        });
     },
 
+
     view(vnode) {
-        return m("div", { style: "padding: 20px; font-family: sans-serif;" }, [
+        return m("div", {style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 3px;"}, [
             vnode.state.started
                 ? m(Questionnaire)
                 : m("div", {
-                    style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, [
                     m("h2", "Not sure which plan is right for you?"),
                     m("p", "Take the test to find out which plan you need."),
                     m("button", {
-                        style: "display: block; margin: 0 auto; cursor: pointer;",
+                        style: {
+                            width: "300px",
+                            fontWeight: "700",
+                            color: "#fff",
+                            padding: "10px 0",
+                            background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+                            borderRadius: "5px",
+                            margin: "0 auto",
+                            cursor: "pointer",
+                            fontSize: "17px",
+                            textAlign: "center"
+                        },
                         onclick: () => {
                             vnode.state.started = true;
                             m.redraw();
@@ -188,6 +289,16 @@ const App: m.Component<{}, AppState> = {
 
 // Точка входа
 m.mount(document.body, App);
+
+
+
+
+
+
+
+
+
+
 
 
 

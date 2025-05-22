@@ -1597,7 +1597,6 @@
 
   // build/index.js
   var import_mithril = __toESM(require_mithril());
-  import_mithril.default.render(document.body, (0, import_mithril.default)("h1", "Hello from Mithril + ESBuild!"));
   var questions = [
     {
       question: "Do you want to use this mailbox for business or for yourself?",
@@ -1626,10 +1625,11 @@
   ];
   var Questionnaire = {
     oninit(vnode) {
-      vnode.state.currentIndex = 0;
-      vnode.state.answers = [];
-      vnode.state.plan = "";
-      vnode.state.evaluatePlan = (answers) => {
+      const state = vnode.state;
+      state.currentIndex = 0;
+      state.answers = [];
+      state.plan = "";
+      state.evaluatePlan = (answers) => {
         if (answers.includes("Personal") && answers.includes("Yes") && answers.includes("15") && answers.includes("3") && answers.includes("More") && answers.includes("20 GB")) {
           return "Revolutionary";
         } else if (answers.includes("Personal") && answers.includes("Yes") && answers.includes("30") && answers.includes("10") && answers.includes("More") && answers.includes("500 GB")) {
@@ -1650,12 +1650,35 @@
       if (state.currentIndex >= questions.length) {
         state.plan = state.evaluatePlan(state.answers);
         return (0, import_mithril.default)("div", {
-          style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+          style: {
+            maxWidth: "800px",
+            padding: "10px",
+            margin: "0 auto",
+            /*border: "1px solid black",
+            borderRadius: "1em",*/
+            textAlign: "center",
+            fontFamily: "sans-serif"
+          }
         }, [
-          (0, import_mithril.default)("h2", "Recommended plan is:"),
-          (0, import_mithril.default)("p", state.plan),
+          (0, import_mithril.default)("h2", {
+            style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
+          }, "Recommended plan is:"),
+          (0, import_mithril.default)("p", {
+            style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
+          }, state.plan),
           (0, import_mithril.default)("button", {
-            style: "cursor: pointer",
+            style: {
+              width: "300px",
+              fontWeight: "700",
+              color: "#fff",
+              padding: "10px 0",
+              background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+              borderRadius: "5px",
+              margin: "0 auto",
+              cursor: "pointer",
+              fontSize: "17px",
+              textAlign: "center"
+            },
             onclick: () => {
               state.currentIndex = 0;
               state.answers = [];
@@ -1665,39 +1688,112 @@
       }
       const current = questions[state.currentIndex];
       return (0, import_mithril.default)("div", {
-        style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em;"
+        style: {
+          maxWidth: "800px",
+          /*  padding: "20px",*/
+          margin: "0 auto",
+          /*border: "1px solid",
+          borderRadius: "1em",*/
+          fontFamily: "sans-serif"
+        }
       }, [
-        (0, import_mithril.default)("p", { style: "text-align: center;" }, current.question),
-        ...current.choices.map((choice) => (0, import_mithril.default)("div", (0, import_mithril.default)("label", {
-          style: "display: block; padding:0 20px; margin: 10px 0; cursor: pointer;"
+        (0, import_mithril.default)("h2", { style: { padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px" } }, current.question),
+        (0, import_mithril.default)("ul", {
+          style: {
+            listStyle: "none",
+            position: "relative"
+            /* marginBottom: "20px",*/
+            /* borderTop: "1px solid #eee",
+             transition: "background-color 0.2s"*/
+          }
         }, [
-          (0, import_mithril.default)("input[type=checkbox]", {
-            name: `choice-${state.currentIndex}`,
-            value: choice,
-            onclick: () => {
-              state.answers.push(choice);
-              state.currentIndex++;
-            }
-          }),
-          " ",
-          choice
-        ])))
+          ...current.choices.map((choice) => {
+            const inputId = `choice-${state.currentIndex}-${choice}`;
+            const liState = { hover: false };
+            return (0, import_mithril.default)("li", {
+              onmouseover: () => {
+                liState.hover = true;
+                import_mithril.default.redraw();
+              },
+              onmouseout: () => {
+                liState.hover = false;
+              },
+              style: {
+                listStyle: "none",
+                position: "relative",
+                /* marginBottom: "20px",*/
+                borderTop: "1px solid #eee",
+                backgroundColor: liState.hover ? "red" : "transparent",
+                transition: "background-color 0.2s"
+              }
+            }, (0, import_mithril.default)("label", {
+              for: inputId,
+              style: {
+                /*display: "flex",
+                alignItems: "center",*/
+                cursor: "pointer",
+                /*paddingLeft: "35px",*/
+                padding: "1.5rem 2.5rem 1.5rem 5rem",
+                position: "relative",
+                width: "100%",
+                margin: "0",
+                fontSize: "16px",
+                display: "inline-block",
+                verticalAlign: "middle",
+                lineHeight: "1.5"
+              }
+            }, [
+              (0, import_mithril.default)("input[type=radio]", {
+                id: inputId,
+                name: `choice-${state.currentIndex}`,
+                value: choice,
+                style: {
+                  position: "absolute",
+                  opacity: 0,
+                  cursor: "pointer"
+                },
+                onclick: () => {
+                  state.answers.push(choice);
+                  state.currentIndex++;
+                }
+              }),
+              (0, import_mithril.default)("span", choice)
+            ]));
+          })
+        ])
       ]);
     }
   };
   var App = {
     oninit(vnode) {
       vnode.state.started = false;
+      Object.assign(document.body.style, {
+        margin: "0",
+        padding: "0",
+        background: "#eee",
+        fontFamily: "sans-serif"
+      });
     },
     view(vnode) {
-      return (0, import_mithril.default)("div", { style: "padding: 20px; font-family: sans-serif;" }, [
+      return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 3px;" }, [
         vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", {
-          style: "max-width: 700px; padding: 10px; margin: 0 auto; border:1px solid black; border-radius: 1em; text-align: center;"
+          style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
         }, [
           (0, import_mithril.default)("h2", "Not sure which plan is right for you?"),
           (0, import_mithril.default)("p", "Take the test to find out which plan you need."),
           (0, import_mithril.default)("button", {
-            style: "display: block; margin: 0 auto; cursor: pointer;",
+            style: {
+              width: "300px",
+              fontWeight: "700",
+              color: "#fff",
+              padding: "10px 0",
+              background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+              borderRadius: "5px",
+              margin: "0 auto",
+              cursor: "pointer",
+              fontSize: "17px",
+              textAlign: "center"
+            },
             onclick: () => {
               vnode.state.started = true;
               import_mithril.default.redraw();
