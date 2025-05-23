@@ -198,9 +198,9 @@ const Questionnaire = {
                             style: {
                                 width: "20px",
                                 height: "20px",
-                                border: "2px solid #666",
+                                border: "1px solid #bbb",
                                 borderRadius: "50%",
-                                background: state.selectedId === inputId ? "#00aaaa" : "transparent"
+                                background: state.selectedId === inputId ? "#d93951" : "transparent"
                             }
                         }, state.selectedId === inputId ? renderCheckmark() : ""), m("span", choice))
                     ]));
