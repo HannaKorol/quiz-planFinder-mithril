@@ -1656,7 +1656,8 @@
             padding: "10px",
             margin: "0 auto",
             textAlign: "center",
-            fontFamily: "sans-serif"
+            fontFamily: "sans-serif",
+            boxSizing: "border-box"
           }
         }, [
           (0, import_mithril.default)("h2", {
@@ -1732,7 +1733,8 @@
                 fontSize: "16px",
                 display: "inline-block",
                 verticalAlign: "middle",
-                lineHeight: "1.5"
+                lineHeight: "1.5",
+                boxSizing: "border-box"
               }
             }, [
               (0, import_mithril.default)("input[type=radio]", {
@@ -1740,16 +1742,33 @@
                 name: `choice-${state.currentIndex}`,
                 value: choice,
                 style: {
-                  position: "absolute",
-                  opacity: 0,
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  display: "none"
                 },
                 onclick: () => {
-                  state.answers.push(choice);
-                  state.currentIndex++;
+                  state.selectedId = inputId;
+                  setTimeout(() => {
+                    state.answers.push(choice);
+                    state.currentIndex++;
+                    import_mithril.default.redraw();
+                  }, 500);
                 }
               }),
-              (0, import_mithril.default)("span", choice)
+              (0, import_mithril.default)("", {
+                style: {
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px"
+                }
+              }, (0, import_mithril.default)("span", {
+                style: {
+                  width: "20px",
+                  height: "20px",
+                  border: "2px solid #666",
+                  borderRadius: "50%",
+                  background: state.selectedId === inputId ? "#00aaaa" : "transparent"
+                }
+              }, state.selectedId === inputId ? renderCheckmark() : ""), (0, import_mithril.default)("span", choice))
             ]));
           })
         ])
@@ -1763,7 +1782,8 @@
         margin: "0",
         padding: "0",
         background: "#eee",
-        fontFamily: "sans-serif"
+        fontFamily: "sans-serif",
+        boxSizing: "border-box"
       });
     },
     view(vnode) {
@@ -1794,6 +1814,13 @@
         ])
       ]);
     }
+  };
+  var renderCheckmark = () => {
+    return (0, import_mithril.default)("span", {
+      style: {
+        color: "white"
+      }
+    }, import_mithril.default.trust('<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M416 128L192 384l-96-96"/></svg>'));
   };
   import_mithril.default.mount(document.body, App);
 })();
