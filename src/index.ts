@@ -8,7 +8,10 @@ import m from "mithril";
 
 //Step(1): Questions and choices
 // Типы
-type Choice = string;
+type Choice = {
+    option: string;
+    plans: Record<string, number>;
+}
 
 interface Question {
     question: string;
@@ -33,29 +36,65 @@ interface AppState {
 const questions: Question[] = [
     {
         question: "Do you want to use this mailbox for business or for yourself?",
-        choices: ["Business", "Personal"],
+        choices: [{option: "Business", plans: {Essential: 1, Advanced: 1, Unlimited: 1}}, {
+            option: "Personal",
+            plans: {Free: 1, Revolutionary: 1, Legend: 1}
+        }, {option:"Not sure at the moment", plans: {Free: 1,}}],
     },
     {
         question: "Do you need extra email addresses in your mailbox?",
-        choices: ["Yes", "No"],
+        choices: [{
+            option: "Yes",
+            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+        }, {option: "No", plans: {Free: 1}}],
     },
     {
         question: "How many extra email addresses do you need?",
-        choices: ["15", "30"],
+        choices: [{option: "15", plans: {Essential: 1, Revolutionary: 1}}, {
+            option: "30",
+            plans: {Legend: 1, Unlimited: 1}
+        }],
     },
     {
-        question: "Do you need custom domains? If yes, how many?",
-        choices: ["3", "10", "unlimited"],
+        question: "Do you need custom domains?",
+        choices: [{
+            option: "Yes",
+            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+        }, {option: "No", plans: {Free: 1}}],
     },
     {
-        question: "Do you need one calendar or more?",
-        choices: ["One", "More"],
+        question: "How many custom domains do you need?",
+        choices: [{option: "3", plans: {Essential: 1, Revolutionary: 1}}, {
+            option: "10",
+            plans: {Legend: 1, Advanced: 1}
+        }, {option: "unlimited", plans: {Unlimited: 1}}],
+    },
+    {
+        question: "Do you need only one calendar or more?",
+        choices: [{option: "One", plans: {Free: 1}}, {
+            option: "More",
+            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+        }],
     },
     {
         question: "How much storage space do you need to save your emails?",
-        choices: ["1 GB", "20 GB", "50 GB", "500 GB", "1000 GB"],
+        choices: [{option: "1 GB", plans: {Free: 1}}, {option: "20 GB", plans: {Revolutionary: 1}}, {
+            option: "50 GB",
+            plans: {Essential: 1}
+        }, {option: "500 GB", plans: {Legend: 1, Advanced: 1}}, {option: "1000 GB", plans: {Unlimited: 1}}],
     }
 ];
+
+let score = {
+    Free: 0,
+    Revolutionary: 0,
+    Legend: 0,
+    Essential: 0,
+    Advanced: 0,
+    Unlimited: 0
+}
+
+
 
 // Компонент Questionnaire
 const Questionnaire: m.Component<{}, QuestionnaireState> = {
@@ -66,7 +105,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         state.plan = "";
         state.hoverStates = {};
 
-        state.evaluatePlan = (answers: Choice[]): string => {
+        state.evaluatePlan = (answers: Choice[{}]): string => {
             if (
                 answers.includes("Personal") &&
                 answers.includes("Yes") &&
