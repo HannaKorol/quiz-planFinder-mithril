@@ -85,6 +85,7 @@ const questions: Question[] = [
     }
 ];
 
+
 let score = {
     Free: 0,
     Revolutionary: 0,
@@ -93,6 +94,7 @@ let score = {
     Advanced: 0,
     Unlimited: 0
 }
+
 
 
 
@@ -105,50 +107,52 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         state.plan = "";
         state.hoverStates = {};
 
-        state.evaluatePlan = (answers: Choice[{}]): string => {
+        state.evaluatePlan = (answers: Choice[]): string => {
+            const selectedOptions = answers.map(a => a.option);
+
             if (
-                answers.includes("Personal") &&
-                answers.includes("Yes") &&
-                answers.includes("15") &&
-                answers.includes("3") &&
-                answers.includes("More") &&
-                answers.includes("20 GB")
+                selectedOptions.includes("Personal") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("15") &&
+                selectedOptions.includes("3") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("20 GB")
             ) {
                 return "Revolutionary";
             } else if (
-                answers.includes("Personal") &&
-                answers.includes("Yes") &&
-                answers.includes("30") &&
-                answers.includes("10") &&
-                answers.includes("More") &&
-                answers.includes("500 GB")
+                selectedOptions.includes("Personal") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("10") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("500 GB")
             ) {
                 return "Legend";
             } else if (
-                answers.includes("Business") &&
-                answers.includes("Yes") &&
-                answers.includes("15") &&
-                answers.includes("3") &&
-                answers.includes("More") &&
-                answers.includes("50 GB")
+                selectedOptions.includes("Business") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("15") &&
+                selectedOptions.includes("3") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("50 GB")
             ) {
                 return "Essential";
             } else if (
-                answers.includes("Business") &&
-                answers.includes("Yes") &&
-                answers.includes("30") &&
-                answers.includes("10") &&
-                answers.includes("More") &&
-                answers.includes("500 GB")
+                selectedOptions.includes("Business") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("10") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("500 GB")
             ) {
                 return "Advanced";
             } else if (
-                answers.includes("Business") &&
-                answers.includes("Yes") &&
-                answers.includes("30") &&
-                answers.includes("unlimited") &&
-                answers.includes("More") &&
-                answers.includes("1000 GB")
+                selectedOptions.includes("Business") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("unlimited") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("1000 GB")
             ) {
                 return "Unlimited";
             } else {
