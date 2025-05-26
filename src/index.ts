@@ -30,6 +30,7 @@ interface QuestionnaireState {
     plan: string;
     hoverStates: Record<string, boolean>;
     selectedId?: string;
+
     evaluatePlan(answers: Choice[]): string;
 
 }
@@ -42,65 +43,70 @@ interface AppState {
 const questions: Question[] = [
     {
         question: "How do you intend to use this mailbox — for business or personal purposes?",
-        choices: [{option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}}, {
-            option: "For personal use",
-            plans: {Free: 1, Revolutionary: 1, Legend: 1}
-        }, {option:"I’m not sure yet", plans: {Free: 1,}}],
+        choices: [
+            {option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}},
+            {option: "For personal use", plans: {Free: 1, Revolutionary: 1, Legend: 1}},
+            {option: "I’m not sure yet", plans: {Free: 1,}}
+        ],
     },
     {
         question: "Would you like to add additional email addresses to this mailbox?",
-        choices: [{
-            option: "Yes",
-            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
-        }, {option: "No", plans: {Free: 1}}],
+        choices: [
+            {option: "Yes", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
+            {option: "No", plans: {Free: 1}}
+        ],
     },
     {
         question: "If applicable, how many additional email addresses do you require?",
-        choices: [{option: "15", plans: {Essential: 1, Revolutionary: 1}}, {
-            option: "30",
-            plans: {Legend: 1, Unlimited: 1}
-        }],
+        choices: [
+            {option: "15", plans: {Essential: 1, Revolutionary: 1}},
+            {option: "30", plans: {Legend: 1, Unlimited: 1}}
+        ],
     },
     {
         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?",
-        choices: [{
-            option: "Yes",
-            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
-        }, {option: "No", plans: {Free: 1}}],
+        choices: [
+            {option: "Yes",
+            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
+            {option: "No", plans: {Free: 1}}
+        ],
     },
     {
         question: "If applicable, how many custom domains would you like to configure?",
-        choices: [{option: "3", plans: {Essential: 1, Revolutionary: 1}}, {
-            option: "10",
-            plans: {Legend: 1, Advanced: 1}
-        }, {option: "unlimited", plans: {Unlimited: 1}}],
+        choices: [
+            {option: "3", plans: {Essential: 1, Revolutionary: 1}},
+            {option: "10", plans: {Legend: 1, Advanced: 1}},
+            {option: "unlimited", plans: {Unlimited: 1}}
+        ],
     },
     {
         question: "How many calendars do you plan to use?",
-        choices: [{option: "One", plans: {Free: 1}}, {
-            option: "Unlimited calendars",
-            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
-        }],
+        choices: [
+            {option: "One", plans: {Free: 1}},
+            {option: "Unlimited calendars", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}}
+        ],
     },
     {
         question: "What is your estimated email storage requirement?",
-        choices: [{option: "1 GB", plans: {Free: 1}}, {option: "20 GB", plans: {Revolutionary: 1}}, {
-            option: "50 GB",
-            plans: {Essential: 1}
-        }, {option: "500 GB", plans: {Legend: 1, Advanced: 1}}, {option: "1000 GB", plans: {Unlimited: 1}}],
+        choices: [
+            {option: "1 GB", plans: {Free: 1}},
+            {option: "20 GB", plans: {Revolutionary: 1}},
+            {option: "50 GB", plans: {Essential: 1}},
+            {option: "500 GB", plans: {Legend: 1, Advanced: 1}},
+            {option: "1000 GB", plans: {Unlimited: 1}}
+        ],
     }
 ];
 
 
-/*let score = {
+let score = {
     Free: 0,
     Revolutionary: 0,
     Legend: 0,
     Essential: 0,
     Advanced: 0,
     Unlimited: 0
-}*/
-
+}
 
 
 // Компонент Questionnaire
@@ -120,7 +126,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("15") &&
                 selectedOptions.includes("3") &&
-                selectedOptions.includes("More") &&
+                selectedOptions.includes("Unlimited calendars") &&
                 selectedOptions.includes("20 GB")
             ) {
                 return "Revolutionary";
@@ -129,7 +135,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("30") &&
                 selectedOptions.includes("10") &&
-                selectedOptions.includes("More") &&
+                selectedOptions.includes("Unlimited calendars") &&
                 selectedOptions.includes("500 GB")
             ) {
                 return "Legend";
@@ -138,7 +144,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("15") &&
                 selectedOptions.includes("3") &&
-                selectedOptions.includes("More") &&
+                selectedOptions.includes("Unlimited calendars") &&
                 selectedOptions.includes("50 GB")
             ) {
                 return "Essential";
@@ -147,7 +153,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("30") &&
                 selectedOptions.includes("10") &&
-                selectedOptions.includes("More") &&
+                selectedOptions.includes("Unlimited calendars") &&
                 selectedOptions.includes("500 GB")
             ) {
                 return "Advanced";
@@ -156,7 +162,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("30") &&
                 selectedOptions.includes("unlimited") &&
-                selectedOptions.includes("More") &&
+                selectedOptions.includes("Unlimited calendars") &&
                 selectedOptions.includes("1000 GB")
             ) {
                 return "Unlimited";
@@ -341,8 +347,21 @@ const App: m.Component<{}, AppState> = {
                 ? m(Questionnaire)
                 : m("div", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"
-                }, [ m("div", {style:{display: "flex", justifyContent:"center", flexDirection: "column", maxWidth: "400px",}}, [m("p", {style: {fontSize: "18px",}}, "Confused about which plan to choose?"),
-                    m("h2", {style: {fontSize: "30px", padding:"5px 0px", margin:"auto", }}, "Take our 1-minute quiz to find your plan."), m("p", "We’ll show you the best match based on your needs and daily activities.")]),
+                }, [m("div", {
+                    style: {
+                        display: "flex",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        maxWidth: "400px",
+                    }
+                }, [m("p", {style: {fontSize: "18px",}}, "Confused about which plan to choose?"),
+                    m("h2", {
+                        style: {
+                            fontSize: "30px",
+                            padding: "5px 0px",
+                            margin: "auto",
+                        }
+                    }, "Take our 1-minute quiz to find your plan."), m("p", "We’ll show you the best match based on your needs and daily activities.")]),
                     m("button", {
                         style: {
                             width: "200px",
@@ -371,12 +390,6 @@ const App: m.Component<{}, AppState> = {
 
 // Точка входа
 m.mount(document.body, App);
-
-
-
-
-
-
 
 
 /*
