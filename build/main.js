@@ -1730,7 +1730,7 @@
           margin: "0 auto",
           fontFamily: "sans-serif",
           opacity: state.animation ? "0" : "1",
-          transition: "opacity 0.5s ease-in-out 0.3s"
+          transition: "opacity 0.7s ease-in-out"
         }
       }, [
         (0, import_mithril.default)("h2", { style: { padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px" } }, current.question),
