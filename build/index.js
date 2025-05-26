@@ -2,30 +2,63 @@ import m from "mithril";
 // Вопросы
 const questions = [
     {
-        question: "Do you want to use this mailbox for business or for yourself?",
-        choices: ["Business", "Personal"],
+        question: "How do you intend to use this mailbox — for business or personal purposes?",
+        choices: [{ option: "For business purposes", plans: { Essential: 1, Advanced: 1, Unlimited: 1 } }, {
+                option: "For personal use",
+                plans: { Free: 1, Revolutionary: 1, Legend: 1 }
+            }, { option: "I’m not sure yet", plans: { Free: 1, } }],
     },
     {
-        question: "Do you need extra email addresses in your mailbox?",
-        choices: ["Yes", "No"],
+        question: "Would you like to add additional email addresses to this mailbox?",
+        choices: [{
+                option: "Yes",
+                plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
+            }, { option: "No", plans: { Free: 1 } }],
     },
     {
-        question: "How many extra email addresses do you need?",
-        choices: ["15", "30"],
+        question: "If applicable, how many additional email addresses do you require?",
+        choices: [{ option: "15", plans: { Essential: 1, Revolutionary: 1 } }, {
+                option: "30",
+                plans: { Legend: 1, Unlimited: 1 }
+            }],
     },
     {
-        question: "Do you need custom domains? If yes, how many?",
-        choices: ["3", "10", "unlimited"],
+        question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?",
+        choices: [{
+                option: "Yes",
+                plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
+            }, { option: "No", plans: { Free: 1 } }],
     },
     {
-        question: "Do you need one calendar or more?",
-        choices: ["One", "More"],
+        question: "If applicable, how many custom domains would you like to configure?",
+        choices: [{ option: "3", plans: { Essential: 1, Revolutionary: 1 } }, {
+                option: "10",
+                plans: { Legend: 1, Advanced: 1 }
+            }, { option: "unlimited", plans: { Unlimited: 1 } }],
     },
     {
-        question: "How much storage space do you need to save your emails?",
-        choices: ["1 GB", "20 GB", "50 GB", "500 GB", "1000 GB"],
+        question: "How many calendars do you plan to use?",
+        choices: [{ option: "One", plans: { Free: 1 } }, {
+                option: "More",
+                plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
+            }],
+    },
+    {
+        question: "What is your estimated email storage requirement?",
+        choices: [{ option: "1 GB", plans: { Free: 1 } }, { option: "20 GB", plans: { Revolutionary: 1 } }, {
+                option: "50 GB",
+                plans: { Essential: 1 }
+            }, { option: "500 GB", plans: { Legend: 1, Advanced: 1 } }, { option: "1000 GB", plans: { Unlimited: 1 } }],
     }
 ];
+/*let score = {
+    Free: 0,
+    Revolutionary: 0,
+    Legend: 0,
+    Essential: 0,
+    Advanced: 0,
+    Unlimited: 0
+}*/
 // Компонент Questionnaire
 const Questionnaire = {
     oninit(vnode) {
@@ -35,44 +68,45 @@ const Questionnaire = {
         state.plan = "";
         state.hoverStates = {};
         state.evaluatePlan = (answers) => {
-            if (answers.includes("Personal") &&
-                answers.includes("Yes") &&
-                answers.includes("15") &&
-                answers.includes("3") &&
-                answers.includes("More") &&
-                answers.includes("20 GB")) {
+            const selectedOptions = answers.map(a => a.option);
+            if (selectedOptions.includes("For personal use") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("15") &&
+                selectedOptions.includes("3") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("20 GB")) {
                 return "Revolutionary";
             }
-            else if (answers.includes("Personal") &&
-                answers.includes("Yes") &&
-                answers.includes("30") &&
-                answers.includes("10") &&
-                answers.includes("More") &&
-                answers.includes("500 GB")) {
+            else if (selectedOptions.includes("For personal use") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("10") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("500 GB")) {
                 return "Legend";
             }
-            else if (answers.includes("Business") &&
-                answers.includes("Yes") &&
-                answers.includes("15") &&
-                answers.includes("3") &&
-                answers.includes("More") &&
-                answers.includes("50 GB")) {
+            else if (selectedOptions.includes("For business purposes") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("15") &&
+                selectedOptions.includes("3") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("50 GB")) {
                 return "Essential";
             }
-            else if (answers.includes("Business") &&
-                answers.includes("Yes") &&
-                answers.includes("30") &&
-                answers.includes("10") &&
-                answers.includes("More") &&
-                answers.includes("500 GB")) {
+            else if (selectedOptions.includes("For business purposes") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("10") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("500 GB")) {
                 return "Advanced";
             }
-            else if (answers.includes("Business") &&
-                answers.includes("Yes") &&
-                answers.includes("30") &&
-                answers.includes("unlimited") &&
-                answers.includes("More") &&
-                answers.includes("1000 GB")) {
+            else if (selectedOptions.includes("For business purposes") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("unlimited") &&
+                selectedOptions.includes("More") &&
+                selectedOptions.includes("1000 GB")) {
                 return "Unlimited";
             }
             else {
@@ -138,7 +172,7 @@ const Questionnaire = {
                 }
             }, [
                 ...current.choices.map((choice, index) => {
-                    const inputId = `choice-${state.currentIndex}-${choice}`;
+                    const inputId = `choice-${state.currentIndex}-${index}`;
                     const hoverKey = `${state.currentIndex}-${index}`;
                     const isHovered = state.hoverStates[hoverKey];
                     return m("li", {
@@ -202,7 +236,7 @@ const Questionnaire = {
                                 borderRadius: "50%",
                                 background: state.selectedId === inputId ? "#d93951" : "transparent"
                             }
-                        }, state.selectedId === inputId ? renderCheckmark() : ""), m("span", choice))
+                        }, state.selectedId === inputId ? renderCheckmark() : ""), m("span", choice.option))
                     ]));
                 })
             ])

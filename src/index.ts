@@ -8,14 +8,21 @@ import m from "mithril";
 
 //Step(1): Questions and choices
 // Типы
-type Choice = {
-    option: string;
-    plans: Record<string, number>;
-}
+
+type PlanName = string;
+type PlanScore = number;
 
 interface Question {
     question: string;
     choices: Choice[];
+}
+
+type Choice = {
+    option: string;
+    //// Define a type for a choice of
+// plans, where the keys (PlanName) are strings
+// and the values (PlanScore) are Student objects
+    plans: Record<PlanName, PlanScore>;
 }
 
 interface QuestionnaireState {
@@ -24,8 +31,8 @@ interface QuestionnaireState {
     plan: string;
     hoverStates: Record<string, boolean>;
     selectedId?: string;
-
     evaluatePlan(answers: Choice[]): string;
+
 }
 
 interface AppState {
@@ -35,49 +42,49 @@ interface AppState {
 // Вопросы
 const questions: Question[] = [
     {
-        question: "Do you want to use this mailbox for business or for yourself?",
-        choices: [{option: "Business", plans: {Essential: 1, Advanced: 1, Unlimited: 1}}, {
-            option: "Personal",
+        question: "How do you intend to use this mailbox — for business or personal purposes?",
+        choices: [{option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}}, {
+            option: "For personal use",
             plans: {Free: 1, Revolutionary: 1, Legend: 1}
-        }, {option:"Not sure at the moment", plans: {Free: 1,}}],
+        }, {option:"I’m not sure yet", plans: {Free: 1,}}],
     },
     {
-        question: "Do you need extra email addresses in your mailbox?",
+        question: "Would you like to add additional email addresses to this mailbox?",
         choices: [{
             option: "Yes",
             plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
         }, {option: "No", plans: {Free: 1}}],
     },
     {
-        question: "How many extra email addresses do you need?",
+        question: "If applicable, how many additional email addresses do you require?",
         choices: [{option: "15", plans: {Essential: 1, Revolutionary: 1}}, {
             option: "30",
             plans: {Legend: 1, Unlimited: 1}
         }],
     },
     {
-        question: "Do you need custom domains?",
+        question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?",
         choices: [{
             option: "Yes",
             plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
         }, {option: "No", plans: {Free: 1}}],
     },
     {
-        question: "How many custom domains do you need?",
+        question: "If applicable, how many custom domains would you like to configure?",
         choices: [{option: "3", plans: {Essential: 1, Revolutionary: 1}}, {
             option: "10",
             plans: {Legend: 1, Advanced: 1}
         }, {option: "unlimited", plans: {Unlimited: 1}}],
     },
     {
-        question: "Do you need only one calendar or more?",
+        question: "How many calendars do you plan to use?",
         choices: [{option: "One", plans: {Free: 1}}, {
             option: "More",
             plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
         }],
     },
     {
-        question: "How much storage space do you need to save your emails?",
+        question: "What is your estimated email storage requirement?",
         choices: [{option: "1 GB", plans: {Free: 1}}, {option: "20 GB", plans: {Revolutionary: 1}}, {
             option: "50 GB",
             plans: {Essential: 1}
@@ -86,14 +93,14 @@ const questions: Question[] = [
 ];
 
 
-let score = {
+/*let score = {
     Free: 0,
     Revolutionary: 0,
     Legend: 0,
     Essential: 0,
     Advanced: 0,
     Unlimited: 0
-}
+}*/
 
 
 
@@ -111,7 +118,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             const selectedOptions = answers.map(a => a.option);
 
             if (
-                selectedOptions.includes("Personal") &&
+                selectedOptions.includes("For personal use") &&
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("15") &&
                 selectedOptions.includes("3") &&
@@ -120,7 +127,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             ) {
                 return "Revolutionary";
             } else if (
-                selectedOptions.includes("Personal") &&
+                selectedOptions.includes("For personal use") &&
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("30") &&
                 selectedOptions.includes("10") &&
@@ -129,7 +136,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             ) {
                 return "Legend";
             } else if (
-                selectedOptions.includes("Business") &&
+                selectedOptions.includes("For business purposes") &&
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("15") &&
                 selectedOptions.includes("3") &&
@@ -138,7 +145,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             ) {
                 return "Essential";
             } else if (
-                selectedOptions.includes("Business") &&
+                selectedOptions.includes("For business purposes") &&
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("30") &&
                 selectedOptions.includes("10") &&
@@ -147,7 +154,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             ) {
                 return "Advanced";
             } else if (
-                selectedOptions.includes("Business") &&
+                selectedOptions.includes("For business purposes") &&
                 selectedOptions.includes("Yes") &&
                 selectedOptions.includes("30") &&
                 selectedOptions.includes("unlimited") &&
@@ -223,7 +230,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 }
             }, [
                 ...current.choices.map((choice, index) => {
-                    const inputId = `choice-${state.currentIndex}-${choice}`;
+                    const inputId = `choice-${state.currentIndex}-${index}`;
                     const hoverKey = `${state.currentIndex}-${index}`;
                     const isHovered = state.hoverStates[hoverKey];
 
@@ -292,7 +299,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                     },
                                     state.selectedId === inputId ? renderCheckmark() : ""),
                                 m("span",
-                                    choice))
+                                    choice.option))
                         ])
                     )
                 })])]);
