@@ -1,9 +1,8 @@
 import m from "mithril";
 
 //Компоненты:
-//     App: основной контейнер
-//     Questionnaire: логика опроса
-//     Result: вывод подходящего тарифа
+//     App: основной контейнер для: или вопросы если кнопка "Start" нажата, или начать тест
+//     Questionnaire: логика опроса и вывод подходящего тарифа
 
 //Step(1): Questions and choices
 // Типы
@@ -29,7 +28,8 @@ interface QuestionnaireState {
     answers: Choice[];
     plan: string;
     hoverStates: Record<string, boolean>;
-    selectedId?: string;
+    selectedId?: string | null;
+    animation: boolean;
 
     evaluatePlan(answers: Choice[]): string;
 
@@ -46,7 +46,7 @@ const questions: Question[] = [
         choices: [
             {option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}},
             {option: "For personal use", plans: {Free: 1, Revolutionary: 1, Legend: 1}},
-            {option: "I’m not sure yet", plans: {Free: 1,}}
+            {option: "I’m not sure yet", plans: {Free: 1}}
         ],
     },
     {
@@ -99,28 +99,28 @@ const questions: Question[] = [
 ];
 
 
-let score = {
+/*let score = {
     Free: 0,
     Revolutionary: 0,
     Legend: 0,
     Essential: 0,
     Advanced: 0,
     Unlimited: 0
-}
+}*/
 
 
 // Компонент Questionnaire
 const Questionnaire: m.Component<{}, QuestionnaireState> = {
+    //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
     oninit(vnode) {
-        const state = vnode.state;
-        state.currentIndex = 0;
-        state.answers = [];
-        state.plan = "";
-        state.hoverStates = {};
+        vnode.state.currentIndex = 0;
+        vnode.state.answers = [];
+        vnode.state.plan = "";
+        vnode.state.hoverStates = {};
+        vnode.state.animation = false;
 
-        state.evaluatePlan = (answers: Choice[]): string => {
+        vnode.state.evaluatePlan = (answers: Choice[]): string => {
             const selectedOptions = answers.map(a => a.option);
-
             if (
                 selectedOptions.includes("For personal use") &&
                 selectedOptions.includes("Yes") &&
@@ -166,12 +166,20 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 selectedOptions.includes("1000 GB")
             ) {
                 return "Unlimited";
+            /*} else if (
+                selectedOptions.includes("For business purposes") &&
+                selectedOptions.includes("Yes") &&
+                selectedOptions.includes("30") &&
+                selectedOptions.includes("unlimited") &&
+                selectedOptions.includes("Unlimited calendars") &&
+                selectedOptions.includes("1000 GB")
+            ) {
+                return "Unlimited";*/
             } else {
                 return "Basic";
             }
         };
     },
-
     view(vnode) {
         const state = vnode.state;
 //result to show
@@ -216,16 +224,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             ]);
         }
 
-
 // Current questions with options
         const current = questions[state.currentIndex];
-
 
         return m("div", {
             style: {
                 maxWidth: "800px",
                 margin: "0 auto",
-                fontFamily: "sans-serif"
+                fontFamily: "sans-serif",
+                opacity: state.animation? "0" : "1",
+                transition: "opacity 0.5s ease-in-out 0.3s"
             }
         }, [
             m("h2", {style: {padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px"}}, current.question), m("ul", {
@@ -280,11 +288,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                             },
                             onclick: () => {
                                 state.selectedId = inputId;
+                                state.animation = true; // старт исчезновения
+                                m.redraw();
+
                                 setTimeout(() => {
                                     state.answers.push(choice);
                                     state.currentIndex++;
+                                   state.selectedId = null;
+                                    state.animation = false; //появление нового вопроса
                                     m.redraw();
-                                }, 300)
+                                }, 700) // синхронизировано с transition: 0.5s
                             }
                         }),
                             m("", {
@@ -317,13 +330,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 
 };
 
-/*const renderCheckmark = () => {
-    return m("span", {
-        style: {
-            color: "white"
-        }
-    }, m.trust("<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M416 128L192 384l-96-96\"/></svg>"))
-}*/
 
 //  Старт или продолжение
 const App: m.Component<{}, AppState> = {
@@ -339,8 +345,6 @@ const App: m.Component<{}, AppState> = {
             boxSizing: "border-box"
         });
     },
-
-
     view(vnode) {
         return m("div", {style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px; padding: 20px;"}, [
             vnode.state.started
