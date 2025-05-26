@@ -1636,7 +1636,7 @@
     {
       question: "How many calendars do you plan to use?",
       choices: [{ option: "One", plans: { Free: 1 } }, {
-        option: "More",
+        option: "Unlimited calendars",
         plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
       }]
     },
@@ -1699,11 +1699,13 @@
               color: "#fff",
               padding: "10px 0",
               background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
-              borderRadius: "5px",
+              borderRadius: "100px",
               margin: "0 auto",
               cursor: "pointer",
               fontSize: "17px",
-              textAlign: "center"
+              textAlign: "center",
+              minWidth: "60px",
+              height: "50px"
             },
             onclick: () => {
               state.currentIndex = 0;
@@ -1777,7 +1779,7 @@
                     state.answers.push(choice);
                     state.currentIndex++;
                     import_mithril.default.redraw();
-                  }, 500);
+                  }, 300);
                 }
               }),
               (0, import_mithril.default)("", {
@@ -1794,7 +1796,11 @@
                   borderRadius: "50%",
                   background: state.selectedId === inputId ? "#d93951" : "transparent"
                 }
-              }, state.selectedId === inputId ? renderCheckmark() : ""), (0, import_mithril.default)("span", choice.option))
+              }, state.selectedId === inputId ? (0, import_mithril.default)("span", {
+                style: {
+                  color: "white"
+                }
+              }, import_mithril.default.trust('<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M416 128L192 384l-96-96"/></svg>')) : ""), (0, import_mithril.default)("span", choice.option))
             ]));
           })
         ])
@@ -1813,12 +1819,15 @@
       });
     },
     view(vnode) {
-      return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 3px;" }, [
+      return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px; padding: 20px;" }, [
         vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", {
-          style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
+          style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"
         }, [
-          (0, import_mithril.default)("p", "Having trouble choosing the right plan?"),
-          (0, import_mithril.default)("h2", "Take our 1-minute quiz to find your plan."),
+          (0, import_mithril.default)("div", { style: { display: "flex", justifyContent: "center", flexDirection: "column", maxWidth: "400px" } }, [
+            (0, import_mithril.default)("p", { style: { fontSize: "18px" } }, "Confused about which plan to choose?"),
+            (0, import_mithril.default)("h2", { style: { fontSize: "30px", padding: "5px 0px", margin: "auto" } }, "Take our 1-minute quiz to find your plan."),
+            (0, import_mithril.default)("p", "We\u2019ll show you the best match based on your needs and daily activities.")
+          ]),
           (0, import_mithril.default)("button", {
             style: {
               width: "200px",
@@ -1826,11 +1835,13 @@
               color: "#fff",
               padding: "10px 0",
               background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
-              borderRadius: "5px",
+              borderRadius: "100px",
               margin: "0 auto",
               cursor: "pointer",
               fontSize: "17px",
-              textAlign: "center"
+              textAlign: "center",
+              minWidth: "60px",
+              height: "50px"
             },
             onclick: () => {
               vnode.state.started = true;
@@ -1840,13 +1851,6 @@
         ])
       ]);
     }
-  };
-  var renderCheckmark = () => {
-    return (0, import_mithril.default)("span", {
-      style: {
-        color: "white"
-      }
-    }, import_mithril.default.trust('<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M416 128L192 384l-96-96"/></svg>'));
   };
   import_mithril.default.mount(document.body, App);
 })();

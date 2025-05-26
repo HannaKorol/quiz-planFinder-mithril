@@ -39,7 +39,7 @@ const questions = [
     {
         question: "How many calendars do you plan to use?",
         choices: [{ option: "One", plans: { Free: 1 } }, {
-                option: "More",
+                option: "Unlimited calendars",
                 plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
             }],
     },
@@ -142,11 +142,13 @@ const Questionnaire = {
                         color: "#fff",
                         padding: "10px 0",
                         background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
-                        borderRadius: "5px",
+                        borderRadius: "100px",
                         margin: "0 auto",
                         cursor: "pointer",
                         fontSize: "17px",
-                        textAlign: "center"
+                        textAlign: "center",
+                        minWidth: "60px",
+                        height: "50px",
                     },
                     onclick: () => {
                         state.currentIndex = 0;
@@ -219,7 +221,7 @@ const Questionnaire = {
                                     state.answers.push(choice);
                                     state.currentIndex++;
                                     m.redraw();
-                                }, 500);
+                                }, 300);
                             }
                         }),
                         m("", {
@@ -236,13 +238,24 @@ const Questionnaire = {
                                 borderRadius: "50%",
                                 background: state.selectedId === inputId ? "#d93951" : "transparent"
                             }
-                        }, state.selectedId === inputId ? renderCheckmark() : ""), m("span", choice.option))
+                        }, state.selectedId === inputId ? m("span", {
+                            style: {
+                                color: "white"
+                            }
+                        }, m.trust("<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M416 128L192 384l-96-96\"/></svg>")) : ""), m("span", choice.option))
                     ]));
                 })
             ])
         ]);
     },
 };
+/*const renderCheckmark = () => {
+    return m("span", {
+        style: {
+            color: "white"
+        }
+    }, m.trust("<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M416 128L192 384l-96-96\"/></svg>"))
+}*/
 //  Старт или продолжение
 const App = {
     oninit(vnode) {
@@ -257,14 +270,13 @@ const App = {
         });
     },
     view(vnode) {
-        return m("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 3px;" }, [
+        return m("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px; padding: 20px;" }, [
             vnode.state.started
                 ? m(Questionnaire)
                 : m("div", {
-                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
-                }, [
-                    m("p", "Having trouble choosing the right plan?"),
-                    m("h2", "Take our 1-minute quiz to find your plan."),
+                    style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"
+                }, [m("div", { style: { display: "flex", justifyContent: "center", flexDirection: "column", maxWidth: "400px", } }, [m("p", { style: { fontSize: "18px", } }, "Confused about which plan to choose?"),
+                        m("h2", { style: { fontSize: "30px", padding: "5px 0px", margin: "auto", } }, "Take our 1-minute quiz to find your plan."), m("p", "We’ll show you the best match based on your needs and daily activities.")]),
                     m("button", {
                         style: {
                             width: "200px",
@@ -272,11 +284,13 @@ const App = {
                             color: "#fff",
                             padding: "10px 0",
                             background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
-                            borderRadius: "5px",
+                            borderRadius: "100px",
                             margin: "0 auto",
                             cursor: "pointer",
                             fontSize: "17px",
-                            textAlign: "center"
+                            textAlign: "center",
+                            minWidth: "60px",
+                            height: "50px"
                         },
                         onclick: () => {
                             vnode.state.started = true;
@@ -286,13 +300,6 @@ const App = {
                 ])
         ]);
     }
-};
-const renderCheckmark = () => {
-    return m("span", {
-        style: {
-            color: "white"
-        }
-    }, m.trust("<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"ionicon\" viewBox=\"0 0 512 512\"><path fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32\" d=\"M416 128L192 384l-96-96\"/></svg>"));
 };
 // Точка входа
 m.mount(document.body, App);
