@@ -1616,8 +1616,8 @@
     {
       question: "If applicable, how many additional email addresses do you require?",
       choices: [
-        { option: "15", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "30", plans: { Legend: 1, Unlimited: 1 } }
+        { option: "1-15", plans: { Essential: 1, Revolutionary: 1 } },
+        { option: "16-30", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } }
       ]
     },
     {
@@ -1633,8 +1633,8 @@
     {
       question: "If applicable, how many custom domains would you like to configure?",
       choices: [
-        { option: "3", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "10", plans: { Legend: 1, Advanced: 1 } },
+        { option: "1-3", plans: { Essential: 1, Revolutionary: 1 } },
+        { option: "4-10", plans: { Legend: 1, Advanced: 1 } },
         { option: "unlimited", plans: { Unlimited: 1 } }
       ]
     },
@@ -1649,10 +1649,10 @@
       question: "What is your estimated email storage requirement?",
       choices: [
         { option: "1 GB", plans: { Free: 1 } },
-        { option: "20 GB", plans: { Revolutionary: 1 } },
-        { option: "50 GB", plans: { Essential: 1 } },
-        { option: "500 GB", plans: { Legend: 1, Advanced: 1 } },
-        { option: "1000 GB", plans: { Unlimited: 1 } }
+        { option: "2-20 GB", plans: { Revolutionary: 1 } },
+        { option: "21-50 GB", plans: { Essential: 1 } },
+        { option: "51-500 GB", plans: { Legend: 1, Advanced: 1 } },
+        { option: "501-1000 GB", plans: { Unlimited: 1 } }
       ]
     }
   ];
@@ -1665,20 +1665,23 @@
       vnode.state.hoverStates = {};
       vnode.state.animation = false;
       vnode.state.evaluatePlan = (answers) => {
-        const selectedOptions = answers.map((a) => a.option);
-        if (selectedOptions.includes("For personal use") && selectedOptions.includes("Yes") && selectedOptions.includes("15") && selectedOptions.includes("3") && selectedOptions.includes("Unlimited calendars") && selectedOptions.includes("20 GB")) {
-          return "Revolutionary";
-        } else if (selectedOptions.includes("For personal use") && selectedOptions.includes("Yes") && selectedOptions.includes("30") && selectedOptions.includes("10") && selectedOptions.includes("Unlimited calendars") && selectedOptions.includes("500 GB")) {
-          return "Legend";
-        } else if (selectedOptions.includes("For business purposes") && selectedOptions.includes("Yes") && selectedOptions.includes("15") && selectedOptions.includes("3") && selectedOptions.includes("Unlimited calendars") && selectedOptions.includes("50 GB")) {
-          return "Essential";
-        } else if (selectedOptions.includes("For business purposes") && selectedOptions.includes("Yes") && selectedOptions.includes("30") && selectedOptions.includes("10") && selectedOptions.includes("Unlimited calendars") && selectedOptions.includes("500 GB")) {
-          return "Advanced";
-        } else if (selectedOptions.includes("For business purposes") && selectedOptions.includes("Yes") && selectedOptions.includes("30") && selectedOptions.includes("unlimited") && selectedOptions.includes("Unlimited calendars") && selectedOptions.includes("1000 GB")) {
-          return "Unlimited";
-        } else {
-          return "Basic";
+        const score = {
+          Free: 0,
+          Revolutionary: 0,
+          Legend: 0,
+          Essential: 0,
+          Advanced: 0,
+          Unlimited: 0
+        };
+        for (const answer of answers) {
+          for (const plan in answer.plans) {
+            if (Object.prototype.hasOwnProperty.call(score, plan)) {
+              score[plan] += answer.plans[plan];
+            }
+          }
         }
+        const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
+        return result[0];
       };
     },
     view(vnode) {
@@ -1719,6 +1722,7 @@
             onclick: () => {
               state.currentIndex = 0;
               state.answers = [];
+              state.plan = "";
             }
           }, "Try again")
         ]);
@@ -1794,7 +1798,7 @@
                     state.selectedId = null;
                     state.animation = false;
                     import_mithril.default.redraw();
-                  }, 700);
+                  }, 600);
                 }
               }),
               (0, import_mithril.default)("", {
@@ -1834,7 +1838,7 @@
       });
     },
     view(vnode) {
-      return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px; padding: 20px;" }, [
+      return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;" }, [
         vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", {
           style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"
         }, [
@@ -1843,7 +1847,8 @@
               display: "flex",
               justifyContent: "center",
               flexDirection: "column",
-              maxWidth: "400px"
+              maxWidth: "400px",
+              padding: "10px"
             }
           }, [
             (0, import_mithril.default)("p", { style: { fontSize: "18px" } }, "Confused about which plan to choose?"),

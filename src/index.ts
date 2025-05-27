@@ -19,7 +19,7 @@ type Choice = {
     option: string;
     //// Define a type for a choice of
 // plans, where the keys (PlanName) are strings
-// and the values (PlanScore) are Student objects
+// and the values (PlanScore) are plan objects
     plans: Record<PlanName, PlanScore>;
 }
 
@@ -59,8 +59,8 @@ const questions: Question[] = [
     {
         question: "If applicable, how many additional email addresses do you require?",
         choices: [
-            {option: "15", plans: {Essential: 1, Revolutionary: 1}},
-            {option: "30", plans: {Legend: 1, Unlimited: 1}}
+            {option: "1-15", plans: {Essential: 1, Revolutionary: 1}},
+            {option: "16-30", plans: {Legend: 1, Unlimited: 1, Advanced: 1, }}
         ],
     },
     {
@@ -74,8 +74,8 @@ const questions: Question[] = [
     {
         question: "If applicable, how many custom domains would you like to configure?",
         choices: [
-            {option: "3", plans: {Essential: 1, Revolutionary: 1}},
-            {option: "10", plans: {Legend: 1, Advanced: 1}},
+            {option: "1-3", plans: {Essential: 1, Revolutionary: 1}},
+            {option: "4-10", plans: {Legend: 1, Advanced: 1}},
             {option: "unlimited", plans: {Unlimited: 1}}
         ],
     },
@@ -90,23 +90,13 @@ const questions: Question[] = [
         question: "What is your estimated email storage requirement?",
         choices: [
             {option: "1 GB", plans: {Free: 1}},
-            {option: "20 GB", plans: {Revolutionary: 1}},
-            {option: "50 GB", plans: {Essential: 1}},
-            {option: "500 GB", plans: {Legend: 1, Advanced: 1}},
-            {option: "1000 GB", plans: {Unlimited: 1}}
+            {option: "2-20 GB", plans: {Revolutionary: 1}},
+            {option: "21-50 GB", plans: {Essential: 1}},
+            {option: "51-500 GB", plans: {Legend: 1, Advanced: 1}},
+            {option: "501-1000 GB", plans: {Unlimited: 1}}
         ],
     }
 ];
-
-
-/*let score = {
-    Free: 0,
-    Revolutionary: 0,
-    Legend: 0,
-    Essential: 0,
-    Advanced: 0,
-    Unlimited: 0
-}*/
 
 
 // Компонент Questionnaire
@@ -120,66 +110,30 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         vnode.state.animation = false;
 
         vnode.state.evaluatePlan = (answers: Choice[]): string => {
-            const selectedOptions = answers.map(a => a.option);
-            if (
-                selectedOptions.includes("For personal use") &&
-                selectedOptions.includes("Yes") &&
-                selectedOptions.includes("15") &&
-                selectedOptions.includes("3") &&
-                selectedOptions.includes("Unlimited calendars") &&
-                selectedOptions.includes("20 GB")
-            ) {
-                return "Revolutionary";
-            } else if (
-                selectedOptions.includes("For personal use") &&
-                selectedOptions.includes("Yes") &&
-                selectedOptions.includes("30") &&
-                selectedOptions.includes("10") &&
-                selectedOptions.includes("Unlimited calendars") &&
-                selectedOptions.includes("500 GB")
-            ) {
-                return "Legend";
-            } else if (
-                selectedOptions.includes("For business purposes") &&
-                selectedOptions.includes("Yes") &&
-                selectedOptions.includes("15") &&
-                selectedOptions.includes("3") &&
-                selectedOptions.includes("Unlimited calendars") &&
-                selectedOptions.includes("50 GB")
-            ) {
-                return "Essential";
-            } else if (
-                selectedOptions.includes("For business purposes") &&
-                selectedOptions.includes("Yes") &&
-                selectedOptions.includes("30") &&
-                selectedOptions.includes("10") &&
-                selectedOptions.includes("Unlimited calendars") &&
-                selectedOptions.includes("500 GB")
-            ) {
-                return "Advanced";
-            } else if (
-                selectedOptions.includes("For business purposes") &&
-                selectedOptions.includes("Yes") &&
-                selectedOptions.includes("30") &&
-                selectedOptions.includes("unlimited") &&
-                selectedOptions.includes("Unlimited calendars") &&
-                selectedOptions.includes("1000 GB")
-            ) {
-                return "Unlimited";
-            /*} else if (
-                selectedOptions.includes("For business purposes") &&
-                selectedOptions.includes("Yes") &&
-                selectedOptions.includes("30") &&
-                selectedOptions.includes("unlimited") &&
-                selectedOptions.includes("Unlimited calendars") &&
-                selectedOptions.includes("1000 GB")
-            ) {
-                return "Unlimited";*/
-            } else {
-                return "Basic";
+            // Найдём тариф с наибольшим количеством баллов
+
+            const score: Record<PlanName, number> = {
+                Free: 0,
+                Revolutionary: 0,
+                Legend: 0,
+                Essential: 0,
+                Advanced: 0,
+                Unlimited: 0
+            };
+
+            for (const answer of answers) {
+                for(const plan in answer.plans) {
+                    if(Object.prototype.hasOwnProperty.call(score, plan)) {
+                        score[plan] += answer.plans[plan];
+                    }
+                }
             }
+
+            const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
+            return result[0]; //название тарифа
         };
     },
+
     view(vnode) {
         const state = vnode.state;
 //result to show
@@ -219,8 +173,10 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
-                    }
-                }, "Try again"),
+                        state.plan = "";
+                        /*for(let key in score) score[key as keyof typeof score]=0;*/
+                        }
+                }, "Try again")
             ]);
         }
 
@@ -297,10 +253,10 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                    state.selectedId = null;
                                     state.animation = false; //появление нового вопроса
                                     m.redraw();
-                                }, 700) // синхронизировано с transition: 0.5s
+                                }, 600) // синхронизировано с transition: 0.5s
                             }
                         }),
-                            m("", {
+                          m("", {
                                     style: {
                                         display: "flex",
                                         alignItems: "center",
@@ -346,7 +302,7 @@ const App: m.Component<{}, AppState> = {
         });
     },
     view(vnode) {
-        return m("div", {style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px; padding: 20px;"}, [
+        return m("div", {style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;"}, [
             vnode.state.started
                 ? m(Questionnaire)
                 : m("div", {
@@ -357,6 +313,7 @@ const App: m.Component<{}, AppState> = {
                         justifyContent: "center",
                         flexDirection: "column",
                         maxWidth: "400px",
+                        padding: "10px"
                     }
                 }, [m("p", {style: {fontSize: "18px",}}, "Confused about which plan to choose?"),
                     m("h2", {
@@ -365,7 +322,8 @@ const App: m.Component<{}, AppState> = {
                             padding: "5px 0px",
                             margin: "auto",
                         }
-                    }, "Take our 1-minute quiz to find your plan."), m("p", "We’ll show you the best match based on your needs and daily activities.")]),
+                    }, "Take our 1-minute quiz to find your plan."),
+                    m("p", "We’ll show you the best match based on your needs and daily activities.")]),
                     m("button", {
                         style: {
                             width: "200px",
@@ -394,37 +352,3 @@ const App: m.Component<{}, AppState> = {
 
 // Точка входа
 m.mount(document.body, App);
-
-
-/*
-const App = {
-    step: 0,
-    view: function () {
-        return App.step == 0 && m("div", {class: "container"}, [
-            m("div", {class: "container"}, [
-                m("h2", "Not sure which plan is right for you?"),
-                m("h1", "Take the test to find out which plan you need."),
-                m("button", {
-                    id: "test-start-button", onclick: () => {
-                        App.step = 1;
-                        m.redraw();
-                    },
-                }, "Start Test")
-            ]),
-            App.step == 1 && m("div", {class: "container"}, [
-                m("p", "Do you want to use this mailbox  for business or for yourself?"),
-                m("button", {
-                    class: "test-continues", onclick: () => App.step = 2.1
-                }, "Next Question")
-            ]),
-            App.step == 2.1 && m("div", {class: "container"}, [
-                m("p", "Do you want to use your mail account for business or for yourself?"),
-                m("button", {
-                    class: "test-continues", onclick: () => App.step = 2
-                }, "Next Question")
-            ]),
-        ])
-    }
-}
-*/
-
