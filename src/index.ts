@@ -30,6 +30,7 @@ interface QuestionnaireState {
     hoverStates: Record<string, boolean>;
     selectedId?: string | null;
     animation: boolean;
+    showResultContainer: boolean;
 
     evaluatePlan(answers: Choice[]): string;
 
@@ -60,7 +61,8 @@ const questions: Question[] = [
         question: "If applicable, how many additional email addresses do you require?",
         choices: [
             {option: "1-15", plans: {Essential: 1, Revolutionary: 1}},
-            {option: "16-30", plans: {Legend: 1, Unlimited: 1, Advanced: 1, }}
+            {option: "16-30", plans: {Legend: 1, Unlimited: 1, Advanced: 1, }},
+            {option: "No need", plans: {Free: 1}},
         ],
     },
     {
@@ -108,6 +110,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         vnode.state.plan = "";
         vnode.state.hoverStates = {};
         vnode.state.animation = false;
+        vnode.state.showResultContainer = true;
 
         vnode.state.evaluatePlan = (answers: Choice[]): string => {
             // Найдём тариф с наибольшим количеством баллов
@@ -134,12 +137,14 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         };
     },
 
-    view(vnode) {
+    view: function (vnode) {
         const state = vnode.state;
+        const showResultContainer = vnode.state.showResultContainer;
 //result to show
         if (state.currentIndex >= questions.length) {
             state.plan = state.evaluatePlan(state.answers);
-            return m("div", {
+
+            return showResultContainer && m("div", {
                 style: {
                     maxWidth: "800px",
                     padding: "10px",
@@ -175,8 +180,30 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         state.answers = [];
                         state.plan = "";
                         /*for(let key in score) score[key as keyof typeof score]=0;*/
+                    }
+                }, "Try again"),
+                m("button",
+                    {
+                        style: {
+                            width: "200px",
+                            fontWeight: "700",
+                            color: "#fff",
+                            padding: "10px 0",
+                            background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
+                            borderRadius: "100px",
+                            margin: "0 auto",
+                            cursor: "pointer",
+                            fontSize: "17px",
+                            textAlign: "center",
+                            minWidth: "60px",
+                            height: "50px",
+                        },
+                        onclick: () => {
+                           /* "this.parentNode.style.display = 'none';"*/
+                            vnode.state.showResultContainer = false;
                         }
-                }, "Try again")
+                    },
+                    "Close"),
             ]);
         }
 
@@ -188,8 +215,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 maxWidth: "800px",
                 margin: "0 auto",
                 fontFamily: "sans-serif",
-                opacity: state.animation? "0" : "1",
-                transition: "opacity 0.7s ease-in-out"
+                opacity: state.animation ? "0" : "1",
+                transition: "opacity 0.6s ease-in-out"
             }
         }, [
             m("h2", {style: {padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px"}}, current.question), m("ul", {
@@ -250,13 +277,13 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                 setTimeout(() => {
                                     state.answers.push(choice);
                                     state.currentIndex++;
-                                   state.selectedId = null;
+                                    state.selectedId = null;
                                     state.animation = false; //появление нового вопроса
                                     m.redraw();
-                                }, 600) // синхронизировано с transition: 0.5s
+                                }, 500) // синхронизировано с transition: 0.5s
                             }
                         }),
-                          m("", {
+                            m("", {
                                     style: {
                                         display: "flex",
                                         alignItems: "center",
@@ -285,6 +312,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
     },
 
 };
+
+
 
 
 //  Старт или продолжение

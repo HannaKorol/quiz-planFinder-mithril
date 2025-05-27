@@ -1617,7 +1617,8 @@
       question: "If applicable, how many additional email addresses do you require?",
       choices: [
         { option: "1-15", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "16-30", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } }
+        { option: "16-30", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } },
+        { option: "No need", plans: { Free: 1 } }
       ]
     },
     {
@@ -1664,6 +1665,7 @@
       vnode.state.plan = "";
       vnode.state.hoverStates = {};
       vnode.state.animation = false;
+      vnode.state.showResultContainer = true;
       vnode.state.evaluatePlan = (answers) => {
         const score = {
           Free: 0,
@@ -1684,11 +1686,12 @@
         return result[0];
       };
     },
-    view(vnode) {
+    view: function(vnode) {
       const state = vnode.state;
+      const showResultContainer = vnode.state.showResultContainer;
       if (state.currentIndex >= questions.length) {
         state.plan = state.evaluatePlan(state.answers);
-        return (0, import_mithril.default)("div", {
+        return showResultContainer && (0, import_mithril.default)("div", {
           style: {
             maxWidth: "800px",
             padding: "10px",
@@ -1724,7 +1727,26 @@
               state.answers = [];
               state.plan = "";
             }
-          }, "Try again")
+          }, "Try again"),
+          (0, import_mithril.default)("button", {
+            style: {
+              width: "200px",
+              fontWeight: "700",
+              color: "#fff",
+              padding: "10px 0",
+              background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
+              borderRadius: "100px",
+              margin: "0 auto",
+              cursor: "pointer",
+              fontSize: "17px",
+              textAlign: "center",
+              minWidth: "60px",
+              height: "50px"
+            },
+            onclick: () => {
+              vnode.state.showResultContainer = false;
+            }
+          }, "Close")
         ]);
       }
       const current = questions[state.currentIndex];
@@ -1734,7 +1756,7 @@
           margin: "0 auto",
           fontFamily: "sans-serif",
           opacity: state.animation ? "0" : "1",
-          transition: "opacity 0.7s ease-in-out"
+          transition: "opacity 0.6s ease-in-out"
         }
       }, [
         (0, import_mithril.default)("h2", { style: { padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px" } }, current.question),
@@ -1798,7 +1820,7 @@
                     state.selectedId = null;
                     state.animation = false;
                     import_mithril.default.redraw();
-                  }, 600);
+                  }, 500);
                 }
               }),
               (0, import_mithril.default)("", {
