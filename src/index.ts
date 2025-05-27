@@ -38,6 +38,7 @@ interface QuestionnaireState {
 
 interface AppState {
     started: boolean;
+    animation: boolean;
 }
 
 // Вопросы
@@ -187,7 +188,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         style: {
                             width: "200px",
                             fontWeight: "700",
-                            color: "#fff",
+                            color: "#850122",
                             padding: "10px 0",
                             background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
                             borderRadius: "100px",
@@ -320,12 +321,15 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 const App: m.Component<{}, AppState> = {
     oninit(vnode) {
         vnode.state.started = false;
+        vnode.state.animation = false;
+
 
         //styles to body
         Object.assign(document.body.style, {
             margin: "0",
             padding: "0",
-            background: "#eee",
+      background: "#eee",
+           /* background: "#fff2ea",*/
             fontFamily: "sans-serif",
             boxSizing: "border-box"
         });
@@ -342,7 +346,9 @@ const App: m.Component<{}, AppState> = {
                         justifyContent: "center",
                         flexDirection: "column",
                         maxWidth: "400px",
-                        padding: "10px"
+                        padding: "10px",
+                        opacity: vnode.state.animation ? "0" : "1",
+                        transition: "opacity 0.6s ease-in-out"
                     }
                 }, [m("p", {style: {fontSize: "18px",}}, "Confused about which plan to choose?"),
                     m("h2", {
@@ -359,24 +365,37 @@ const App: m.Component<{}, AppState> = {
                             fontWeight: "700",
                             color: "#fff",
                             padding: "10px 0",
-                            background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+                            backgroundColor: "#850122",
                             borderRadius: "100px",
                             margin: "0 auto",
                             cursor: "pointer",
                             fontSize: "17px",
                             textAlign: "center",
                             minWidth: "60px",
-                            height: "50px"
+                            height: "50px",
+                            opacity: vnode.state.animation ? "0" : "1",
+                            transition: "opacity 0.6s ease-in-out"
                         },
+                        onmouseover: (e: Event) => {(e.target as HTMLButtonElement).style.backgroundColor="#be8f96";},
+                        onmouseout: (e: Event) => {(e.target as HTMLButtonElement).style.backgroundColor= "#850122";},
                         onclick: () => {
-                            vnode.state.started = true;
+                            vnode.state.animation = true;
+                          /*  vnode.state.started = true;*/
                             m.redraw();
+
+                            setTimeout(() => {
+                                vnode.state.started = true;
+                                vnode.state.animation = false; // сброс
+                                m.redraw(); // показать Questionnaire
+                            }, 600); // время анимации должно совпадать с transition
                         }
                     }, "Start Now")
                 ])
         ]);
     }
 };
+
+
 
 
 // Точка входа
