@@ -27,8 +27,10 @@ const questions = [
     {
         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?",
         choices: [
-            { option: "Yes",
-                plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 } },
+            {
+                option: "Yes",
+                plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
+            },
             { option: "No", plans: { Free: 1 } }
         ],
     },
@@ -44,7 +46,10 @@ const questions = [
         question: "How many calendars do you plan to use?",
         choices: [
             { option: "One", plans: { Free: 1 } },
-            { option: "Unlimited calendars", plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 } }
+            {
+                option: "Unlimited calendars",
+                plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
+            }
         ],
     },
     {
@@ -68,6 +73,7 @@ const Questionnaire = {
         vnode.state.hoverStates = {};
         vnode.state.animation = false;
         vnode.state.showResultContainer = true;
+        vnode.state.showQuestionContainer = true;
         vnode.state.evaluatePlan = (answers) => {
             // Найдём тариф с наибольшим количеством баллов
             const score = {
@@ -92,6 +98,10 @@ const Questionnaire = {
     view: function (vnode) {
         const state = vnode.state;
         const showResultContainer = vnode.state.showResultContainer;
+        const showQuestionContainer = vnode.state.showQuestionContainer;
+        /*
+                const showQuestionContainer = vnode.state.showQuestionContainer;
+        */
         //result to show
         if (state.currentIndex >= questions.length) {
             state.plan = state.evaluatePlan(state.answers);
@@ -119,7 +129,7 @@ const Questionnaire = {
                         padding: "10px 0",
                         background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
                         borderRadius: "100px",
-                        margin: "0 auto",
+                        margin: "0 10px",
                         cursor: "pointer",
                         fontSize: "17px",
                         textAlign: "center",
@@ -141,7 +151,7 @@ const Questionnaire = {
                         padding: "10px 0",
                         background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
                         borderRadius: "100px",
-                        margin: "0 auto",
+                        margin: "0 10px",
                         cursor: "pointer",
                         fontSize: "17px",
                         textAlign: "center",
@@ -157,7 +167,7 @@ const Questionnaire = {
         }
         // Current questions with options
         const current = questions[state.currentIndex];
-        return m("div", {
+        return showQuestionContainer && m("div", {
             style: {
                 maxWidth: "800px",
                 margin: "0 auto",
@@ -166,7 +176,34 @@ const Questionnaire = {
                 transition: "opacity 0.6s ease-in-out"
             }
         }, [
-            m("h2", { style: { padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px" } }, current.question), m("ul", {
+            m("div", [
+                m("button", {
+                    style: {
+                        fontSize: "14px",
+                        color: "#000",
+                        textAlign: "center",
+                        backgroundColor: "#3333330d",
+                        marginRight: "2%",
+                        marginTop: "1%",
+                        float: "right",
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                        lineHeight: "20px",
+                        padding: "0px 5px"
+                    },
+                    onclick: () => {
+                        vnode.state.showQuestionContainer = false;
+                    }
+                }, "x"),
+                m("h2", {
+                    style: {
+                        padding: "30px 30px 10px 50px",
+                        margin: 0,
+                        fontSize: "18px"
+                    }
+                }, current.question),
+            ]),
+            m("ul", {
                 style: {
                     listStyle: "none",
                     position: "relative",
@@ -310,8 +347,12 @@ const App = {
                             opacity: vnode.state.animation ? "0" : "1",
                             transition: "opacity 0.6s ease-in-out"
                         },
-                        onmouseover: (e) => { e.target.style.backgroundColor = "#be8f96"; },
-                        onmouseout: (e) => { e.target.style.backgroundColor = "#850122"; },
+                        onmouseover: (e) => {
+                            e.target.style.backgroundColor = "#be8f96";
+                        },
+                        onmouseout: (e) => {
+                            e.target.style.backgroundColor = "#850122";
+                        },
                         onclick: () => {
                             vnode.state.animation = true;
                             /*  vnode.state.started = true;*/

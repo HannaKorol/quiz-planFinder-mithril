@@ -31,6 +31,7 @@ interface QuestionnaireState {
     selectedId?: string | null;
     animation: boolean;
     showResultContainer: boolean;
+    showQuestionContainer: boolean;
 
     evaluatePlan(answers: Choice[]): string;
 
@@ -62,15 +63,17 @@ const questions: Question[] = [
         question: "If applicable, how many additional email addresses do you require?",
         choices: [
             {option: "1-15", plans: {Essential: 1, Revolutionary: 1}},
-            {option: "16-30", plans: {Legend: 1, Unlimited: 1, Advanced: 1, }},
+            {option: "16-30", plans: {Legend: 1, Unlimited: 1, Advanced: 1,}},
             {option: "No need", plans: {Free: 1}},
         ],
     },
     {
         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?",
         choices: [
-            {option: "Yes",
-            plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
+            {
+                option: "Yes",
+                plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+            },
             {option: "No", plans: {Free: 1}}
         ],
     },
@@ -86,7 +89,10 @@ const questions: Question[] = [
         question: "How many calendars do you plan to use?",
         choices: [
             {option: "One", plans: {Free: 1}},
-            {option: "Unlimited calendars", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}}
+            {
+                option: "Unlimited calendars",
+                plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+            }
         ],
     },
     {
@@ -112,11 +118,11 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         vnode.state.hoverStates = {};
         vnode.state.animation = false;
         vnode.state.showResultContainer = true;
+        vnode.state.showQuestionContainer = true;
 
         vnode.state.evaluatePlan = (answers: Choice[]): string => {
             // Найдём тариф с наибольшим количеством баллов
-
-            const score: Record<PlanName, number> = {
+            const score: Record<PlanName, PlanScore> = {
                 Free: 0,
                 Revolutionary: 0,
                 Legend: 0,
@@ -126,8 +132,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             };
 
             for (const answer of answers) {
-                for(const plan in answer.plans) {
-                    if(Object.prototype.hasOwnProperty.call(score, plan)) {
+                for (const plan in answer.plans) {
+                    if (Object.prototype.hasOwnProperty.call(score, plan)) {
                         score[plan] += answer.plans[plan];
                     }
                 }
@@ -141,6 +147,10 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
     view: function (vnode) {
         const state = vnode.state;
         const showResultContainer = vnode.state.showResultContainer;
+        const showQuestionContainer = vnode.state.showQuestionContainer;
+        /*
+                const showQuestionContainer = vnode.state.showQuestionContainer;
+        */
 //result to show
         if (state.currentIndex >= questions.length) {
             state.plan = state.evaluatePlan(state.answers);
@@ -161,38 +171,15 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, state.plan),
-                m("button", {
-                    style: {
-                        width: "200px",
-                        fontWeight: "700",
-                        color: "#fff",
-                        padding: "10px 0",
-                        background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
-                        borderRadius: "100px",
-                        margin: "0 auto",
-                        cursor: "pointer",
-                        fontSize: "17px",
-                        textAlign: "center",
-                        minWidth: "60px",
-                        height: "50px",
-                    },
-                    onclick: () => {
-                        state.currentIndex = 0;
-                        state.answers = [];
-                        state.plan = "";
-                        /*for(let key in score) score[key as keyof typeof score]=0;*/
-                    }
-                }, "Try again"),
-                m("button",
-                    {
+                    m("button", {
                         style: {
                             width: "200px",
                             fontWeight: "700",
-                            color: "#850122",
+                            color: "#fff",
                             padding: "10px 0",
-                            background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
+                            background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
                             borderRadius: "100px",
-                            margin: "0 auto",
+                            margin: "0 10px",
                             cursor: "pointer",
                             fontSize: "17px",
                             textAlign: "center",
@@ -200,18 +187,41 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                             height: "50px",
                         },
                         onclick: () => {
-                           /* "this.parentNode.style.display = 'none';"*/
-                            vnode.state.showResultContainer = false;
+                            state.currentIndex = 0;
+                            state.answers = [];
+                            state.plan = "";
+                            /*for(let key in score) score[key as keyof typeof score]=0;*/
                         }
-                    },
-                    "Close"),
+                    }, "Try again"),
+                    m("button",
+                        {
+                            style: {
+                                width: "200px",
+                                fontWeight: "700",
+                                color: "#850122",
+                                padding: "10px 0",
+                                background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
+                                borderRadius: "100px",
+                                margin: "0 10px",
+                                cursor: "pointer",
+                                fontSize: "17px",
+                                textAlign: "center",
+                                minWidth: "60px",
+                                height: "50px",
+                            },
+                            onclick: () => {
+                                /* "this.parentNode.style.display = 'none';"*/
+                                vnode.state.showResultContainer = false;
+                            }
+                        },
+                        "Close"),
             ]);
         }
 
 // Current questions with options
         const current = questions[state.currentIndex];
 
-        return m("div", {
+        return showQuestionContainer && m("div", {
             style: {
                 maxWidth: "800px",
                 margin: "0 auto",
@@ -220,7 +230,37 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 transition: "opacity 0.6s ease-in-out"
             }
         }, [
-            m("h2", {style: {padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px"}}, current.question), m("ul", {
+            m("div", [
+                m("button",
+                    {
+                        style: {
+                            fontSize: "14px",
+                            color: "#000",
+                            textAlign: "center",
+                            backgroundColor: "#3333330d",
+                            marginRight: "2%",
+                            marginTop: "1%",
+                            float:"right",
+                            borderRadius: "50%",
+                            cursor: "pointer",
+                            lineHeight: "20px",
+                            padding: "0px 5px"
+
+                        },
+                        onclick: () => {
+                            vnode.state.showQuestionContainer = false;
+                        }
+                    }, "x"),
+                m("h2", {
+                    style: {
+                        padding: "30px 30px 10px 50px",
+                        margin: 0,
+                        fontSize: "18px"
+                    }
+                }, current.question),
+
+            ]),
+            m("ul", {
                 style: {
                     listStyle: "none",
                     position: "relative",
@@ -315,8 +355,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 };
 
 
-
-
 //  Старт или продолжение
 const App: m.Component<{}, AppState> = {
     oninit(vnode) {
@@ -328,8 +366,8 @@ const App: m.Component<{}, AppState> = {
         Object.assign(document.body.style, {
             margin: "0",
             padding: "0",
-      background: "#eee",
-           /* background: "#fff2ea",*/
+            background: "#eee",
+            /* background: "#fff2ea",*/
             fontFamily: "sans-serif",
             boxSizing: "border-box"
         });
@@ -376,11 +414,15 @@ const App: m.Component<{}, AppState> = {
                             opacity: vnode.state.animation ? "0" : "1",
                             transition: "opacity 0.6s ease-in-out"
                         },
-                        onmouseover: (e: Event) => {(e.target as HTMLButtonElement).style.backgroundColor="#be8f96";},
-                        onmouseout: (e: Event) => {(e.target as HTMLButtonElement).style.backgroundColor= "#850122";},
+                        onmouseover: (e: Event) => {
+                            (e.target as HTMLButtonElement).style.backgroundColor = "#be8f96";
+                        },
+                        onmouseout: (e: Event) => {
+                            (e.target as HTMLButtonElement).style.backgroundColor = "#850122";
+                        },
                         onclick: () => {
                             vnode.state.animation = true;
-                          /*  vnode.state.started = true;*/
+                            /*  vnode.state.started = true;*/
                             m.redraw();
 
                             setTimeout(() => {
@@ -394,8 +436,6 @@ const App: m.Component<{}, AppState> = {
         ]);
     }
 };
-
-
 
 
 // Точка входа

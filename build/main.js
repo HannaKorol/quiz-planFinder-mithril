@@ -1643,7 +1643,10 @@
       question: "How many calendars do you plan to use?",
       choices: [
         { option: "One", plans: { Free: 1 } },
-        { option: "Unlimited calendars", plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 } }
+        {
+          option: "Unlimited calendars",
+          plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
+        }
       ]
     },
     {
@@ -1666,6 +1669,7 @@
       vnode.state.hoverStates = {};
       vnode.state.animation = false;
       vnode.state.showResultContainer = true;
+      vnode.state.showQuestionContainer = true;
       vnode.state.evaluatePlan = (answers) => {
         const score = {
           Free: 0,
@@ -1689,6 +1693,7 @@
     view: function(vnode) {
       const state = vnode.state;
       const showResultContainer = vnode.state.showResultContainer;
+      const showQuestionContainer = vnode.state.showQuestionContainer;
       if (state.currentIndex >= questions.length) {
         state.plan = state.evaluatePlan(state.answers);
         return showResultContainer && (0, import_mithril.default)("div", {
@@ -1715,7 +1720,7 @@
               padding: "10px 0",
               background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
               borderRadius: "100px",
-              margin: "0 auto",
+              margin: "0 10px",
               cursor: "pointer",
               fontSize: "17px",
               textAlign: "center",
@@ -1736,7 +1741,7 @@
               padding: "10px 0",
               background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
               borderRadius: "100px",
-              margin: "0 auto",
+              margin: "0 10px",
               cursor: "pointer",
               fontSize: "17px",
               textAlign: "center",
@@ -1750,7 +1755,7 @@
         ]);
       }
       const current = questions[state.currentIndex];
-      return (0, import_mithril.default)("div", {
+      return showQuestionContainer && (0, import_mithril.default)("div", {
         style: {
           maxWidth: "800px",
           margin: "0 auto",
@@ -1759,7 +1764,33 @@
           transition: "opacity 0.6s ease-in-out"
         }
       }, [
-        (0, import_mithril.default)("h2", { style: { padding: ".5rem 2.5rem 1.5rem", margin: 0, fontSize: "18px" } }, current.question),
+        (0, import_mithril.default)("div", [
+          (0, import_mithril.default)("button", {
+            style: {
+              fontSize: "14px",
+              color: "#000",
+              textAlign: "center",
+              backgroundColor: "#3333330d",
+              marginRight: "2%",
+              marginTop: "1%",
+              float: "right",
+              borderRadius: "50%",
+              cursor: "pointer",
+              lineHeight: "20px",
+              padding: "0px 5px"
+            },
+            onclick: () => {
+              vnode.state.showQuestionContainer = false;
+            }
+          }, "x"),
+          (0, import_mithril.default)("h2", {
+            style: {
+              padding: "30px 30px 10px 50px",
+              margin: 0,
+              fontSize: "18px"
+            }
+          }, current.question)
+        ]),
         (0, import_mithril.default)("ul", {
           style: {
             listStyle: "none",
