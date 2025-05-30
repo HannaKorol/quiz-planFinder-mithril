@@ -74,6 +74,21 @@ const Questionnaire = {
         vnode.state.animation = false;
         vnode.state.showResultContainer = true;
         vnode.state.showQuestionContainer = true;
+        vnode.state.selectedIndex = 1; //for the final page "slider movement"
+        //Final page: slider
+        vnode.state.moveToSelected = (directionOrIndex) => {
+            let newIndex = vnode.state.selectedIndex;
+            if (directionOrIndex === "prev") {
+                newIndex = Math.max(0, newIndex - 1);
+            }
+            else if (directionOrIndex == "next") {
+                newIndex = Math.min(2, newIndex + 1);
+            }
+            else {
+                newIndex = directionOrIndex;
+            }
+            vnode.state.selectedIndex = newIndex;
+        };
         vnode.state.evaluatePlan = (answers) => {
             // Найдём тариф с наибольшим количеством баллов
             const score = {
@@ -105,6 +120,47 @@ const Questionnaire = {
         //result to show
         if (state.currentIndex >= questions.length) {
             state.plan = state.evaluatePlan(state.answers);
+            //Logic for the carusel -------------------------------------
+            const getStyle = (index) => {
+                const base = {
+                    position: "absolute",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    transition: "all 0.6s ease",
+                    padding: "50px",
+                    borderRadius: "10px",
+                    textAlign: "center",
+                    fontSize: "20px",
+                    backgroundColor: "#f4f4f4",
+                    opacity: 1,
+                    zIndex: 1
+                };
+                if (index === state.selectedIndex) {
+                    return { ...base, left: "50%", transform: "translateX(-50%) translateY(0)", zIndex: 10 };
+                }
+                else if (index === state.selectedIndex - 1) {
+                    return {
+                        ...base,
+                        left: "30%",
+                        transform: "translateX(-50%) translateY(20px)",
+                        opacity: 0.7,
+                        zIndex: 5
+                    };
+                }
+                else if (index === state.selectedIndex + 1) {
+                    return {
+                        ...base,
+                        left: "70%",
+                        transform: "translateX(-50%) translateY(20px)",
+                        opacity: 0.7,
+                        zIndex: 5
+                    };
+                }
+                else {
+                    return { display: "none" };
+                }
+            };
+            //-------------------------------------------------------------
             return showResultContainer && m("div", {
                 style: {
                     maxWidth: "800px",
@@ -121,53 +177,53 @@ const Questionnaire = {
                 m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, state.plan),
+                //aded carusel here----------------------------------------
                 m("div", {
                     style: {
-                        width: "400px",
-                        height: "600px",
-                        overflowX: "auto",
-                        overflowY: "hidden",
-                        whiteSpace: "nowrap",
-                        margin: "20px auto",
-                    }, oncreate: ({ dom }) => {
-                        const onWheel = (event) => {
-                            event.preventDefault();
-                            const e = event; // Явное приведение
-                            dom.scrollLeft += e.deltaY;
-                        };
-                        dom.addEventListener("wheel", onWheel, { passive: false });
+                        width: "100%",
+                        height: "400px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "relative",
+                        overflow: "hidden",
+                        marginTop: "40px"
                     }
                 }, [
                     m("div", {
                         style: {
-                            display: "inline-block",
-                            backgroundColor: "yellow",
-                            width: "300px",
-                            height: "600px",
-                            transformOrigin: "left top 0px",
-                            margin: "10px"
+                            position: "relative",
+                            width: "100%",
+                            height: "100%"
+                        },
+                        oncreate: ({ dom }) => {
+                            const onWheel = (event) => {
+                                const e = event;
+                                event.preventDefault();
+                                if (e.deltaY > 0) {
+                                    state.moveToSelected("next");
+                                }
+                                else {
+                                    state.moveToSelected("prev");
+                                }
+                                m.redraw();
+                            };
+                            dom.addEventListener("wheel", onWheel, { passive: false });
                         }
-                    }, "Text 1"),
-                    m("div", {
-                        style: {
-                            display: "inline-block",
-                            backgroundColor: "yellow",
-                            width: "300px",
-                            height: "600px",
-                            transformOrigin: "left top 0px",
-                            margin: "10px"
-                        }
-                    }, "Text 2"),
-                    m("div", {
-                        style: {
-                            display: "inline-block",
-                            backgroundColor: "yellow",
-                            width: "300px",
-                            height: "600px",
-                            transformOrigin: "left top 0px",
-                            margin: "10px"
-                        }
-                    }, "Text 3")
+                    }, [
+                        m("div", {
+                            style: getStyle(0),
+                            onclick: () => state.moveToSelected(0)
+                        }, "Text 1"),
+                        m("div", {
+                            style: getStyle(1),
+                            onclick: () => state.moveToSelected(1)
+                        }, "Text 2"),
+                        m("div", {
+                            style: getStyle(2),
+                            onclick: () => state.moveToSelected(2)
+                        }, "Text 3"),
+                    ]),
                 ]),
                 m("button", {
                     style: {
