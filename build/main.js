@@ -1712,6 +1712,52 @@
           (0, import_mithril.default)("p", {
             style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
           }, state.plan),
+          (0, import_mithril.default)("div", {
+            style: {
+              width: "400px",
+              height: "600px",
+              overflowX: "auto",
+              overflowY: "hidden",
+              whiteSpace: "nowrap",
+              margin: "20px auto"
+              /* border: "1px solid gray",
+               padding: "10px",*/
+            }
+          }, [
+            (0, import_mithril.default)("div", {
+              style: {
+                display: "inline-block",
+                backgroundColor: "yellow",
+                width: "300px",
+                height: "600px",
+                /* transform: "rotate(90deg)",*/
+                transformOrigin: "left top 0px",
+                margin: "10px"
+              }
+            }, "Text 1"),
+            (0, import_mithril.default)("div", {
+              style: {
+                display: "inline-block",
+                backgroundColor: "yellow",
+                width: "300px",
+                height: "600px",
+                /* transform: "rotate(90deg)",*/
+                transformOrigin: "left top 0px",
+                margin: "10px"
+              }
+            }, "Text 2"),
+            (0, import_mithril.default)("div", {
+              style: {
+                display: "inline-block",
+                backgroundColor: "yellow",
+                width: "300px",
+                height: "600px",
+                /* transform: "rotate(90deg)",*/
+                transformOrigin: "left top 0px",
+                margin: "10px"
+              }
+            }, "Text 3")
+          ]),
           (0, import_mithril.default)("button", {
             style: {
               width: "200px",

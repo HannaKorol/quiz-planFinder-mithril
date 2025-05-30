@@ -171,50 +171,90 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, state.plan),
-                    m("button", {
+                m("div", {
+                    style: {
+                        width: "400px",
+                        height: "600px",
+                        overflowX: "auto",
+                        overflowY: "hidden",
+                        whiteSpace: "nowrap",
+                        margin: "20px auto",
+                    }
+                }, [
+                    m("div", {
                         style: {
-                            width: "200px",
-                            fontWeight: "700",
-                            color: "#fff",
-                            padding: "10px 0",
-                            background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
-                            borderRadius: "100px",
-                            margin: "0 10px",
-                            cursor: "pointer",
-                            fontSize: "17px",
-                            textAlign: "center",
-                            minWidth: "60px",
-                            height: "50px",
-                        },
-                        onclick: () => {
-                            state.currentIndex = 0;
-                            state.answers = [];
-                            state.plan = "";
-                            /*for(let key in score) score[key as keyof typeof score]=0;*/
+                            display: "inline-block",
+                            backgroundColor: "yellow",
+                            width: "300px",
+                            height: "600px",
+                            transformOrigin: "left top 0px",
+                            margin: "10px"
+
                         }
-                    }, "Try again"),
-                    m("button",
-                        {
-                            style: {
-                                width: "200px",
-                                fontWeight: "700",
-                                color: "#850122",
-                                padding: "10px 0",
-                                background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
-                                borderRadius: "100px",
-                                margin: "0 10px",
-                                cursor: "pointer",
-                                fontSize: "17px",
-                                textAlign: "center",
-                                minWidth: "60px",
-                                height: "50px",
-                            },
-                            onclick: () => {
-                                /* "this.parentNode.style.display = 'none';"*/
-                                vnode.state.showResultContainer = false;
-                            }
-                        },
-                        "Close"),
+                    }, "Text 1"),
+                    m("div", {
+                        style: {
+                            display: "inline-block",
+                            backgroundColor: "yellow",
+                            width: "300px",
+                            height: "600px",
+                            transformOrigin: "left top 0px",
+                            margin: "10px"
+                        }
+                    }, "Text 2"),
+                    m("div", {
+                        style: {
+                            display: "inline-block",
+                            backgroundColor: "yellow",
+                            width: "300px",
+                            height: "600px",
+                            transformOrigin: "left top 0px",
+                            margin: "10px"
+                        }
+                    }, "Text 3")
+                ]),
+                m("button", {
+                    style: {
+                        width: "200px",
+                        fontWeight: "700",
+                        color: "#fff",
+                        padding: "10px 0",
+                        background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+                        borderRadius: "100px",
+                        margin: "0 10px",
+                        cursor: "pointer",
+                        fontSize: "17px",
+                        textAlign: "center",
+                        minWidth: "60px",
+                        height: "50px",
+                    },
+                    onclick: () => {
+                        state.currentIndex = 0;
+                        state.answers = [];
+                        state.plan = "";
+                        /*for(let key in score) score[key as keyof typeof score]=0;*/
+                    }
+                }, "Try again"),
+                m("button", {
+                    style: {
+                        width: "200px",
+                        fontWeight: "700",
+                        color: "#850122",
+                        padding: "10px 0",
+                        background: "linear-gradient(45deg, rgb(153, 113, 122), rgb(53, 46, 60) 100%);",
+                        borderRadius: "100px",
+                        margin: "0 10px",
+                        cursor: "pointer",
+                        fontSize: "17px",
+                        textAlign: "center",
+                        minWidth: "60px",
+                        height: "50px",
+                    },
+                    onclick: () => {
+                        /* "this.parentNode.style.display = 'none';"*/
+                        vnode.state.showResultContainer = false;
+                    }
+                }, "Close"),
             ]);
         }
 
@@ -240,7 +280,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                             backgroundColor: "#3333330d",
                             marginRight: "2%",
                             marginTop: "1%",
-                            float:"right",
+                            float: "right",
                             borderRadius: "50%",
                             cursor: "pointer",
                             lineHeight: "20px",
