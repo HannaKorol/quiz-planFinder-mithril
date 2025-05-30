@@ -1720,8 +1720,14 @@
               overflowY: "hidden",
               whiteSpace: "nowrap",
               margin: "20px auto"
-              /* border: "1px solid gray",
-               padding: "10px",*/
+            },
+            oncreate: ({ dom }) => {
+              const onWheel = (event) => {
+                event.preventDefault();
+                const e = event;
+                dom.scrollLeft += e.deltaY;
+              };
+              dom.addEventListener("wheel", onWheel, { passive: false });
             }
           }, [
             (0, import_mithril.default)("div", {
@@ -1730,7 +1736,6 @@
                 backgroundColor: "yellow",
                 width: "300px",
                 height: "600px",
-                /* transform: "rotate(90deg)",*/
                 transformOrigin: "left top 0px",
                 margin: "10px"
               }
@@ -1741,7 +1746,6 @@
                 backgroundColor: "yellow",
                 width: "300px",
                 height: "600px",
-                /* transform: "rotate(90deg)",*/
                 transformOrigin: "left top 0px",
                 margin: "10px"
               }
@@ -1752,7 +1756,6 @@
                 backgroundColor: "yellow",
                 width: "300px",
                 height: "600px",
-                /* transform: "rotate(90deg)",*/
                 transformOrigin: "left top 0px",
                 margin: "10px"
               }

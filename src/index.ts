@@ -179,8 +179,15 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         overflowY: "hidden",
                         whiteSpace: "nowrap",
                         margin: "20px auto",
+                    }, oncreate: ({ dom }) => {
+                        const onWheel: EventListener = (event) => {
+                            event.preventDefault();
+                            const e = event as WheelEvent;  // Явное приведение
+                            dom.scrollLeft += e.deltaY;
+                        };
+                        dom.addEventListener("wheel", onWheel, { passive: false });
                     }
-                }, [
+                    }, [
                     m("div", {
                         style: {
                             display: "inline-block",

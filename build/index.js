@@ -129,8 +129,13 @@ const Questionnaire = {
                         overflowY: "hidden",
                         whiteSpace: "nowrap",
                         margin: "20px auto",
-                        /* border: "1px solid gray",
-                         padding: "10px",*/
+                    }, oncreate: ({ dom }) => {
+                        const onWheel = (event) => {
+                            event.preventDefault();
+                            const e = event; // Явное приведение
+                            dom.scrollLeft += e.deltaY;
+                        };
+                        dom.addEventListener("wheel", onWheel, { passive: false });
                     }
                 }, [
                     m("div", {
@@ -139,7 +144,6 @@ const Questionnaire = {
                             backgroundColor: "yellow",
                             width: "300px",
                             height: "600px",
-                            /* transform: "rotate(90deg)",*/
                             transformOrigin: "left top 0px",
                             margin: "10px"
                         }
@@ -150,7 +154,6 @@ const Questionnaire = {
                             backgroundColor: "yellow",
                             width: "300px",
                             height: "600px",
-                            /* transform: "rotate(90deg)",*/
                             transformOrigin: "left top 0px",
                             margin: "10px"
                         }
@@ -161,7 +164,6 @@ const Questionnaire = {
                             backgroundColor: "yellow",
                             width: "300px",
                             height: "600px",
-                            /* transform: "rotate(90deg)",*/
                             transformOrigin: "left top 0px",
                             margin: "10px"
                         }
