@@ -1711,34 +1711,54 @@
         const getStyle = (index) => {
           const base = {
             position: "absolute",
-            top: "50%",
+            /*      top: "50%",*/
             transform: "translateY(-50%)",
             transition: "all 0.6s ease",
             padding: "50px",
             borderRadius: "10px",
             textAlign: "center",
             fontSize: "20px",
-            backgroundColor: "#f4f4f4",
             opacity: 1,
-            zIndex: 1
+            zIndex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
           };
           if (index === state.selectedIndex) {
-            return { ...base, left: "50%", transform: "translateX(-50%) translateY(0)", zIndex: 10 };
+            return {
+              ...base,
+              left: "50%",
+              transform: "translateX(-50%) translateY(0)",
+              zIndex: 10,
+              //above div "next" and "prev"
+              width: "300px",
+              height: "570px",
+              backgroundColor: "#ffcccc",
+              boxShadow: "-5px 1px 37px -13px #00000075"
+            };
           } else if (index === state.selectedIndex - 1) {
             return {
               ...base,
-              left: "30%",
-              transform: "translateX(-50%) translateY(20px)",
+              left: "20%",
+              transform: "translateX(-50%) translateY(40px)",
               opacity: 0.7,
-              zIndex: 5
+              /*  zIndex: 5,*/
+              width: "200px",
+              height: "550px",
+              backgroundColor: "#f8eded",
+              boxShadow: "10px 10px 5px #00000033"
             };
           } else if (index === state.selectedIndex + 1) {
             return {
               ...base,
-              left: "70%",
-              transform: "translateX(-50%) translateY(20px)",
+              left: "80%",
+              transform: "translateX(-50%) translateY(40px)",
               opacity: 0.7,
-              zIndex: 5
+              /*      zIndex: 5,*/
+              width: "200px",
+              height: "550px",
+              backgroundColor: "#f8eded",
+              boxShadow: "-21px 15px 18px 0px #00000033"
             };
           } else {
             return { display: "none" };
@@ -1764,13 +1784,13 @@
           (0, import_mithril.default)("div", {
             style: {
               width: "100%",
-              height: "400px",
+              height: "750px",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
               position: "relative",
               overflow: "hidden",
-              marginTop: "40px"
+              marginTop: "20px"
             }
           }, [
             (0, import_mithril.default)("div", {
@@ -1989,20 +2009,16 @@
     },
     view(vnode) {
       return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;" }, [
-        vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", {
-          style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"
-        }, [
-          (0, import_mithril.default)("div", {
-            style: {
-              display: "flex",
-              justifyContent: "center",
-              flexDirection: "column",
-              maxWidth: "400px",
-              padding: "10px",
-              opacity: vnode.state.animation ? "0" : "1",
-              transition: "opacity 0.6s ease-in-out"
-            }
-          }, [
+        vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", { style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;" }, [
+          (0, import_mithril.default)("div", { style: {
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            maxWidth: "400px",
+            padding: "10px",
+            opacity: vnode.state.animation ? "0" : "1",
+            transition: "opacity 0.6s ease-in-out"
+          } }, [
             (0, import_mithril.default)("p", { style: { fontSize: "18px" } }, "Confused about which plan to choose?"),
             (0, import_mithril.default)("h2", {
               style: {

@@ -9,12 +9,6 @@ import m from "mithril";
 
 type PlanName = string;
 type PlanScore = number;
-
-interface Question {
-    question: string;
-    choices: Choice[];
-}
-
 type Choice = {
     option: string;
     //// Define a type for a choice of
@@ -22,6 +16,12 @@ type Choice = {
 // and the values (PlanScore) are plan objects
     plans: Record<PlanName, PlanScore>;
 }
+
+interface Question {
+    question: string;
+    choices: Choice[];
+}
+
 
 interface QuestionnaireState {
     currentIndex: number;
@@ -137,7 +137,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             vnode.state.selectedIndex = newIndex;
         }
 
-
+//Which plan receive the highest rate based on the user´s answers:
         vnode.state.evaluatePlan = (answers: Choice[]): string => {
             // Найдём тариф с наибольшим количеством баллов
             const score: Record<PlanName, PlanScore> = {
@@ -177,35 +177,54 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             const getStyle = (index: number): any => {
                 const base = {
                     position: "absolute",
-                    top: "50%",
+              /*      top: "50%",*/
                     transform: "translateY(-50%)",
                     transition: "all 0.6s ease",
                     padding: "50px",
                     borderRadius: "10px",
                     textAlign: "center",
                     fontSize: "20px",
-                    backgroundColor: "#f4f4f4",
                     opacity: 1,
-                    zIndex: 1
+                    zIndex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                 };
 
                 if (index === state.selectedIndex) {
-                    return {...base, left: "50%", transform: "translateX(-50%) translateY(0)", zIndex: 10};
-                } else if (index === state.selectedIndex - 1) {
-                    return {
-                        ...base,
-                        left: "30%",
-                        transform: "translateX(-50%) translateY(20px)",
-                        opacity: 0.7,
-                        zIndex: 5
+                    return {...base,
+                        left: "50%",
+                        transform: "translateX(-50%) translateY(0)",
+                        zIndex: 10, //above div "next" and "prev"
+                        width: "300px",
+                        height: "570px",
+                        backgroundColor: "#ffcccc",
+                        boxShadow: "-5px 1px 37px -13px #00000075",
                     };
-                } else if (index === state.selectedIndex + 1) {
+                } else if (index === state.selectedIndex - 1) { // prev
                     return {
                         ...base,
-                        left: "70%",
-                        transform: "translateX(-50%) translateY(20px)",
+                        left: "20%",
+                        transform: "translateX(-50%) translateY(40px)",
                         opacity: 0.7,
-                        zIndex: 5
+                     /*  zIndex: 5,*/
+                        width: "200px",
+                        height: "550px",
+                        backgroundColor: "#f8eded",
+                        boxShadow: "10px 10px 5px #00000033",
+
+                    };
+                } else if (index === state.selectedIndex + 1) { //next
+                    return {
+                        ...base,
+                        left: "80%",
+                        transform: "translateX(-50%) translateY(40px)",
+                        opacity: 0.7,
+              /*      zIndex: 5,*/
+                        width: "200px",
+                        height: "550px",
+                        backgroundColor: "#f8eded",
+                        boxShadow: "-21px 15px 18px 0px #00000033",
                     };
                 } else {
                     return {display: "none"};
@@ -235,13 +254,13 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 m("div", {
                     style: {
                         width: "100%",
-                        height: "400px",
+                        height: "750px",
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
                         position: "relative",
                         overflow: "hidden",
-                        marginTop: "40px"
+                        marginTop: "20px"
                     }
                 }, [
                     m("div", {
@@ -250,6 +269,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                             width: "100%",
                             height: "100%"},
                         oncreate: ({ dom }) => {
+
+                            //mouseWheel to move sliders on the result page
                             const onWheel: EventListener = (event) => {
                             const e = event as WheelEvent;
                             event.preventDefault();
@@ -464,9 +485,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 
 
 //  Старт или продолжение
-    const App
-:
-m.Component<{}, AppState> = {
+    const App: m.Component<{}, AppState> = {
     oninit(vnode) {
         vnode.state.started = false;
         vnode.state.animation = false;
@@ -486,10 +505,8 @@ m.Component<{}, AppState> = {
         return m("div", {style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;"}, [
             vnode.state.started
                 ? m(Questionnaire)
-                : m("div", {
-                    style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"
-                }, [m("div", {
-                    style: {
+                : m("div", {style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;"},
+                    [m("div", {style: {
                         display: "flex",
                         justifyContent: "center",
                         flexDirection: "column",
@@ -497,8 +514,8 @@ m.Component<{}, AppState> = {
                         padding: "10px",
                         opacity: vnode.state.animation ? "0" : "1",
                         transition: "opacity 0.6s ease-in-out"
-                    }
-                }, [m("p", {style: {fontSize: "18px",}}, "Confused about which plan to choose?"),
+                    }},
+                        [m("p", {style: {fontSize: "18px",}}, "Confused about which plan to choose?"),
                     m("h2", {
                         style: {
                             fontSize: "30px",
@@ -532,7 +549,6 @@ m.Component<{}, AppState> = {
                         },
                         onclick: () => {
                             vnode.state.animation = true;
-                            /*  vnode.state.started = true;*/
                             m.redraw();
 
                             setTimeout(() => {
