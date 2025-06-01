@@ -69,12 +69,13 @@ const Questionnaire = {
     oninit(vnode) {
         vnode.state.currentIndex = 0;
         vnode.state.answers = [];
-        vnode.state.plan = "";
+        /*vnode.state.plan = "";*/
         vnode.state.hoverStates = {};
         vnode.state.animation = false;
         vnode.state.showResultContainer = true;
         vnode.state.showQuestionContainer = true;
         vnode.state.selectedIndex = 1; //for the final page "slider movement"
+        vnode.state.topPlans = [];
         //Final page: slider
         vnode.state.moveToSelected = (directionOrIndex) => {
             let newIndex = vnode.state.selectedIndex;
@@ -90,7 +91,7 @@ const Questionnaire = {
             vnode.state.selectedIndex = newIndex;
         };
         //Which plan receive the highest rate based on the user´s answers:
-        vnode.state.evaluatePlan = (answers) => {
+        vnode.state.evaluateTopPlans = (answers) => {
             // Найдём тариф с наибольшим количеством баллов
             const score = {
                 Free: 0,
@@ -107,20 +108,28 @@ const Questionnaire = {
                     }
                 }
             }
-            const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
-            return result[0]; //название тарифа
+            const sorted = Object.entries(score)
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => entry[0]);
+            return sorted.slice(0, 3);
+            /* const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
+             return result[0]; //название тарифа*/
         };
     },
     view: function (vnode) {
         const state = vnode.state;
-        const showResultContainer = vnode.state.showResultContainer;
-        const showQuestionContainer = vnode.state.showQuestionContainer;
+        const showResultContainer = state.showResultContainer;
+        const showQuestionContainer = state.showQuestionContainer;
         /*
                 const showQuestionContainer = vnode.state.showQuestionContainer;
         */
         //result to show
         if (state.currentIndex >= questions.length) {
-            state.plan = state.evaluatePlan(state.answers);
+            /*
+                        state.plan = state.evaluatePlan(state.answers);
+            */
+            const topPlans = state.evaluateTopPlans(state.answers);
+            state.topPlans = topPlans;
             //Logic for the carusel -------------------------------------
             const getStyle = (index) => {
                 const base = {
@@ -139,7 +148,8 @@ const Questionnaire = {
                     justifyContent: "center",
                 };
                 if (index === state.selectedIndex) {
-                    return { ...base,
+                    return {
+                        ...base,
                         left: "50%",
                         transform: "translateX(-50%) translateY(0)",
                         zIndex: 10, //above div "next" and "prev"
@@ -195,7 +205,7 @@ const Questionnaire = {
                 }, "Recommended plan is:"),
                 m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
-                }, state.plan),
+                }),
                 //aded carusel here----------------------------------------
                 m("div", {
                     style: {
@@ -234,15 +244,15 @@ const Questionnaire = {
                         m("div", {
                             style: getStyle(0),
                             onclick: () => state.moveToSelected(0)
-                        }, "Text 1"),
+                        }, state.topPlans?.[1] || ""),
                         m("div", {
                             style: getStyle(1),
                             onclick: () => state.moveToSelected(1)
-                        }, "Text 2"),
+                        }, state.topPlans?.[0] || ""),
                         m("div", {
                             style: getStyle(2),
                             onclick: () => state.moveToSelected(2)
-                        }, "Text 3"),
+                        }, state.topPlans?.[2] || ""),
                     ]),
                 ]),
                 m("button", {
@@ -263,7 +273,7 @@ const Questionnaire = {
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
-                        state.plan = "";
+                        /*  state.plan = "";*/
                         /*for(let key in score) score[key as keyof typeof score]=0;*/
                     }
                 }, "Try again"),
@@ -433,7 +443,8 @@ const App = {
         return m("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;" }, [
             vnode.state.started
                 ? m(Questionnaire)
-                : m("div", { style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;" }, [m("div", { style: {
+                : m("div", { style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;" }, [m("div", {
+                        style: {
                             display: "flex",
                             justifyContent: "center",
                             flexDirection: "column",
@@ -441,7 +452,8 @@ const App = {
                             padding: "10px",
                             opacity: vnode.state.animation ? "0" : "1",
                             transition: "opacity 0.6s ease-in-out"
-                        } }, [m("p", { style: { fontSize: "18px", } }, "Confused about which plan to choose?"),
+                        }
+                    }, [m("p", { style: { fontSize: "18px", } }, "Confused about which plan to choose?"),
                         m("h2", {
                             style: {
                                 fontSize: "30px",

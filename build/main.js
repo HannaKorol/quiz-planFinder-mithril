@@ -1665,12 +1665,12 @@
     oninit(vnode) {
       vnode.state.currentIndex = 0;
       vnode.state.answers = [];
-      vnode.state.plan = "";
       vnode.state.hoverStates = {};
       vnode.state.animation = false;
       vnode.state.showResultContainer = true;
       vnode.state.showQuestionContainer = true;
       vnode.state.selectedIndex = 1;
+      vnode.state.topPlans = [];
       vnode.state.moveToSelected = (directionOrIndex) => {
         let newIndex = vnode.state.selectedIndex;
         if (directionOrIndex === "prev") {
@@ -1682,7 +1682,7 @@
         }
         vnode.state.selectedIndex = newIndex;
       };
-      vnode.state.evaluatePlan = (answers) => {
+      vnode.state.evaluateTopPlans = (answers) => {
         const score = {
           Free: 0,
           Revolutionary: 0,
@@ -1698,16 +1698,17 @@
             }
           }
         }
-        const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
-        return result[0];
+        const sorted = Object.entries(score).sort((a, b) => b[1] - a[1]).map((entry) => entry[0]);
+        return sorted.slice(0, 3);
       };
     },
     view: function(vnode) {
       const state = vnode.state;
-      const showResultContainer = vnode.state.showResultContainer;
-      const showQuestionContainer = vnode.state.showQuestionContainer;
+      const showResultContainer = state.showResultContainer;
+      const showQuestionContainer = state.showQuestionContainer;
       if (state.currentIndex >= questions.length) {
-        state.plan = state.evaluatePlan(state.answers);
+        const topPlans = state.evaluateTopPlans(state.answers);
+        state.topPlans = topPlans;
         const getStyle = (index) => {
           const base = {
             position: "absolute",
@@ -1779,7 +1780,7 @@
           }, "Recommended plan is:"),
           (0, import_mithril.default)("p", {
             style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
-          }, state.plan),
+          }),
           //aded carusel here----------------------------------------
           (0, import_mithril.default)("div", {
             style: {
@@ -1816,15 +1817,15 @@
               (0, import_mithril.default)("div", {
                 style: getStyle(0),
                 onclick: () => state.moveToSelected(0)
-              }, "Text 1"),
+              }, state.topPlans?.[1] || ""),
               (0, import_mithril.default)("div", {
                 style: getStyle(1),
                 onclick: () => state.moveToSelected(1)
-              }, "Text 2"),
+              }, state.topPlans?.[0] || ""),
               (0, import_mithril.default)("div", {
                 style: getStyle(2),
                 onclick: () => state.moveToSelected(2)
-              }, "Text 3")
+              }, state.topPlans?.[2] || "")
             ])
           ]),
           (0, import_mithril.default)("button", {
@@ -1845,7 +1846,6 @@
             onclick: () => {
               state.currentIndex = 0;
               state.answers = [];
-              state.plan = "";
             }
           }, "Try again"),
           (0, import_mithril.default)("button", {
@@ -2010,15 +2010,17 @@
     view(vnode) {
       return (0, import_mithril.default)("div", { style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;" }, [
         vnode.state.started ? (0, import_mithril.default)(Questionnaire) : (0, import_mithril.default)("div", { style: "max-width: 800px; padding: 10px; margin: 0 auto; /*text-align: center;*/; display: flex; flex-direction: row; justify-content: center; align-items: center; border-box: 20px;" }, [
-          (0, import_mithril.default)("div", { style: {
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-            maxWidth: "400px",
-            padding: "10px",
-            opacity: vnode.state.animation ? "0" : "1",
-            transition: "opacity 0.6s ease-in-out"
-          } }, [
+          (0, import_mithril.default)("div", {
+            style: {
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "column",
+              maxWidth: "400px",
+              padding: "10px",
+              opacity: vnode.state.animation ? "0" : "1",
+              transition: "opacity 0.6s ease-in-out"
+            }
+          }, [
             (0, import_mithril.default)("p", { style: { fontSize: "18px" } }, "Confused about which plan to choose?"),
             (0, import_mithril.default)("h2", {
               style: {
