@@ -39,7 +39,8 @@ const questions = [
         choices: [
             { option: "1-3", plans: { Essential: 1, Revolutionary: 1 } },
             { option: "4-10", plans: { Legend: 1, Advanced: 1 } },
-            { option: "unlimited", plans: { Unlimited: 1 } }
+            { option: "unlimited", plans: { Unlimited: 1 } },
+            { option: "No need", plans: { Free: 1 } }
         ],
     },
     {
@@ -164,7 +165,7 @@ const Questionnaire = {
                         ...base,
                         left: "20%",
                         transform: "translateX(-60%) translateY(40px)",
-                        opacity: 0.7,
+                        opacity: 0.3,
                         /*  zIndex: 5,*/
                         width: "250px",
                         height: "600px",
@@ -177,7 +178,7 @@ const Questionnaire = {
                         ...base,
                         left: "80%",
                         transform: "translateX(-40%) translateY(40px)",
-                        opacity: 0.7,
+                        opacity: 0.3,
                         /*      zIndex: 5,*/
                         width: "250px",
                         height: "600px",
@@ -241,13 +242,15 @@ const Questionnaire = {
                             dom.addEventListener("wheel", onWheel, { passive: false });
                         }
                         //-------------------------------------------------------//
-                    }, [
+                    }, 
+                    //-----divs on the final pages: recommended and 2 alternatives--------------------------------------//
+                    [
                         m("div", {
                             style: getStyle(0),
                             onclick: () => state.moveToSelected(0)
                         }, m("div", { style: { width: "400px", borderRadius: "10px", } }, [m("p", {
                                 style: {
-                                    background: "green",
+                                    background: "#e5a85b",
                                     position: "absolute",
                                     /*top: "1%",*/
                                     width: "100%",
@@ -258,7 +261,8 @@ const Questionnaire = {
                                     borderRadius: "10px 10px 0 0",
                                     color: "white",
                                 }
-                            }, "Alternative"), m("h3", {
+                            }, "Alternative"),
+                            m("h3", {
                                 style: {
                                     /*background: "red", */
                                     position: "absolute",
@@ -270,7 +274,23 @@ const Questionnaire = {
                                     padding: "5px 0",
                                     fontWeight: "normal",
                                 }
-                            }, state.topPlans?.[1] || "")])),
+                            }, state.topPlans?.[1] || "")]), m("a", {
+                            href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                            target: "_blank",
+                            style: {
+                                display: "block",
+                                textAlign: "center",
+                                color: "#ff0a0a",
+                                textDecoration: "none",
+                                cursor: "pointer",
+                                position: "absolute",
+                                padding: "10px 50px",
+                                borderRadius: "10px",
+                                backgroundColor: "#ffffff",
+                                bottom: "50px",
+                                border: "solid 2px",
+                            }
+                        }, "Get Started")),
                         m("div", {
                             style: getStyle(1),
                             onclick: () => state.moveToSelected(1)
@@ -297,14 +317,30 @@ const Questionnaire = {
                                     fontSize: "30px",
                                     margin: "40px auto 0 auto",
                                     padding: "5px 0",
+                                    fontWeight: "normal",
                                 }
-                            }, state.topPlans?.[0] || "")])),
+                            }, state.topPlans?.[0] || "")]), m("a", {
+                            href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                            target: "_blank",
+                            style: {
+                                display: "block",
+                                textAlign: "center",
+                                color: "white",
+                                textDecoration: "none",
+                                cursor: "pointer",
+                                position: "absolute",
+                                padding: "10px 50px",
+                                borderRadius: "10px",
+                                backgroundColor: "#ff0a0a",
+                                bottom: "50px",
+                            }
+                        }, "Get Started")),
                         m("div", {
                             style: getStyle(2),
                             onclick: () => state.moveToSelected(2)
                         }, m("div", { style: { width: "400px", borderRadius: "10px", } }, [m("p", {
                                 style: {
-                                    background: "green",
+                                    background: "#e5a85b",
                                     position: "absolute",
                                     /*top: "1%",*/
                                     width: "100%",
@@ -315,7 +351,8 @@ const Questionnaire = {
                                     borderRadius: "10px 10px 0 0",
                                     color: "white",
                                 }
-                            }, "Alternative"), m("h3", {
+                            }, "Alternative"),
+                            m("h3", {
                                 style: {
                                     /*background: "red", */
                                     position: "absolute",
@@ -327,9 +364,26 @@ const Questionnaire = {
                                     padding: "5px 0",
                                     fontWeight: "normal",
                                 }
-                            }, state.topPlans?.[2] || "")])),
+                            }, state.topPlans?.[2] || "")]), m("a", {
+                            href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                            target: "_blank",
+                            style: {
+                                display: "block",
+                                textAlign: "center",
+                                color: "#ff0a0a",
+                                textDecoration: "none",
+                                cursor: "pointer",
+                                position: "absolute",
+                                padding: "10px 50px",
+                                borderRadius: "10px",
+                                backgroundColor: "#ffffff",
+                                bottom: "50px",
+                                border: "solid 2px",
+                            }
+                        }, "Get Started")),
                     ]),
                 ]),
+                //-----------------------------------------------------------------------------------------------------------//
                 m("button", {
                     style: {
                         width: "200px",
@@ -351,7 +405,7 @@ const Questionnaire = {
                         /*  state.plan = "";*/
                         /*for(let key in score) score[key as keyof typeof score]=0;*/
                     }
-                }, "Try again"),
+                }, "Try test again"),
                 m("button", {
                     style: {
                         width: "200px",

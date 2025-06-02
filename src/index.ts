@@ -87,7 +87,8 @@ const questions: Question[] = [
         choices: [
             {option: "1-3", plans: {Essential: 1, Revolutionary: 1}},
             {option: "4-10", plans: {Legend: 1, Advanced: 1}},
-            {option: "unlimited", plans: {Unlimited: 1}}
+            {option: "unlimited", plans: {Unlimited: 1}},
+            {option: "No need", plans: {Free: 1}}
         ],
     },
     {
@@ -185,6 +186,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             /*
                         state.plan = state.evaluatePlan(state.answers);
             */
+
+
             const topPlans = state.evaluateTopPlans(state.answers);
             state.topPlans = topPlans;
 
@@ -222,7 +225,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         ...base,
                         left: "20%",
                         transform: "translateX(-60%) translateY(40px)",
-                        opacity: 0.7,
+                        opacity: 0.3,
                         /*  zIndex: 5,*/
                         width: "250px",
                         height: "600px",
@@ -235,7 +238,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         ...base,
                         left: "80%",
                         transform: "translateX(-40%) translateY(40px)",
-                        opacity: 0.7,
+                        opacity: 0.3,
                         /*      zIndex: 5,*/
                         width: "250px",
                         height: "600px",
@@ -280,122 +283,189 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     }
                 }, [
                     m("div", {
-                        style: {
-                            position: "relative",
-                            width: "100%",
-                            height: "100%"
-                        },
-                        oncreate: ({dom}) => {
-
-
-                            //-------mouseWheel to move sliders on the result page-------//
-
-                            const onWheel: EventListener = (event) => {
-                                const e = event as WheelEvent; //for Typeskript to understand what is for the event
-                                event.preventDefault(); //preventDefault ensures the page won’t scroll down.
-
-                                if (e.deltaY > 0) {
-                                    state.moveToSelected("next");
-                                } else {
-                                    state.moveToSelected("prev");
-                                }
-                                m.redraw();
-                            };
-
-                            dom.addEventListener("wheel", onWheel, {passive: false});
-                        }
-                        //-------------------------------------------------------//
-
-                    }, [
-                        m("div", {
-                            style: getStyle(0),
-                            onclick: () => state.moveToSelected(0)
-                        }, m("div", {style: {width: "400px", borderRadius: "10px",}}, [m("p", {
                             style: {
-                                background: "green",
-                                position: "absolute",
-                                /*top: "1%",*/
+                                position: "relative",
                                 width: "100%",
-                                textAlign: "center",
-                                fontSize: "18px",
-                                margin: "0 auto",
-                                padding: "5px 0",
-                                borderRadius: "10px 10px 0 0",
-                                color: "white",
-                            }
-                        }, "Alternative"), m("h3", {
-                            style: {
-                                /*background: "red", */
-                                position: "absolute",
-                                /*top: "1%",*/
-                                width: "100%",
-                                textAlign: "center",
-                                fontSize: "20px",
-                                margin: "40px auto 0 auto",
-                                padding: "5px 0",
-                                fontWeight:"normal",
-                            }
-                        }, state.topPlans?.[1] || "")])),
-                        m("div", {
-                                style: getStyle(1),
-                                onclick: () => state.moveToSelected(1)
+                                height: "100%"
                             },
-                            m("div", {style: {width: "400px", borderRadius: "10px",}}, [m("p", {
-                                style: {
-                                    background: "red",
-                                    position: "absolute",
-                                    /*top: "1%",*/
-                                    width: "100%",
-                                    textAlign: "center",
-                                    fontSize: "18px",
-                                    margin: "0 auto",
-                                    padding: "5px 0",
-                                    borderRadius: "10px 10px 0 0",
-                                    color: "white",
-                                }
-                            }, "The best plan for you"), m("h3", {
-                                style: {
-                                    /*background: "red", */
-                                    position: "absolute",
-                                    /*top: "1%",*/
-                                    width: "100%",
-                                    textAlign: "center",
-                                    fontSize: "30px",
-                                    margin: "40px auto 0 auto",
-                                    padding: "5px 0",
-                                }
-                            }, state.topPlans?.[0] || "")])),
-                        m("div", {
-                            style: getStyle(2),
-                            onclick: () => state.moveToSelected(2)
-                        }, m("div", {style: {width: "400px", borderRadius: "10px",}}, [m("p", {
-                            style: {
-                                background: "green",
-                                position: "absolute",
-                                /*top: "1%",*/
-                                width: "100%",
-                                textAlign: "center",
-                                fontSize: "18px",
-                                margin: "0 auto",
-                                padding: "5px 0",
-                                borderRadius: "10px 10px 0 0",
-                                color: "white",
+                            oncreate: ({dom}) => {
+
+
+                                //-------mouseWheel to move sliders on the result page-------//
+
+                                const onWheel: EventListener = (event) => {
+                                    const e = event as WheelEvent; //for Typeskript to understand what is for the event
+                                    event.preventDefault(); //preventDefault ensures the page won’t scroll down.
+
+                                    if (e.deltaY > 0) {
+                                        state.moveToSelected("next");
+                                    } else {
+                                        state.moveToSelected("prev");
+                                    }
+                                    m.redraw();
+                                };
+
+                                dom.addEventListener("wheel", onWheel, {passive: false});
                             }
-                        }, "Alternative"), m("h3", {
-                            style: {
-                                /*background: "red", */
-                                position: "absolute",
-                                /*top: "1%",*/
-                                width: "100%",
-                                textAlign: "center",
-                                fontSize: "20px",
-                                margin: "40px auto 0 auto",
-                                padding: "5px 0",
-                                fontWeight:"normal",
-                            }
-                        }, state.topPlans?.[2] || "")])),
-                    ]),
+                            //-------------------------------------------------------//
+
+                        },
+
+                        //-----divs on the final pages: recommended and 2 alternatives--------------------------------------//
+                        [
+                            m("div", { //right side "alternative"
+                                style: getStyle(0),
+                                onclick: () => state.moveToSelected(0)
+                            }, m("div", {style: {width: "400px", borderRadius: "10px",}},
+                                [m("p", {
+                                    style: {
+                                        background: "#e5a85b",
+                                        position: "absolute",
+                                        /*top: "1%",*/
+                                        width: "100%",
+                                        textAlign: "center",
+                                        fontSize: "18px",
+                                        margin: "0 auto",
+                                        padding: "5px 0",
+                                        borderRadius: "10px 10px 0 0",
+                                        color: "white",
+                                    }
+                                }, "Alternative"),
+                                    m("h3", {
+                                        style: {
+                                            /*background: "red", */
+                                            position: "absolute",
+                                            /*top: "1%",*/
+                                            width: "100%",
+                                            textAlign: "center",
+                                            fontSize: "20px",
+                                            margin: "40px auto 0 auto",
+                                            padding: "5px 0",
+                                            fontWeight: "normal",
+                                        }
+                                    }, state.topPlans?.[1] || "")]),
+                                m("a", {
+                                href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                                target: "_blank",
+                                style: {
+                                    display: "block",
+                                    textAlign: "center",
+                                    color: "#ff0a0a",
+                                    textDecoration: "none",
+                                    cursor: "pointer",
+                                    position:"absolute",
+                                    padding: "10px 50px",
+                                    borderRadius: "10px",
+                                    backgroundColor: "#ffffff",
+                                    bottom:"50px",
+                                    border: "solid 2px",
+                                }
+                            }, "Get Started")),
+
+
+                            m("div", { //central plan (top plan)
+                                    style: getStyle(1),
+                                    onclick: () => state.moveToSelected(1)
+                                },
+                                m("div", {style: {width: "400px", borderRadius: "10px",}},
+                                    [m("p", {
+                                        style: {
+                                            background: "red",
+                                            position: "absolute",
+                                            /*top: "1%",*/
+                                            width: "100%",
+                                            textAlign: "center",
+                                            fontSize: "18px",
+                                            margin: "0 auto",
+                                            padding: "5px 0",
+                                            borderRadius: "10px 10px 0 0",
+                                            color: "white",
+                                        }
+                                    }, "The best plan for you"), m("h3", {
+                                        style: {
+                                            /*background: "red", */
+                                            position: "absolute",
+                                            /*top: "1%",*/
+                                            width: "100%",
+                                            textAlign: "center",
+                                            fontSize: "30px",
+                                            margin: "40px auto 0 auto",
+                                            padding: "5px 0",
+                                            fontWeight:"normal",
+                                        }
+                                    }, state.topPlans?.[0] || "")]),
+                                m("a", {
+                                    href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                                    target: "_blank",
+                                    style: {
+                                        display: "block",
+                                        textAlign: "center",
+                                        color: "white",
+                                        textDecoration: "none",
+                                        cursor: "pointer",
+                                        position:"absolute",
+                                        padding: "10px 50px",
+                                        borderRadius: "10px",
+                                        backgroundColor: "#ff0a0a",
+                                        bottom:"50px",
+                                    }
+                                }, "Get Started")),
+
+
+                            m("div", { //left side "alternative plan"
+                                style: getStyle(2),
+                                onclick: () => state.moveToSelected(2)
+                            }, m("div", {style: {width: "400px", borderRadius: "10px",}},
+                                [m("p", {
+                                    style: {
+                                        background: "#e5a85b",
+                                        position: "absolute",
+                                        /*top: "1%",*/
+                                        width: "100%",
+                                        textAlign: "center",
+                                        fontSize: "18px",
+                                        margin: "0 auto",
+                                        padding: "5px 0",
+                                        borderRadius: "10px 10px 0 0",
+                                        color: "white",
+                                    }
+                                }, "Alternative"),
+                                    m("h3", {
+                                        style: {
+                                            /*background: "red", */
+                                            position: "absolute",
+                                            /*top: "1%",*/
+                                            width: "100%",
+                                            textAlign: "center",
+                                            fontSize: "20px",
+                                            margin: "40px auto 0 auto",
+                                            padding: "5px 0",
+                                            fontWeight: "normal",
+                                        }
+                                    }, state.topPlans?.[2] || "")]),
+                                m("a", {
+                                    href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                                    target: "_blank",
+                                    style: {
+                                        display: "block",
+                                        textAlign: "center",
+                                        color: "#ff0a0a",
+                                        textDecoration: "none",
+                                        cursor: "pointer",
+                                        position:"absolute",
+                                        padding: "10px 50px",
+                                        borderRadius: "10px",
+                                        backgroundColor: "#ffffff",
+                                        bottom:"50px",
+                                        border: "solid 2px",
+                                    }
+                                }, "Get Started")
+                                ),
+                        ]),
                 ]),
+
+                //-----------------------------------------------------------------------------------------------------------//
+
                 m("button", {
                     style: {
                         width: "200px",
@@ -417,7 +487,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         /*  state.plan = "";*/
                         /*for(let key in score) score[key as keyof typeof score]=0;*/
                     }
-                }, "Try again"),
+                }, "Try test again"),
                 m("button", {
                     style: {
                         width: "200px",
