@@ -5,8 +5,8 @@ import m from "mithril";
 //     Questionnaire: логика опроса и вывод подходящего тарифа
 
 //Step(1): Questions and choices
-// Типы
 
+// Типы
 type PlanName = string;
 type PlanScore = number;
 type Choice = {
@@ -22,7 +22,7 @@ interface Question {
     choices: Choice[];
 }
 
-
+//interface - это тип которий задается в TypeScript
 interface QuestionnaireState {
     currentIndex: number;
     answers: Choice[];
@@ -33,13 +33,9 @@ interface QuestionnaireState {
     showResultContainer: boolean;
     showQuestionContainer: boolean;
     selectedIndex: number;
-
-    moveToSelected(directionOrIndex: "prev" | "next" | number): void;
-
-    evaluateTopPlans(answers: Choice[]): string[];
-
     topPlans: string [];
-
+    moveToSelected(directionOrIndex: "prev" | "next" | number): void;
+    evaluateTopPlans(answers: Choice[]): string[];
 }
 
 interface AppState {
@@ -114,23 +110,26 @@ const questions: Question[] = [
 ];
 
 
+
+
+
 // Компонент Questionnaire
 const Questionnaire: m.Component<{}, QuestionnaireState> = {
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
     oninit(vnode) {
-        vnode.state.currentIndex = 0;
-        vnode.state.answers = [];
-        /*vnode.state.plan = "";*/
-        vnode.state.hoverStates = {};
-        vnode.state.animation = false;
-        vnode.state.showResultContainer = true;
-        vnode.state.showQuestionContainer = true;
-        vnode.state.selectedIndex = 1; //for the final page "slider movement"
-        vnode.state.topPlans = [];
+        const state = vnode.state
+        state.currentIndex = 0;
+        state.answers = [];
+        state.hoverStates = {};
+        state.animation = false;
+        state.showResultContainer = true;
+        state.showQuestionContainer = true;
+        state.selectedIndex = 1;
+        state.topPlans = [];
 
-        //Final page: slider
-        vnode.state.moveToSelected = (directionOrIndex: "prev" | "next" | number) => {
-            let newIndex = vnode.state.selectedIndex;
+        //Final page: function to switch between "prev" and "next" or number
+        state.moveToSelected = (directionOrIndex: "prev" | "next" | number) => {
+            let newIndex = vnode.state.selectedIndex; //
 
             if (directionOrIndex === "prev") {
                 newIndex = Math.max(0, newIndex - 1);
@@ -142,9 +141,10 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             vnode.state.selectedIndex = newIndex;
         }
 
+
 //Which plan receive the highest rate based on the user´s answers:
         vnode.state.evaluateTopPlans = (answers: Choice[]): string[] => {
-            // Найдём тариф с наибольшим количеством баллов
+            // Найдём 3 тариф с наибольшим количеством баллов
             const score: Record<PlanName, PlanScore> = {
                 Free: 0,
                 Revolutionary: 0,
@@ -162,12 +162,12 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 }
             }
 
-            const sorted = Object.entries(score)
-                .sort((a, b) => b[1] - a[1])
-                .map(entry => entry[0]);
-
-            return sorted.slice(0, 3);
-
+            // --------------Определяем кто является победителем по опросу-----------------------------------------------------------------------------------//
+            const sorted = Object.entries(score)                          //1.Преобразует объект в массив пар с Object.entries() как [ключ, значение]: [["Free", 3], ["Revolutionary", 2]..]
+                .sort((a, b) => b[1] - a[1])  //2.Сортирует массив по убыванию очков (то есть по второму элементу в паре):
+                .map(entry => entry[0]);                           //3.Оставляет только названия планов (первый элемент в паре): ["Free", "Revolutionary" ...]
+            return sorted.slice(0, 3);                                          //4.Обрезаем массив, чтобы оставить только первые 3 имени.
+          //--------------------------------------------------------------------------------------------------------------------------------------------------//
 
             /* const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
              return result[0]; //название тарифа*/
@@ -644,9 +644,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         ])
                     )
                 })])]);
-    }
-    ,
-
+    },
 };
 
 
