@@ -195,14 +195,14 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     /*      top: "50%",*/
                     transform: "translateY(-50%)",
                     transition: "all 0.6s ease",
-                    padding: "50px",
+                    /*padding: "50px",*/
                     borderRadius: "10px",
                     textAlign: "center",
                     fontSize: "20px",
                     opacity: 1,
                     zIndex: 1,
                     display: "flex",
-                    alignItems: "center",
+                    /*alignItems: "center",*/
                     justifyContent: "center",
                 };
 
@@ -212,20 +212,20 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         left: "50%",
                         transform: "translateX(-50%) translateY(0)",
                         zIndex: 10, //above div "next" and "prev"
-                        width: "300px",
-                        height: "570px",
-                        backgroundColor: "#ffcccc",
+                        width: "400px",
+                        height: "620px",
+                        backgroundColor: "#ecd9d9",
                         boxShadow: "-5px 1px 37px -13px #00000075",
                     };
                 } else if (index === state.selectedIndex - 1) { // prev
                     return {
                         ...base,
                         left: "20%",
-                        transform: "translateX(-50%) translateY(40px)",
+                        transform: "translateX(-60%) translateY(40px)",
                         opacity: 0.7,
                         /*  zIndex: 5,*/
-                        width: "200px",
-                        height: "550px",
+                        width: "250px",
+                        height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "10px 10px 5px #00000033",
 
@@ -234,11 +234,11 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     return {
                         ...base,
                         left: "80%",
-                        transform: "translateX(-50%) translateY(40px)",
+                        transform: "translateX(-40%) translateY(40px)",
                         opacity: 0.7,
                         /*      zIndex: 5,*/
-                        width: "200px",
-                        height: "550px",
+                        width: "250px",
+                        height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "-21px 15px 18px 0px #00000033",
                     };
@@ -287,10 +287,12 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         },
                         oncreate: ({dom}) => {
 
-                            //mouseWheel to move sliders on the result page
+
+                            //-------mouseWheel to move sliders on the result page-------//
+
                             const onWheel: EventListener = (event) => {
-                                const e = event as WheelEvent;
-                                event.preventDefault();
+                                const e = event as WheelEvent; //for Typeskript to understand what is for the event
+                                event.preventDefault(); //preventDefault ensures the page won’t scroll down.
 
                                 if (e.deltaY > 0) {
                                     state.moveToSelected("next");
@@ -302,19 +304,96 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 
                             dom.addEventListener("wheel", onWheel, {passive: false});
                         }
+                        //-------------------------------------------------------//
+
                     }, [
                         m("div", {
                             style: getStyle(0),
                             onclick: () => state.moveToSelected(0)
-                        }, state.topPlans?.[1] || ""),
+                        }, m("div", {style: {width: "400px", borderRadius: "10px",}}, [m("p", {
+                            style: {
+                                background: "green",
+                                position: "absolute",
+                                /*top: "1%",*/
+                                width: "100%",
+                                textAlign: "center",
+                                fontSize: "18px",
+                                margin: "0 auto",
+                                padding: "5px 0",
+                                borderRadius: "10px 10px 0 0",
+                                color: "white",
+                            }
+                        }, "Alternative"), m("h3", {
+                            style: {
+                                /*background: "red", */
+                                position: "absolute",
+                                /*top: "1%",*/
+                                width: "100%",
+                                textAlign: "center",
+                                fontSize: "20px",
+                                margin: "40px auto 0 auto",
+                                padding: "5px 0",
+                                fontWeight:"normal",
+                            }
+                        }, state.topPlans?.[1] || "")])),
                         m("div", {
-                            style: getStyle(1),
-                            onclick: () => state.moveToSelected(1)
-                        }, state.topPlans?.[0] || ""),
+                                style: getStyle(1),
+                                onclick: () => state.moveToSelected(1)
+                            },
+                            m("div", {style: {width: "400px", borderRadius: "10px",}}, [m("p", {
+                                style: {
+                                    background: "red",
+                                    position: "absolute",
+                                    /*top: "1%",*/
+                                    width: "100%",
+                                    textAlign: "center",
+                                    fontSize: "18px",
+                                    margin: "0 auto",
+                                    padding: "5px 0",
+                                    borderRadius: "10px 10px 0 0",
+                                    color: "white",
+                                }
+                            }, "The best plan for you"), m("h3", {
+                                style: {
+                                    /*background: "red", */
+                                    position: "absolute",
+                                    /*top: "1%",*/
+                                    width: "100%",
+                                    textAlign: "center",
+                                    fontSize: "30px",
+                                    margin: "40px auto 0 auto",
+                                    padding: "5px 0",
+                                }
+                            }, state.topPlans?.[0] || "")])),
                         m("div", {
                             style: getStyle(2),
                             onclick: () => state.moveToSelected(2)
-                        }, state.topPlans?.[2] || ""),
+                        }, m("div", {style: {width: "400px", borderRadius: "10px",}}, [m("p", {
+                            style: {
+                                background: "green",
+                                position: "absolute",
+                                /*top: "1%",*/
+                                width: "100%",
+                                textAlign: "center",
+                                fontSize: "18px",
+                                margin: "0 auto",
+                                padding: "5px 0",
+                                borderRadius: "10px 10px 0 0",
+                                color: "white",
+                            }
+                        }, "Alternative"), m("h3", {
+                            style: {
+                                /*background: "red", */
+                                position: "absolute",
+                                /*top: "1%",*/
+                                width: "100%",
+                                textAlign: "center",
+                                fontSize: "20px",
+                                margin: "40px auto 0 auto",
+                                padding: "5px 0",
+                                fontWeight:"normal",
+                            }
+                        }, state.topPlans?.[2] || "")])),
                     ]),
                 ]),
                 m("button", {
@@ -335,7 +414,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
-                      /*  state.plan = "";*/
+                        /*  state.plan = "";*/
                         /*for(let key in score) score[key as keyof typeof score]=0;*/
                     }
                 }, "Try again"),

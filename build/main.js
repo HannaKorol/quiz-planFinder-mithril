@@ -1715,14 +1715,14 @@
             /*      top: "50%",*/
             transform: "translateY(-50%)",
             transition: "all 0.6s ease",
-            padding: "50px",
+            /*padding: "50px",*/
             borderRadius: "10px",
             textAlign: "center",
             fontSize: "20px",
             opacity: 1,
             zIndex: 1,
             display: "flex",
-            alignItems: "center",
+            /*alignItems: "center",*/
             justifyContent: "center"
           };
           if (index === state.selectedIndex) {
@@ -1732,20 +1732,20 @@
               transform: "translateX(-50%) translateY(0)",
               zIndex: 10,
               //above div "next" and "prev"
-              width: "300px",
-              height: "570px",
-              backgroundColor: "#ffcccc",
+              width: "400px",
+              height: "620px",
+              backgroundColor: "#ecd9d9",
               boxShadow: "-5px 1px 37px -13px #00000075"
             };
           } else if (index === state.selectedIndex - 1) {
             return {
               ...base,
               left: "20%",
-              transform: "translateX(-50%) translateY(40px)",
+              transform: "translateX(-60%) translateY(40px)",
               opacity: 0.7,
               /*  zIndex: 5,*/
-              width: "200px",
-              height: "550px",
+              width: "250px",
+              height: "600px",
               backgroundColor: "#f8eded",
               boxShadow: "10px 10px 5px #00000033"
             };
@@ -1753,11 +1753,11 @@
             return {
               ...base,
               left: "80%",
-              transform: "translateX(-50%) translateY(40px)",
+              transform: "translateX(-40%) translateY(40px)",
               opacity: 0.7,
               /*      zIndex: 5,*/
-              width: "200px",
-              height: "550px",
+              width: "250px",
+              height: "600px",
               backgroundColor: "#f8eded",
               boxShadow: "-21px 15px 18px 0px #00000033"
             };
@@ -1778,10 +1778,10 @@
           (0, import_mithril.default)("h2", {
             style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
           }, "Recommended plan is:"),
-          (0, import_mithril.default)("p", {
-            style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
-          }),
-          //aded carusel here----------------------------------------
+          /*m("p", {
+              style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
+          }, /!*state.plan*!/),*/
+          //added carousel here----------------------------------------
           (0, import_mithril.default)("div", {
             style: {
               width: "100%",
@@ -1813,19 +1813,94 @@
                 };
                 dom.addEventListener("wheel", onWheel, { passive: false });
               }
+              //-------------------------------------------------------//
             }, [
               (0, import_mithril.default)("div", {
                 style: getStyle(0),
                 onclick: () => state.moveToSelected(0)
-              }, state.topPlans?.[1] || ""),
+              }, (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [(0, import_mithril.default)("p", {
+                style: {
+                  background: "green",
+                  position: "absolute",
+                  /*top: "1%",*/
+                  width: "100%",
+                  textAlign: "center",
+                  fontSize: "18px",
+                  margin: "0 auto",
+                  padding: "5px 0",
+                  borderRadius: "10px 10px 0 0",
+                  color: "white"
+                }
+              }, "Alternative"), (0, import_mithril.default)("h3", {
+                style: {
+                  /*background: "red", */
+                  position: "absolute",
+                  /*top: "1%",*/
+                  width: "100%",
+                  textAlign: "center",
+                  fontSize: "20px",
+                  margin: "40px auto 0 auto",
+                  padding: "5px 0",
+                  fontWeight: "normal"
+                }
+              }, state.topPlans?.[1] || "")])),
               (0, import_mithril.default)("div", {
                 style: getStyle(1),
                 onclick: () => state.moveToSelected(1)
-              }, state.topPlans?.[0] || ""),
+              }, (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [(0, import_mithril.default)("p", {
+                style: {
+                  background: "red",
+                  position: "absolute",
+                  /*top: "1%",*/
+                  width: "100%",
+                  textAlign: "center",
+                  fontSize: "18px",
+                  margin: "0 auto",
+                  padding: "5px 0",
+                  borderRadius: "10px 10px 0 0",
+                  color: "white"
+                }
+              }, "The best plan for you"), (0, import_mithril.default)("h3", {
+                style: {
+                  /*background: "red", */
+                  position: "absolute",
+                  /*top: "1%",*/
+                  width: "100%",
+                  textAlign: "center",
+                  fontSize: "30px",
+                  margin: "40px auto 0 auto",
+                  padding: "5px 0"
+                }
+              }, state.topPlans?.[0] || "")])),
               (0, import_mithril.default)("div", {
                 style: getStyle(2),
                 onclick: () => state.moveToSelected(2)
-              }, state.topPlans?.[2] || "")
+              }, (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [(0, import_mithril.default)("p", {
+                style: {
+                  background: "green",
+                  position: "absolute",
+                  /*top: "1%",*/
+                  width: "100%",
+                  textAlign: "center",
+                  fontSize: "18px",
+                  margin: "0 auto",
+                  padding: "5px 0",
+                  borderRadius: "10px 10px 0 0",
+                  color: "white"
+                }
+              }, "Alternative"), (0, import_mithril.default)("h3", {
+                style: {
+                  /*background: "red", */
+                  position: "absolute",
+                  /*top: "1%",*/
+                  width: "100%",
+                  textAlign: "center",
+                  fontSize: "20px",
+                  margin: "40px auto 0 auto",
+                  padding: "5px 0",
+                  fontWeight: "normal"
+                }
+              }, state.topPlans?.[2] || "")]))
             ])
           ]),
           (0, import_mithril.default)("button", {
