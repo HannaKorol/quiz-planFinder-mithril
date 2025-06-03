@@ -1663,27 +1663,19 @@
   ];
   var Questionnaire = {
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
+    // vnode.state — объект состояния, типизирован как QuestionnaireState.
+    // vnode.attrs — если бы были входные параметры (но в моем случае их нет — {}).
     oninit(vnode) {
-      vnode.state.currentIndex = 0;
-      vnode.state.answers = [];
-      vnode.state.hoverStates = {};
-      vnode.state.animation = false;
-      vnode.state.showResultContainer = true;
-      vnode.state.showQuestionContainer = true;
-      vnode.state.selectedIndex = 1;
-      vnode.state.topPlans = [];
-      vnode.state.moveToSelected = (directionOrIndex) => {
-        let newIndex = vnode.state.selectedIndex;
-        if (directionOrIndex === "prev") {
-          newIndex = Math.max(0, newIndex - 1);
-        } else if (directionOrIndex == "next") {
-          newIndex = Math.min(2, newIndex + 1);
-        } else {
-          newIndex = directionOrIndex;
-        }
-        vnode.state.selectedIndex = newIndex;
-      };
-      vnode.state.evaluateTopPlans = (answers) => {
+      const state = vnode.state;
+      state.currentIndex = 0;
+      state.answers = [];
+      state.hoverStates = {};
+      state.animation = false;
+      state.showResultContainer = true;
+      state.showQuestionContainer = true;
+      state.selectedIndex = 1;
+      state.topPlans = [];
+      state.evaluateTopPlans = (answers) => {
         const score = {
           Free: 0,
           Revolutionary: 0,
@@ -1702,6 +1694,51 @@
         const sorted = Object.entries(score).sort((a, b) => b[1] - a[1]).map((entry) => entry[0]);
         return sorted.slice(0, 3);
       };
+      state.moveToSelected = (directionOrIndex) => {
+        let newIndex = vnode.state.selectedIndex;
+        if (directionOrIndex === "prev") {
+          newIndex = Math.max(0, newIndex - 1);
+        } else if (directionOrIndex == "next") {
+          newIndex = Math.min(2, newIndex + 1);
+        } else {
+          newIndex = directionOrIndex;
+        }
+        vnode.state.selectedIndex = newIndex;
+      };
+      state.generateDescription = (answers, topPlans) => {
+        const descriptions = {};
+        for (const plan of topPlans) {
+          let description = `Based on your answers, one of the recommended plans is '${plan}'.`;
+          description += "This plan is:";
+          let foundIncluded = false;
+          let foundExcluded = false;
+          for (const answer of answers) {
+            const plansForChoice = answer.plans;
+            const included = plansForChoice[plan] > 0;
+            if (included) {
+              foundIncluded = true;
+              description += `\u2714 ${answer.option}`;
+            }
+          }
+          if (!foundIncluded) {
+            description += "\u2714 (No features from your selection are included)";
+          }
+          description += "However, this plan does not include:";
+          for (const answer of answers) {
+            const plansForChoice = answer.plans;
+            const included = plansForChoice[plan] > 0;
+            if (!included) {
+              description += `\u2716 ${answer.option}`;
+              foundExcluded = true;
+            }
+          }
+          if (!foundExcluded) {
+            description += "\u2716 No missing features";
+          }
+          descriptions[plan] = description;
+        }
+        return descriptions;
+      };
     },
     view: function(vnode) {
       const state = vnode.state;
@@ -1710,6 +1747,7 @@
       if (state.currentIndex >= questions.length) {
         const topPlans = state.evaluateTopPlans(state.answers);
         state.topPlans = topPlans;
+        const planDescriptions = state.generateDescription(state.answers, topPlans);
         const getStyle = (index) => {
           const base = {
             position: "absolute",
@@ -1782,7 +1820,7 @@
           /*m("p", {
               style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
           }, /!*state.plan*!/),*/
-          //added carousel here----------------------------------------
+          //----------------------------------------------------added carousel here----------------------------------------//
           (0, import_mithril.default)("div", {
             style: {
               width: "100%",
@@ -1816,161 +1854,183 @@
                   };
                   dom.addEventListener("wheel", onWheel, { passive: false });
                 }
-                //-------------------------------------------------------//
+                //----------------------------------------------------------------------------------------------------------------------------//
               },
-              //-----divs on the final pages: recommended and 2 alternatives--------------------------------------//
+              //---------------------------------divs on the final pages: recommended and 2 alternatives--------------------------------------//
               [
                 (0, import_mithril.default)("div", {
                   style: getStyle(0),
                   onclick: () => state.moveToSelected(0)
-                }, (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [
-                  (0, import_mithril.default)("p", {
+                }, [
+                  (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [
+                    (0, import_mithril.default)("p", {
+                      style: {
+                        background: "#e5a85b",
+                        position: "absolute",
+                        /*top: "1%",*/
+                        width: "100%",
+                        textAlign: "center",
+                        fontSize: "18px",
+                        margin: "0 auto",
+                        padding: "5px 0",
+                        borderRadius: "10px 10px 0 0",
+                        color: "white"
+                      }
+                    }, "Alternative"),
+                    (0, import_mithril.default)("h3", {
+                      style: {
+                        /*background: "red", */
+                        position: "absolute",
+                        /*top: "1%",*/
+                        width: "100%",
+                        textAlign: "center",
+                        fontSize: "20px",
+                        margin: "40px auto 0 auto",
+                        padding: "5px 0",
+                        fontWeight: "normal"
+                      }
+                    }, state.topPlans?.[1] || ""),
+                    (0, import_mithril.default)("p", {
+                      style: {
+                        marginTop: "120px",
+                        padding: "20px",
+                        fontSize: "14px",
+                        color: "#333",
+                        textAlign: "left"
+                      }
+                    }, planDescriptions[state.topPlans?.[1]])
+                  ]),
+                  (0, import_mithril.default)("a", {
+                    href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                    target: "_blank",
                     style: {
-                      background: "#e5a85b",
-                      position: "absolute",
-                      /*top: "1%",*/
-                      width: "100%",
+                      display: "block",
                       textAlign: "center",
-                      fontSize: "18px",
-                      margin: "0 auto",
-                      padding: "5px 0",
-                      borderRadius: "10px 10px 0 0",
-                      color: "white"
-                    }
-                  }, "Alternative"),
-                  (0, import_mithril.default)("h3", {
-                    style: {
-                      /*background: "red", */
+                      color: "#ff0a0a",
+                      textDecoration: "none",
+                      cursor: "pointer",
                       position: "absolute",
-                      /*top: "1%",*/
-                      width: "100%",
-                      textAlign: "center",
-                      fontSize: "20px",
-                      margin: "40px auto 0 auto",
-                      padding: "5px 0",
-                      fontWeight: "normal"
+                      padding: "10px 50px",
+                      borderRadius: "10px",
+                      backgroundColor: "#ffffff",
+                      bottom: "50px",
+                      border: "solid 2px"
                     }
-                  }, state.topPlans?.[1] || "")
-                ]), (0, import_mithril.default)("a", {
-                  href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
-                  target: "_blank",
-                  style: {
-                    display: "block",
-                    textAlign: "center",
-                    color: "#ff0a0a",
-                    textDecoration: "none",
-                    cursor: "pointer",
-                    position: "absolute",
-                    padding: "10px 50px",
-                    borderRadius: "10px",
-                    backgroundColor: "#ffffff",
-                    bottom: "50px",
-                    border: "solid 2px"
-                  }
-                }, "Get Started")),
+                  }, "Get Started")
+                ]),
                 (0, import_mithril.default)("div", {
                   style: getStyle(1),
                   onclick: () => state.moveToSelected(1)
-                }, (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [(0, import_mithril.default)("p", {
-                  style: {
-                    background: "red",
-                    position: "absolute",
-                    /*top: "1%",*/
-                    width: "100%",
-                    textAlign: "center",
-                    fontSize: "18px",
-                    margin: "0 auto",
-                    padding: "5px 0",
-                    borderRadius: "10px 10px 0 0",
-                    color: "white"
-                  }
-                }, "The best plan for you"), (0, import_mithril.default)("h3", {
-                  style: {
-                    /*background: "red", */
-                    position: "absolute",
-                    /*top: "1%",*/
-                    width: "100%",
-                    textAlign: "center",
-                    fontSize: "30px",
-                    margin: "40px auto 0 auto",
-                    padding: "5px 0",
-                    fontWeight: "normal"
-                  }
-                }, state.topPlans?.[0] || "")]), (0, import_mithril.default)("a", {
-                  href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
-                  target: "_blank",
-                  style: {
-                    display: "block",
-                    textAlign: "center",
-                    color: "white",
-                    textDecoration: "none",
-                    cursor: "pointer",
-                    position: "absolute",
-                    padding: "10px 50px",
-                    borderRadius: "10px",
-                    backgroundColor: "#ff0a0a",
-                    bottom: "50px"
-                  }
-                }, "Get Started")),
+                }, [
+                  (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [
+                    (0, import_mithril.default)("p", {
+                      style: {
+                        background: "red",
+                        position: "absolute",
+                        /*top: "1%",*/
+                        width: "100%",
+                        textAlign: "center",
+                        fontSize: "18px",
+                        margin: "0 auto",
+                        padding: "5px 0",
+                        borderRadius: "10px 10px 0 0",
+                        color: "white"
+                      }
+                    }, "The best plan for you"),
+                    (0, import_mithril.default)("h3", {
+                      style: {
+                        /*background: "red", */
+                        position: "absolute",
+                        /*top: "1%",*/
+                        width: "100%",
+                        textAlign: "center",
+                        fontSize: "30px",
+                        margin: "40px auto 0 auto",
+                        padding: "5px 0",
+                        fontWeight: "normal"
+                      }
+                    }, state.topPlans?.[0] || "")
+                  ]),
+                  //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                  (0, import_mithril.default)("a", {
+                    href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                    target: "_blank",
+                    style: {
+                      display: "block",
+                      textAlign: "center",
+                      color: "white",
+                      textDecoration: "none",
+                      cursor: "pointer",
+                      position: "absolute",
+                      padding: "10px 50px",
+                      borderRadius: "10px",
+                      backgroundColor: "#ff0a0a",
+                      bottom: "50px"
+                    }
+                  }, "Get Started")
+                ]),
                 (0, import_mithril.default)("div", {
                   style: getStyle(2),
                   onclick: () => state.moveToSelected(2)
-                }, (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [
-                  (0, import_mithril.default)("p", {
+                }, [
+                  (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [
+                    (0, import_mithril.default)("p", {
+                      style: {
+                        background: "#e5a85b",
+                        position: "absolute",
+                        /*top: "1%",*/
+                        width: "100%",
+                        textAlign: "center",
+                        fontSize: "18px",
+                        margin: "0 auto",
+                        padding: "5px 0",
+                        borderRadius: "10px 10px 0 0",
+                        color: "white"
+                      }
+                    }, "Alternative"),
+                    (0, import_mithril.default)("h3", {
+                      style: {
+                        /*background: "red", */
+                        position: "absolute",
+                        /*top: "1%",*/
+                        width: "100%",
+                        textAlign: "center",
+                        fontSize: "20px",
+                        margin: "40px auto 0 auto",
+                        padding: "5px 0",
+                        fontWeight: "normal"
+                      }
+                    }, state.topPlans?.[2] || "")
+                  ]),
+                  (0, import_mithril.default)("a", {
+                    href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                    target: "_blank",
                     style: {
-                      background: "#e5a85b",
-                      position: "absolute",
-                      /*top: "1%",*/
-                      width: "100%",
+                      display: "block",
                       textAlign: "center",
-                      fontSize: "18px",
-                      margin: "0 auto",
-                      padding: "5px 0",
-                      borderRadius: "10px 10px 0 0",
-                      color: "white"
-                    }
-                  }, "Alternative"),
-                  (0, import_mithril.default)("h3", {
-                    style: {
-                      /*background: "red", */
+                      color: "#ff0a0a",
+                      textDecoration: "none",
+                      cursor: "pointer",
                       position: "absolute",
-                      /*top: "1%",*/
-                      width: "100%",
-                      textAlign: "center",
-                      fontSize: "20px",
-                      margin: "40px auto 0 auto",
-                      padding: "5px 0",
-                      fontWeight: "normal"
+                      padding: "10px 50px",
+                      borderRadius: "10px",
+                      backgroundColor: "#ffffff",
+                      bottom: "50px",
+                      border: "solid 2px"
                     }
-                  }, state.topPlans?.[2] || "")
-                ]), (0, import_mithril.default)("a", {
-                  href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
-                  target: "_blank",
-                  style: {
-                    display: "block",
-                    textAlign: "center",
-                    color: "#ff0a0a",
-                    textDecoration: "none",
-                    cursor: "pointer",
-                    position: "absolute",
-                    padding: "10px 50px",
-                    borderRadius: "10px",
-                    backgroundColor: "#ffffff",
-                    bottom: "50px",
-                    border: "solid 2px"
-                  }
-                }, "Get Started"))
+                  }, "Get Started")
+                ])
               ]
             )
+            //-----------------------------------------------------------------------------------------------------------//
           ]),
-          //-----------------------------------------------------------------------------------------------------------//
           (0, import_mithril.default)("button", {
             style: {
               width: "200px",
               fontWeight: "700",
               color: "#fff",
               padding: "10px 0",
-              background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+              background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%)",
               borderRadius: "100px",
               margin: "0 10px",
               cursor: "pointer",

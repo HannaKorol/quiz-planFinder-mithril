@@ -11,10 +11,7 @@ type PlanName = string;
 type PlanScore = number;
 type Choice = {
     option: string;
-    //// Define a type for a choice of
-// plans, where the keys (PlanName) are strings
-// and the values (PlanScore) are plan objects
-    plans: Record<PlanName, PlanScore>;
+    plans: Record<PlanName, PlanScore>;       // Define a type for a choice of plans, where the keys (PlanName) are strings and the values (PlanScore) are plan objects
 }
 
 interface Question {
@@ -22,20 +19,24 @@ interface Question {
     choices: Choice[];
 }
 
-//interface - это тип которий задается в TypeScript
+//interface - это тип которий задается в TypeScript для QuestionnaireState
 interface QuestionnaireState {
     currentIndex: number;
     answers: Choice[];
     plan: string;
-    hoverStates: Record<string, boolean>;
-    selectedId?: string | null;
+    hoverStates: Record<string, boolean>;   //Record<K, V> — это встроенный дженерик тип в TypeScript, который означает: "объект, у которого ключи типа K, а значения типа V". Например "button1": true.
+    selectedId?: string | null;            //?-делает это свойство необязательным Это означает:Поле selectedId может: вообще отсутствовать [1. Пока пользователь ничего не выбрал], быть строкой (string)(2. Пользователь выбрал элемент), или быть null(3.Пользователь снял выбор).
     animation: boolean;
     showResultContainer: boolean;
     showQuestionContainer: boolean;
     selectedIndex: number;
-    topPlans: string [];
-    moveToSelected(directionOrIndex: "prev" | "next" | number): void;
-    evaluateTopPlans(answers: Choice[]): string[];
+
+    topPlans: PlanName[];
+
+    evaluateTopPlans(answers: Choice[]): string[];    //какой план больше всего подходит? и какие планы на 2-м и 3-м месте по рейтенгу.
+    moveToSelected(directionOrIndex: "prev" | "next" | number): void; //показывает результат планов в конце. возвращаемое значение: void (ничего не возвращает), может быть отдельно moveToSelected("prev"), moveToSelected("next") или moveToSelected(3). Но вместе-это проще для API(Application Programming Interface)- "набор команд/входов
+   /* generateDescription(answers: Choice[], topPlans: string[]): string[];*/  //динамические результаты опроса, анализ или в тарифный план входит то что выбрано или предлажить альтернативу.
+    generateDescription: (answers: any, topPlans: PlanName[]) => Record<PlanName, string>;
 }
 
 interface AppState {
@@ -111,11 +112,12 @@ const questions: Question[] = [
 
 
 
-
-
 // Компонент Questionnaire
-const Questionnaire: m.Component<{}, QuestionnaireState> = {
+const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, QuestionnaireState> - это тип в TypeScript, описывающий компонент Mithril. У этого компонента нет входных параметров (пустой объект {}).Он использует состояние с типом QuestionnaireState. (m.Component<Attrs, State> - Attrs-Тип входных параметров (данные "снаружи"), State-Тип внутреннего состояния, которое будет доступно в компоненте(данные "внутри")).
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
+    // vnode.state — объект состояния, типизирован как QuestionnaireState.
+    // vnode.attrs — если бы были входные параметры (но в моем случае их нет — {}).
+
     oninit(vnode) {
         const state = vnode.state
         state.currentIndex = 0;
@@ -127,23 +129,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
         state.selectedIndex = 1;
         state.topPlans = [];
 
-        //Final page: function to switch between "prev" and "next" or number
-        state.moveToSelected = (directionOrIndex: "prev" | "next" | number) => {
-            let newIndex = vnode.state.selectedIndex; //
-
-            if (directionOrIndex === "prev") {
-                newIndex = Math.max(0, newIndex - 1);
-            } else if (directionOrIndex == "next") {
-                newIndex = Math.min(2, newIndex + 1);
-            } else {
-                newIndex = directionOrIndex;
-            }
-            vnode.state.selectedIndex = newIndex;
-        }
-
-
-//Which plan receive the highest rate based on the user´s answers:
-        vnode.state.evaluateTopPlans = (answers: Choice[]): string[] => {
+        //------------------------------------------------------------------------Score for every plan------------------------------//
+        state.evaluateTopPlans = (answers: Choice[]): string[] => {
             // Найдём 3 тариф с наибольшим количеством баллов
             const score: Record<PlanName, PlanScore> = {
                 Free: 0,
@@ -154,17 +141,17 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 Unlimited: 0
             };
 
-            for (const answer of answers) {
+            for (const answer of answers) {                                              //Calculate score for every plan based on the answers from the user
                 for (const plan in answer.plans) {
-                    if (Object.prototype.hasOwnProperty.call(score, plan)) {
-                        score[plan as PlanName] += answer.plans[plan as PlanName];
+                    if (Object.prototype.hasOwnProperty.call(score, plan)) {             //Object.prototype.hasOwnProperty.call - роверяем: есть ли такое имя тарифа в объекте score (Это защита от возможных лишних или мусорных ключей в данных.)
+                        score[plan as PlanName] += answer.plans[plan as PlanName];       // Добавляем баллы текущего ответа к общему счёту для этого тарифа.
                     }
                 }
             }
 
-            // --------------Определяем кто является победителем по опросу-----------------------------------------------------------------------------------//
+            // -------------------------------------------------------------------Определяем кто является победителем по опросу------------------------------------------------------------//
             const sorted = Object.entries(score)                          //1.Преобразует объект в массив пар с Object.entries() как [ключ, значение]: [["Free", 3], ["Revolutionary", 2]..]
-                .sort((a, b) => b[1] - a[1])  //2.Сортирует массив по убыванию очков (то есть по второму элементу в паре):
+                .sort((a, b) => b[1] - a[1])  //2.Сортирует массив по убыванию очков (то есть по второму элементу в паре):  (.sort() — это встроенный метод массива в JavaScript, который сортирует элементы массива по заданному правилу. a - это например ["Free", 3] и b - может например быть ["Legend", 5])
                 .map(entry => entry[0]);                           //3.Оставляет только названия планов (первый элемент в паре): ["Free", "Revolutionary" ...]
             return sorted.slice(0, 3);                                          //4.Обрезаем массив, чтобы оставить только первые 3 имени.
           //--------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -172,26 +159,89 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
             /* const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
              return result[0]; //название тарифа*/
         };
+
+        //--------------------------------------------------------------------Final page: function to switch between "prev" and "next" or number------------------------------------------------//
+        state.moveToSelected = (directionOrIndex: "prev" | "next" | number) => {
+            let newIndex = vnode.state.selectedIndex;
+
+            if (directionOrIndex === "prev") {
+                newIndex = Math.max(0, newIndex - 1);
+            } else if (directionOrIndex == "next") {
+                newIndex = Math.min(2, newIndex + 1);
+            } else {
+                newIndex = directionOrIndex;
+            }
+            vnode.state.selectedIndex = newIndex;
+        }
+        //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+
+        //-----------------------------------------------------------Function for the description generation----------------------------------------------------------------------------------------------//
+
+        state.generateDescription = (answers: Choice[], topPlans: string[]) => {
+            const descriptions: Record<string, string> = {};
+
+            for (const plan of topPlans) {
+                let description = `Based on your answers, one of the recommended plans is '${plan}'.`;
+                description += "This plan is:";
+
+                let foundIncluded = false;
+                let foundExcluded = false;
+
+                for (const answer of answers) {
+                    const plansForChoice = answer.plans;
+                    const included = plansForChoice[plan] > 0;
+
+                    if (included) {
+                        foundIncluded = true;
+                        description += `✔ ${answer.option}`;
+                    }
+                }
+
+
+
+                if (!foundIncluded) {
+                    description += "✔ (No features from your selection are included)";
+                }
+
+                description += "However, this plan does not include:";
+                for (const answer of answers) {
+                    const plansForChoice = answer.plans;
+                    const included = plansForChoice[plan] > 0;
+
+                    if (!included) {
+                        description += `✖ ${answer.option}`;
+                        foundExcluded = true;
+                    }
+                }
+
+                if (!foundExcluded) {
+                    description += "✖ No missing features";
+                }
+
+                descriptions[plan] = description;
+            }
+
+            return descriptions;
+        };
     },
+
 
     view: function (vnode) {
         const state = vnode.state;
         const showResultContainer = state.showResultContainer;
         const showQuestionContainer = state.showQuestionContainer;
-        /*
-                const showQuestionContainer = vnode.state.showQuestionContainer;
-        */
-//result to show
+
+           //result to show
         if (state.currentIndex >= questions.length) {
-            /*
-                        state.plan = state.evaluatePlan(state.answers);
-            */
-
-
             const topPlans = state.evaluateTopPlans(state.answers);
             state.topPlans = topPlans;
 
-            //Logic for the carusel -------------------------------------
+            const planDescriptions = state.generateDescription(state.answers, topPlans);
+
+
+
+            //---------------------------Logic for the carousel -------------------------------------//
             const getStyle = (index: number): any => {
                 const base = {
                     position: "absolute",
@@ -249,7 +299,9 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                     return {display: "none"};
                 }
             };
-            //-------------------------------------------------------------
+            //-----------------------------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
 
             return showResultContainer && m("div", {
                 style: {
@@ -267,9 +319,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                 /*m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, /!*state.plan*!/),*/
-
-
-                //added carousel here----------------------------------------
+                //----------------------------------------------------added carousel here----------------------------------------//
                 m("div", {
                     style: {
                         width: "100%",
@@ -291,32 +341,31 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                             oncreate: ({dom}) => {
 
 
-                                //-------mouseWheel to move sliders on the result page-------//
-
+                                //-------------------------------mouseWheel to move sliders on the result page-------------------------------------------//
                                 const onWheel: EventListener = (event) => {
-                                    const e = event as WheelEvent; //for Typeskript to understand what is for the event
-                                    event.preventDefault(); //preventDefault ensures the page won’t scroll down.
+                                    const e = event as WheelEvent;                                  //for Typeskript to understand what is for the event
+                                    event.preventDefault();                                         //preventDefault ensures the page won’t scroll down. Но браузер по умолчанию думает, что ты не будешь ничего останавливать. Поэтому он может запретить использовать preventDefault(), если ты не указал passive: false.
 
-                                    if (e.deltaY > 0) {
+                                    if (e.deltaY > 0) {                                             //когда колесико миши кручу к себе - deltaY становится больше и это значит что нужно показывать "next" в моем случае
                                         state.moveToSelected("next");
                                     } else {
-                                        state.moveToSelected("prev");
+                                        state.moveToSelected("prev");                              //и если от себя то deltaY уменьшается и значит что нужно показывать "prev".
                                     }
                                     m.redraw();
                                 };
 
-                                dom.addEventListener("wheel", onWheel, {passive: false});
+                                dom.addEventListener("wheel", onWheel, {passive: false}); //{passive: false}-Говорю браузеру: Позволь мне использовать event.preventDefault() внутри onWheel".
                             }
-                            //-------------------------------------------------------//
+                            //----------------------------------------------------------------------------------------------------------------------------//
 
                         },
-
-                        //-----divs on the final pages: recommended and 2 alternatives--------------------------------------//
+                        //---------------------------------divs on the final pages: recommended and 2 alternatives--------------------------------------//
                         [
-                            m("div", { //right side "alternative"
+                            m("div", {                                                                  //right side "alternative"
                                 style: getStyle(0),
                                 onclick: () => state.moveToSelected(0)
-                            }, m("div", {style: {width: "400px", borderRadius: "10px",}},
+                            }, [
+                                m("div", {style: {width: "400px", borderRadius: "10px",}},
                                 [m("p", {
                                     style: {
                                         background: "#e5a85b",
@@ -343,7 +392,17 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                             padding: "5px 0",
                                             fontWeight: "normal",
                                         }
-                                    }, state.topPlans?.[1] || "")]),
+                                    }, state.topPlans?.[1] || ""),
+                                m("p", {
+                                    style: {
+                                        marginTop: "120px",
+                                        padding: "20px",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                        textAlign: "left"
+                                    }
+                                }, planDescriptions[state.topPlans?.[1] as PlanName])]),
+
                                 m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",
@@ -360,13 +419,14 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                     bottom:"50px",
                                     border: "solid 2px",
                                 }
-                            }, "Get Started")),
+                            }, "Get Started")]),
 
 
-                            m("div", { //central plan (top plan)
+
+                            m("div", {                                                                     //central plan (top plan)
                                     style: getStyle(1),
                                     onclick: () => state.moveToSelected(1)
-                                },
+                                }, [
                                 m("div", {style: {width: "400px", borderRadius: "10px",}},
                                     [m("p", {
                                         style: {
@@ -381,7 +441,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                             borderRadius: "10px 10px 0 0",
                                             color: "white",
                                         }
-                                    }, "The best plan for you"), m("h3", {
+                                    }, "The best plan for you"),
+                                        m("h3", {
                                         style: {
                                             /*background: "red", */
                                             position: "absolute",
@@ -393,7 +454,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                             padding: "5px 0",
                                             fontWeight:"normal",
                                         }
-                                    }, state.topPlans?.[0] || "")]),
+                                    }, state.topPlans?.[0] || "")]),                                   //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
                                 m("a", {
                                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                     target: "_blank",
@@ -409,13 +470,15 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                         backgroundColor: "#ff0a0a",
                                         bottom:"50px",
                                     }
-                                }, "Get Started")),
+                                }, "Get Started")]),
+
 
 
                             m("div", { //left side "alternative plan"
                                 style: getStyle(2),
                                 onclick: () => state.moveToSelected(2)
-                            }, m("div", {style: {width: "400px", borderRadius: "10px",}},
+                            }, [
+                                m("div", {style: {width: "400px", borderRadius: "10px",}},
                                 [m("p", {
                                     style: {
                                         background: "#e5a85b",
@@ -459,20 +522,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                                         bottom:"50px",
                                         border: "solid 2px",
                                     }
-                                }, "Get Started")
-                                ),
-                        ]),
-                ]),
-
+                                }, "Get Started")])]),
                 //-----------------------------------------------------------------------------------------------------------//
-
+                ]),
                 m("button", {
                     style: {
                         width: "200px",
                         fontWeight: "700",
                         color: "#fff",
                         padding: "10px 0",
-                        background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%",
+                        background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%)",
                         borderRadius: "100px",
                         margin: "0 10px",
                         cursor: "pointer",
@@ -508,12 +567,15 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
                         vnode.state.showResultContainer = false;
                     }
                 }, "Close"),
-            ])
-                ;
-        }
+                             ])}
 
-// Current questions with options
+
+//---------------------------------------------------------------------------------------------Current questions with options-----------------------------------------------------------------------//
         const current = questions[state.currentIndex];
+
+
+
+
 
         return showQuestionContainer && m("div", {
             style: {
@@ -648,14 +710,14 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = {
 };
 
 
+
+
+
 //  Старт или продолжение
 const App: m.Component<{}, AppState> = {
     oninit(vnode) {
         vnode.state.started = false;
         vnode.state.animation = false;
-
-
-        //styles to body
         Object.assign(document.body.style, {
             margin: "0",
             padding: "0",
@@ -663,7 +725,7 @@ const App: m.Component<{}, AppState> = {
             /* background: "#fff2ea",*/
             fontFamily: "sans-serif",
             boxSizing: "border-box"
-        });
+        });    //styles to body
     },
     view(vnode) {
         return m("div", {style: "position: relative; max-width: 800px; margin: 40px auto 0 auto; background: #fff; border-radius: 20px;"}, [
