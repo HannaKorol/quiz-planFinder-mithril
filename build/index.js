@@ -64,6 +64,47 @@ const questions = [
         ],
     }
 ];
+const planDetails = {
+    Free: {
+        storage: "1 GB",
+        emails: "0 extra addresses",
+        domains: "0 custom domains",
+        calendars: "1 calendar"
+    },
+    Revolutionary: {
+        storage: "20 GB",
+        emails: "15 extra addresses",
+        domains: "3 custom domains",
+        calendars: "Unlimited",
+        labels: "Unlimited labels",
+        family: "Family option available"
+    },
+    Legend: {
+        storage: "50 GB",
+        emails: "30 extra addresses",
+        domains: "10 custom domains",
+        calendars: "Unlimited",
+        labels: "Unlimited labels"
+    },
+    Essential: {
+        storage: "21–50 GB",
+        emails: "15 extra addresses",
+        domains: "3 custom domains",
+        calendars: "Unlimited"
+    },
+    Advanced: {
+        storage: "51–500 GB",
+        emails: "30 extra addresses",
+        domains: "10 custom domains",
+        calendars: "Unlimited"
+    },
+    Unlimited: {
+        storage: "501–1000 GB",
+        emails: "Unlimited addresses",
+        domains: "Unlimited domains",
+        calendars: "Unlimited"
+    }
+};
 // Компонент Questionnaire
 const Questionnaire = {
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
@@ -122,37 +163,52 @@ const Questionnaire = {
         };
         //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
         //-----------------------------------------------------------Function for the description generation----------------------------------------------------------------------------------------------//
-        state.generateDescription = (answers, topPlans) => {
+        state.generatePlanDescriptions = (answers, topPlans) => {
             const descriptions = {};
-            for (const plan of topPlans) {
-                let description = `Based on your answers, one of the recommended plans is '${plan}'.`;
-                description += "This plan is:";
-                let foundIncluded = false;
-                let foundExcluded = false;
+            // Соберём, что выбрал пользователь
+            const selectedOptions = new Set();
+            for (const answer of answers) {
+                selectedOptions.add(answer.option);
+            }
+            for (const planName of topPlans) {
+                const details = planDetails[planName];
+                if (!details)
+                    continue;
+                const included = [];
+                const extra = [];
+                const missing = [];
+                // Сравним выбранное пользователем с тем, что включает тариф
                 for (const answer of answers) {
-                    const plansForChoice = answer.plans;
-                    const included = plansForChoice[plan] > 0;
-                    if (included) {
-                        foundIncluded = true;
-                        description += `✔ ${answer.option}`;
+                    const option = answer.option;
+                    const isIncluded = answer.plans[planName] > 0;
+                    if (isIncluded) {
+                        included.push(option);
+                    }
+                    else {
+                        missing.push(option);
                     }
                 }
-                if (!foundIncluded) {
-                    description += "✔ (No features from your selection are included)";
-                }
-                description += "However, this plan does not include:";
-                for (const answer of answers) {
-                    const plansForChoice = answer.plans;
-                    const included = plansForChoice[plan] > 0;
-                    if (!included) {
-                        description += `✖ ${answer.option}`;
-                        foundExcluded = true;
+                // Находим всё, что включено в тариф, но пользователь об этом не просил
+                const allFeatures = Object.values(details);
+                for (const feature of allFeatures) {
+                    const alreadyMentioned = [...included, ...missing].some(txt => feature.toLowerCase().includes(txt.toLowerCase()));
+                    if (!alreadyMentioned) {
+                        extra.push(feature);
                     }
                 }
-                if (!foundExcluded) {
-                    description += "✖ No missing features";
+                // Составим финальное описание
+                let description = `📦 **${planName}** is a recommended plan for you.\n\n`;
+                if (included.length > 0) {
+                    description += `✅ Includes what you selected:\n` + included.map(i => `✔ ${i}`).join("\n") + "\n\n";
                 }
-                descriptions[plan] = description;
+                if (extra.length > 0) {
+                    description += `🎁 Also includes additional features:\n` + extra.map(i => `➕ ${i}`).join("\n") + "\n\n";
+                }
+                if (missing.length > 0) {
+                    description += `⚠ This plan does *not* include:\n` + missing.map(i => `✖ ${i}`).join("\n") + "\n\n";
+                    description += `💡 Consider looking at alternatives (#2 or #3), they might include these.\n`;
+                }
+                descriptions[planName] = description;
             }
             return descriptions;
         };
@@ -165,7 +221,7 @@ const Questionnaire = {
         if (state.currentIndex >= questions.length) {
             const topPlans = state.evaluateTopPlans(state.answers);
             state.topPlans = topPlans;
-            const planDescriptions = state.generateDescription(state.answers, topPlans);
+            const planDescriptions = state.generatePlanDescriptions(state.answers, topPlans);
             //---------------------------Logic for the carousel -------------------------------------//
             const getStyle = (index) => {
                 const base = {
@@ -369,7 +425,16 @@ const Questionnaire = {
                                         padding: "5px 0",
                                         fontWeight: "normal",
                                     }
-                                }, state.topPlans?.[0] || "")]), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                                }, state.topPlans?.[0] || ""), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                                m("p", {
+                                    style: {
+                                        marginTop: "120px",
+                                        padding: "20px",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                        textAlign: "left"
+                                    }
+                                }, planDescriptions[state.topPlans?.[0]])]),
                             m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",
@@ -417,7 +482,16 @@ const Questionnaire = {
                                         padding: "5px 0",
                                         fontWeight: "normal",
                                     }
-                                }, state.topPlans?.[2] || "")]),
+                                }, state.topPlans?.[2] || ""),
+                                m("p", {
+                                    style: {
+                                        marginTop: "120px",
+                                        padding: "20px",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                        textAlign: "left"
+                                    }
+                                }, m.trust(planDescriptions[state.topPlans?.[2]]))]),
                             m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",

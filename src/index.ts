@@ -36,7 +36,7 @@ interface QuestionnaireState {
     evaluateTopPlans(answers: Choice[]): string[];    //какой план больше всего подходит? и какие планы на 2-м и 3-м месте по рейтенгу.
     moveToSelected(directionOrIndex: "prev" | "next" | number): void; //показывает результат планов в конце. возвращаемое значение: void (ничего не возвращает), может быть отдельно moveToSelected("prev"), moveToSelected("next") или moveToSelected(3). Но вместе-это проще для API(Application Programming Interface)- "набор команд/входов
    /* generateDescription(answers: Choice[], topPlans: string[]): string[];*/  //динамические результаты опроса, анализ или в тарифный план входит то что выбрано или предлажить альтернативу.
-    generateDescription: (answers: any, topPlans: PlanName[]) => Record<PlanName, string>;
+    generatePlanDescriptions: (answers: any, topPlans: PlanName[]) => Record<PlanName, string>;
 }
 
 interface AppState {
@@ -111,6 +111,61 @@ const questions: Question[] = [
 ];
 
 
+interface PlanFeatures {
+    storage: string;
+    emails: string;
+    domains: string;
+    calendars: string;
+    labels?: string;
+    family?: string;
+}
+
+const planDetails: Record<PlanName,PlanFeatures> = {
+    Free: {
+        storage: "1 GB",
+        emails: "0 extra addresses",
+        domains: "0 custom domains",
+        calendars: "1 calendar"
+    },
+    Revolutionary: {
+        storage: "20 GB",
+        emails: "15 extra addresses",
+        domains: "3 custom domains",
+        calendars: "Unlimited",
+        labels: "Unlimited labels",
+        family: "Family option available"
+    },
+    Legend: {
+        storage: "50 GB",
+        emails: "30 extra addresses",
+        domains: "10 custom domains",
+        calendars: "Unlimited",
+        labels: "Unlimited labels"
+    },
+    Essential: {
+        storage: "21–50 GB",
+        emails: "15 extra addresses",
+        domains: "3 custom domains",
+        calendars: "Unlimited"
+    },
+    Advanced: {
+        storage: "51–500 GB",
+        emails: "30 extra addresses",
+        domains: "10 custom domains",
+        calendars: "Unlimited"
+    },
+    Unlimited: {
+        storage: "501–1000 GB",
+        emails: "Unlimited addresses",
+        domains: "Unlimited domains",
+        calendars: "Unlimited"
+    }
+};
+
+
+
+
+
 
 // Компонент Questionnaire
 const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, QuestionnaireState> - это тип в TypeScript, описывающий компонент Mithril. У этого компонента нет входных параметров (пустой объект {}).Он использует состояние с типом QuestionnaireState. (m.Component<Attrs, State> - Attrs-Тип входных параметров (данные "снаружи"), State-Тип внутреннего состояния, которое будет доступно в компоненте(данные "внутри")).
@@ -178,52 +233,69 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 
         //-----------------------------------------------------------Function for the description generation----------------------------------------------------------------------------------------------//
 
-        state.generateDescription = (answers: Choice[], topPlans: string[]) => {
-            const descriptions: Record<string, string> = {};
+        state.generatePlanDescriptions = (answers: Choice[], topPlans: string[]) => {
+            const descriptions: Record<PlanName, string> = {};
 
-            for (const plan of topPlans) {
-                let description = `Based on your answers, one of the recommended plans is '${plan}'.`;
-                description += "This plan is:";
+            // Соберём, что выбрал пользователь
+            const selectedOptions = new Set<string>();
+            for (const answer of answers) {
+                selectedOptions.add(answer.option);
+            }
 
-                let foundIncluded = false;
-                let foundExcluded = false;
+            for (const planName of topPlans) {
+                const details = planDetails[planName as PlanName];
+                if (!details) continue;
 
+                const included: string[] = [];
+                const extra: string[] = [];
+                const missing: string[] = [];
+
+                // Сравним выбранное пользователем с тем, что включает тариф
                 for (const answer of answers) {
-                    const plansForChoice = answer.plans;
-                    const included = plansForChoice[plan] > 0;
+                    const option = answer.option;
+                    const isIncluded = answer.plans[planName as PlanName] > 0;
 
-                    if (included) {
-                        foundIncluded = true;
-                        description += `✔ ${answer.option}`;
+                    if (isIncluded) {
+                        included.push(option);
+                    } else {
+                        missing.push(option);
                     }
                 }
 
-
-
-                if (!foundIncluded) {
-                    description += "✔ (No features from your selection are included)";
-                }
-
-                description += "However, this plan does not include:";
-                for (const answer of answers) {
-                    const plansForChoice = answer.plans;
-                    const included = plansForChoice[plan] > 0;
-
-                    if (!included) {
-                        description += `✖ ${answer.option}`;
-                        foundExcluded = true;
+                // Находим всё, что включено в тариф, но пользователь об этом не просил
+                const allFeatures = Object.values(details);
+                for (const feature of allFeatures) {
+                    const alreadyMentioned = [...included, ...missing].some(txt =>
+                        feature.toLowerCase().includes(txt.toLowerCase())
+                    );
+                    if (!alreadyMentioned) {
+                        extra.push(feature);
                     }
                 }
 
-                if (!foundExcluded) {
-                    description += "✖ No missing features";
+                // Составим финальное описание
+                let description = `📦 **${planName}** is a recommended plan for you.\n\n`;
+
+                if (included.length > 0) {
+                    description += `✅ Includes what you selected:\n` + included.map(i => `✔ ${i}`).join("\n") + "\n\n";
                 }
 
-                descriptions[plan] = description;
+                if (extra.length > 0) {
+                    description += `🎁 Also includes additional features:\n` + extra.map(i => `➕ ${i}`).join("\n") + "\n\n";
+                }
+
+                if (missing.length > 0) {
+                    description += `⚠ This plan does *not* include:\n` + missing.map(i => `✖ ${i}`).join("\n") + "\n\n";
+                    description += `💡 Consider looking at alternatives (#2 or #3), they might include these.\n`;
+                }
+
+                descriptions[planName as PlanName] = description;
             }
 
             return descriptions;
         };
+
+
     },
 
 
@@ -237,7 +309,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             const topPlans = state.evaluateTopPlans(state.answers);
             state.topPlans = topPlans;
 
-            const planDescriptions = state.generateDescription(state.answers, topPlans);
+            const planDescriptions = state.generatePlanDescriptions(state.answers, topPlans);
 
 
 
@@ -402,7 +474,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         textAlign: "left"
                                     }
                                 }, planDescriptions[state.topPlans?.[1] as PlanName])]),
-
                                 m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",
@@ -454,7 +525,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                             padding: "5px 0",
                                             fontWeight:"normal",
                                         }
-                                    }, state.topPlans?.[0] || "")]),                                   //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                                    }, state.topPlans?.[0] || ""), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                                m("p", {
+                                    style: {
+                                        marginTop: "120px",
+                                        padding: "20px",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                        textAlign: "left"
+                                    }
+                                }, planDescriptions[state.topPlans?.[0] as PlanName])]),
                                 m("a", {
                                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                     target: "_blank",
@@ -505,7 +585,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                             padding: "5px 0",
                                             fontWeight: "normal",
                                         }
-                                    }, state.topPlans?.[2] || "")]),
+                                    }, state.topPlans?.[2] || ""),
+                                m("p", {
+                                    style: {
+                                        marginTop: "120px",
+                                        padding: "20px",
+                                        fontSize: "14px",
+                                        color: "#333",
+                                        textAlign: "left"
+                                    }
+                                }, m.trust(planDescriptions[state.topPlans?.[2] as PlanName]))]),
                                 m("a", {
                                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                     target: "_blank",

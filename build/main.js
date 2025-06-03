@@ -1661,6 +1661,47 @@
       ]
     }
   ];
+  var planDetails = {
+    Free: {
+      storage: "1 GB",
+      emails: "0 extra addresses",
+      domains: "0 custom domains",
+      calendars: "1 calendar"
+    },
+    Revolutionary: {
+      storage: "20 GB",
+      emails: "15 extra addresses",
+      domains: "3 custom domains",
+      calendars: "Unlimited",
+      labels: "Unlimited labels",
+      family: "Family option available"
+    },
+    Legend: {
+      storage: "50 GB",
+      emails: "30 extra addresses",
+      domains: "10 custom domains",
+      calendars: "Unlimited",
+      labels: "Unlimited labels"
+    },
+    Essential: {
+      storage: "21\u201350 GB",
+      emails: "15 extra addresses",
+      domains: "3 custom domains",
+      calendars: "Unlimited"
+    },
+    Advanced: {
+      storage: "51\u2013500 GB",
+      emails: "30 extra addresses",
+      domains: "10 custom domains",
+      calendars: "Unlimited"
+    },
+    Unlimited: {
+      storage: "501\u20131000 GB",
+      emails: "Unlimited addresses",
+      domains: "Unlimited domains",
+      calendars: "Unlimited"
+    }
+  };
   var Questionnaire = {
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
     // vnode.state — объект состояния, типизирован как QuestionnaireState.
@@ -1705,37 +1746,53 @@
         }
         vnode.state.selectedIndex = newIndex;
       };
-      state.generateDescription = (answers, topPlans) => {
+      state.generatePlanDescriptions = (answers, topPlans) => {
         const descriptions = {};
-        for (const plan of topPlans) {
-          let description = `Based on your answers, one of the recommended plans is '${plan}'.`;
-          description += "This plan is:";
-          let foundIncluded = false;
-          let foundExcluded = false;
+        const selectedOptions = /* @__PURE__ */ new Set();
+        for (const answer of answers) {
+          selectedOptions.add(answer.option);
+        }
+        for (const planName of topPlans) {
+          const details = planDetails[planName];
+          if (!details)
+            continue;
+          const included = [];
+          const extra = [];
+          const missing = [];
           for (const answer of answers) {
-            const plansForChoice = answer.plans;
-            const included = plansForChoice[plan] > 0;
-            if (included) {
-              foundIncluded = true;
-              description += `\u2714 ${answer.option}`;
+            const option = answer.option;
+            const isIncluded = answer.plans[planName] > 0;
+            if (isIncluded) {
+              included.push(option);
+            } else {
+              missing.push(option);
             }
           }
-          if (!foundIncluded) {
-            description += "\u2714 (No features from your selection are included)";
-          }
-          description += "However, this plan does not include:";
-          for (const answer of answers) {
-            const plansForChoice = answer.plans;
-            const included = plansForChoice[plan] > 0;
-            if (!included) {
-              description += `\u2716 ${answer.option}`;
-              foundExcluded = true;
+          const allFeatures = Object.values(details);
+          for (const feature of allFeatures) {
+            const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
+            if (!alreadyMentioned) {
+              extra.push(feature);
             }
           }
-          if (!foundExcluded) {
-            description += "\u2716 No missing features";
+          let description = `\u{1F4E6} **${planName}** is a recommended plan for you.
+
+`;
+          if (included.length > 0) {
+            description += `\u2705 Includes what you selected:
+` + included.map((i) => `\u2714 ${i}`).join("\n") + "\n\n";
           }
-          descriptions[plan] = description;
+          if (extra.length > 0) {
+            description += `\u{1F381} Also includes additional features:
+` + extra.map((i) => `\u2795 ${i}`).join("\n") + "\n\n";
+          }
+          if (missing.length > 0) {
+            description += `\u26A0 This plan does *not* include:
+` + missing.map((i) => `\u2716 ${i}`).join("\n") + "\n\n";
+            description += `\u{1F4A1} Consider looking at alternatives (#2 or #3), they might include these.
+`;
+          }
+          descriptions[planName] = description;
         }
         return descriptions;
       };
@@ -1747,7 +1804,7 @@
       if (state.currentIndex >= questions.length) {
         const topPlans = state.evaluateTopPlans(state.answers);
         state.topPlans = topPlans;
-        const planDescriptions = state.generateDescription(state.answers, topPlans);
+        const planDescriptions = state.generatePlanDescriptions(state.answers, topPlans);
         const getStyle = (index) => {
           const base = {
             position: "absolute",
@@ -1949,9 +2006,18 @@
                         padding: "5px 0",
                         fontWeight: "normal"
                       }
-                    }, state.topPlans?.[0] || "")
+                    }, state.topPlans?.[0] || ""),
+                    //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                    (0, import_mithril.default)("p", {
+                      style: {
+                        marginTop: "120px",
+                        padding: "20px",
+                        fontSize: "14px",
+                        color: "#333",
+                        textAlign: "left"
+                      }
+                    }, planDescriptions[state.topPlans?.[0]])
                   ]),
-                  //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
                   (0, import_mithril.default)("a", {
                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                     target: "_blank",
@@ -2000,7 +2066,16 @@
                         padding: "5px 0",
                         fontWeight: "normal"
                       }
-                    }, state.topPlans?.[2] || "")
+                    }, state.topPlans?.[2] || ""),
+                    (0, import_mithril.default)("p", {
+                      style: {
+                        marginTop: "120px",
+                        padding: "20px",
+                        fontSize: "14px",
+                        color: "#333",
+                        textAlign: "left"
+                      }
+                    }, import_mithril.default.trust(planDescriptions[state.topPlans?.[2]]))
                   ]),
                   (0, import_mithril.default)("a", {
                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
