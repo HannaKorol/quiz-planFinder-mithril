@@ -1603,47 +1603,47 @@
       choices: [
         { option: "For business purposes", plans: { Essential: 1, Advanced: 1, Unlimited: 1 } },
         { option: "For personal use", plans: { Free: 1, Revolutionary: 1, Legend: 1 } },
-        { option: "I\u2019m not sure yet", plans: { Free: 1 } }
+        { option: "I haven\u2019t decided yet.", plans: { Free: 1 } }
       ]
     },
+    /* {
+         question: "Would you like to add additional email addresses to this mailbox? If yes, how many do you require?",
+         choices: [
+             {option: "Yes, I’d like to", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
+             {option: "No, I don’t want to", plans: {Free: 1}}
+         ],
+     },*/
     {
-      question: "Would you like to add additional email addresses to this mailbox?",
-      choices: [
-        { option: "Yes", plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 } },
-        { option: "No", plans: { Free: 1 } }
-      ]
-    },
-    {
-      question: "If applicable, how many additional email addresses do you require?",
+      question: "Would you like to add additional email addresses to your mailbox? If yes, how many do you require?",
       choices: [
         { option: "1-15", plans: { Essential: 1, Revolutionary: 1 } },
         { option: "16-30", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } },
-        { option: "No need", plans: { Free: 1 } }
+        { option: "No, I don\u2019t want to", plans: { Free: 1 } }
       ]
     },
+    /* {
+         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?If yes, how many would you like to configure?",
+         choices: [
+             {
+                 option: "Yes, please",
+                 plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+             },
+             {option: "No, I don't need", plans: {Free: 1}}
+         ],
+     },*/
     {
-      question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?",
-      choices: [
-        {
-          option: "Yes",
-          plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
-        },
-        { option: "No", plans: { Free: 1 } }
-      ]
-    },
-    {
-      question: "If applicable, how many custom domains would you like to configure?",
+      question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox? If yes, how many would you like to configure?",
       choices: [
         { option: "1-3", plans: { Essential: 1, Revolutionary: 1 } },
         { option: "4-10", plans: { Legend: 1, Advanced: 1 } },
-        { option: "unlimited", plans: { Unlimited: 1 } },
-        { option: "No need", plans: { Free: 1 } }
+        { option: "Unlimited domains", plans: { Unlimited: 1 } },
+        { option: "No, I don't need", plans: { Free: 1 } }
       ]
     },
     {
       question: "How many calendars do you plan to use?",
       choices: [
-        { option: "One", plans: { Free: 1 } },
+        { option: "One calendar", plans: { Free: 1 } },
         {
           option: "Unlimited calendars",
           plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
@@ -1663,43 +1663,55 @@
   ];
   var planDetails = {
     Free: {
-      storage: "1 GB",
-      emails: "0 extra addresses",
-      domains: "0 custom domains",
-      calendars: "1 calendar"
+      usage: "For personal use",
+      emails: "Extra email addresses",
+      storage: "1 GB storage",
+      domains: "Don't include custom domains",
+      labels: "3 labels",
+      calendars: "\u{1F4C5} One calendar",
+      family: "Family option is not available"
     },
     Revolutionary: {
-      storage: "20 GB",
-      emails: "15 extra addresses",
+      usage: "For personal use",
+      emails: "15 extra email addresses",
+      storage: "20 GB storage",
       domains: "3 custom domains",
-      calendars: "Unlimited",
+      calendars: "Unlimited calendars",
       labels: "Unlimited labels",
       family: "Family option available"
     },
     Legend: {
-      storage: "50 GB",
-      emails: "30 extra addresses",
+      usage: "For personal use",
+      emails: "30 extra email addresses",
+      storage: "500 GB storage",
       domains: "10 custom domains",
-      calendars: "Unlimited",
-      labels: "Unlimited labels"
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels",
+      family: "Family option available"
     },
     Essential: {
-      storage: "21\u201350 GB",
-      emails: "15 extra addresses",
+      usage: "For business purposes",
+      emails: "15 extra email addresses",
+      storage: "50 GB storage",
       domains: "3 custom domains",
-      calendars: "Unlimited"
+      calendars: "  Unlimited calendars",
+      labels: "Unlimited labels"
     },
     Advanced: {
-      storage: "51\u2013500 GB",
+      usage: "For business purposes",
       emails: "30 extra addresses",
+      storage: "500 GB storage",
       domains: "10 custom domains",
-      calendars: "Unlimited"
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels"
     },
     Unlimited: {
-      storage: "501\u20131000 GB",
-      emails: "Unlimited addresses",
+      usage: "For business purposes",
+      emails: "30 extra addresses",
+      storage: "1000 GB storage",
       domains: "Unlimited domains",
-      calendars: "Unlimited"
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels"
     }
   };
   var Questionnaire = {
@@ -1727,7 +1739,7 @@
         };
         for (const answer of answers) {
           for (const plan in answer.plans) {
-            if (Object.prototype.hasOwnProperty.call(score, plan)) {
+            if (plan in score) {
               score[plan] += answer.plans[plan];
             }
           }
@@ -1753,43 +1765,43 @@
           selectedOptions.add(answer.option);
         }
         for (const planName of topPlans) {
-          const details = planDetails[planName];
-          if (!details)
+          if (!planDetails[
+            planName
+            /*as PlanName*/
+          ])
             continue;
-          const included = [];
+          const included = /* @__PURE__ */ new Set();
           const extra = [];
           const missing = [];
           for (const answer of answers) {
-            const option = answer.option;
-            const isIncluded = answer.plans[planName] > 0;
-            if (isIncluded) {
-              included.push(option);
+            if (answer.plans[planName] > 0) {
+              included.add(answer.option);
             } else {
-              missing.push(option);
+              missing.push(answer.option);
             }
           }
-          const allFeatures = Object.values(details);
+          const allFeatures = Object.values(planDetails[
+            planName
+            /*as PlanName*/
+          ]);
           for (const feature of allFeatures) {
             const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
             if (!alreadyMentioned) {
               extra.push(feature);
             }
           }
-          let description = `\u{1F4E6} **${planName}** is a recommended plan for you.
-
-`;
-          if (included.length > 0) {
-            description += `\u2705 Includes what you selected:
-` + included.map((i) => `\u2714 ${i}`).join("\n") + "\n\n";
+          let description = `\u{1F4E6} ${planName} is a recommended plan for you.`;
+          if (included.size > 0) {
+            description += `\u2705 Because it includes what you selected:` + [...included].map((i) => `\u2714 ${i}`);
           }
           if (extra.length > 0) {
-            description += `\u{1F381} Also includes additional features:
-` + extra.map((i) => `\u2795 ${i}`).join("\n") + "\n\n";
+            description += `\u{1F381}  Also includes additional features:
+` + extra.map((i) => `\u2795 ${i}`);
           }
           if (missing.length > 0) {
-            description += `\u26A0 This plan does *not* include:
-` + missing.map((i) => `\u2716 ${i}`).join("\n") + "\n\n";
-            description += `\u{1F4A1} Consider looking at alternatives (#2 or #3), they might include these.
+            description += `\u26A0 This plan does not include:
+` + missing.map((i) => `\u2716 ${i}`);
+            description += `\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.
 `;
           }
           descriptions[planName] = description;
@@ -1808,17 +1820,14 @@
         const getStyle = (index) => {
           const base = {
             position: "absolute",
-            /*      top: "50%",*/
             transform: "translateY(-50%)",
             transition: "all 0.6s ease",
-            /*padding: "50px",*/
             borderRadius: "10px",
             textAlign: "center",
             fontSize: "20px",
             opacity: 1,
             zIndex: 1,
             display: "flex",
-            /*alignItems: "center",*/
             justifyContent: "center"
           };
           if (index === state.selectedIndex) {
