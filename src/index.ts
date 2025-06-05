@@ -49,8 +49,8 @@ const questions: Question[] = [
     {
         question: "How do you intend to use this mailbox — for business or personal purposes?",
         choices: [
-            {option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}},
-            {option: "For personal use", plans: {Free: 1, Revolutionary: 1, Legend: 1}},
+            {option: "For business purposes", plans: {Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1}},
+            {option: "For personal use", plans: {Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0}},
             {option: "I haven’t decided yet.", plans: {Free: 1}}
         ],
     },
@@ -114,8 +114,8 @@ const questions: Question[] = [
 interface PlanFeatures {
     usage: string;
     storage: string;
-    emails: string;
-    domains: string;
+    emails?: string;
+    domains?: string;
     calendars: string;
     labels?: string;
     family?: string;
@@ -123,55 +123,55 @@ interface PlanFeatures {
 
 const planDetails: Record<PlanName, PlanFeatures> = {
     Free: {
-        usage: "For personal use",
-        emails: "No additional email addresses",
-        storage: "1 GB storage",
-        domains: "No custom domains",
-        labels: "3 labels",
-        calendars: "📅 One calendar",
-        family: "No Family option"
+        usage: "👤 For personal use",
+        /*emails: "✉ No additional email addresses",*/
+        storage: "🗄  1 GB storage",
+        /*domains: "No custom domains",*/
+        labels: "🏷️ 3 labels",
+        calendars: "🗓 One calendar",
+       /* family: "No Family option"*/
     },
     Revolutionary: {
-        usage: "For personal use",
-        emails: "15 additional email addresses",
-        storage: "20 GB storage",
-        domains: "3 custom domains",
-        calendars: "Unlimited calendars",
-        labels: "Unlimited labels",
-        family: "Family option"
+        usage: "👤 For personal use",
+        emails: "✉️ 15 additional email addresses",
+        storage: "🗄  20 GB storage",
+        domains: "🌐 3 custom domains",
+        calendars: "🗓 Unlimited calendars",
+        labels: "🏷️ Unlimited labels",
+        family: "🫂 Family option"
     },
     Legend: {
-        usage: "For personal use",
-        emails: "30 additional email addresses",
-        storage: "500 GB storage",
-        domains: "10 custom domains",
-        calendars: "Unlimited calendars",
-        labels: "Unlimited labels",
-        family: "Family option"
+        usage: "👤 For personal use",
+        emails: "✉️ 30 additional email addresses",
+        storage: "🗄  500 GB storage",
+        domains: "🌐 10 custom domains",
+        calendars: "🗓 Unlimited calendars",
+        labels: "🏷️ Unlimited labels",
+        family: "🫂 Family option"
     },
     Essential: {
-        usage: "For business purposes",
-        emails: "15 additional email addresses",
-        storage: "50 GB storage",
-        domains: "3 custom domains",
-        calendars: "  Unlimited calendars",
-        labels: "Unlimited labels",
+        usage: "👔 For business purposes",
+        emails: "✉️ 15 additional email addresses",
+        storage: "🗄  50 GB storage",
+        domains: "🌐 3 custom domains",
+        calendars: "🗓 Unlimited calendars",
+        labels: "🏷️ Unlimited labels",
     },
     Advanced: {
-        usage: "For business purposes",
-        emails: "30 additional addresses",
-        storage: "500 GB storage",
-        domains: "10 custom domains",
-        calendars: "Unlimited calendars",
-        labels: "Unlimited labels",
+        usage: "👔 For business purposes",
+        emails: "✉️ 30 additional addresses",
+        storage: "🗄  500 GB storage",
+        domains: "🌐 10 custom domains",
+        calendars: "🗓 Unlimited calendars",
+        labels: "🏷️ Unlimited labels",
     },
     Unlimited: {
-        usage: "For business purposes",
-        emails: "30 additional addresses",
-        storage: "1000 GB storage",
-        domains: "Unlimited domains",
-        calendars: "Unlimited calendars",
-        labels: "Unlimited labels",
+        usage: "👔 For business purposes",
+        emails: "✉️ 30 additional addresses",
+        storage: "🗄  1000 GB storage",
+        domains: "🌐 Unlimited domains",
+        calendars: "🗓 Unlimited calendars",
+        labels: "🏷️ Unlimited labels",
     }
 };
 
@@ -286,43 +286,52 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 
                 let description = "";
                 if (i == 0) {
-                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[0]} is a recommended plan for you.</p>`;
+                    description += `<p style="color: #410002; margin-bottom: 10px;">🎯 ${topPlans[0]} is a recommended plan for you.</p>`;
                 } else if  (i == 1) {
-                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[1]} might be a good alternative for you.</p>`;
+                    description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[1]} might be a good alternative for you.</p>`;
                 } else {
-                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
+                    description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
                 }
 
 console.log(topPlans)
 
                 if (included.size > 0) {
-                    description += `<p style="font-weight: bold;">✅ Because it includes what you selected:</p>`;
+                    description += `<p style="font-weight: bold; color: #410002;">✅ Because it includes what you selected:</p>`;
                        description +=`<ul style="list-style-type: none;">`;
                     description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
                     description += `</ul>`
+
                 }
 
                 if (extra.length > 0) {
-                    description += `<p style="color: blue; margin-bottom: 10px;">🎁 Also includes additional features:</p>`;
+                    description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">🎁 Also includes additional features:</p>`;
                     description += `<ul style="list-style-type: none;">`
-                        description += extra.map(i => `<li style="color: black;">➕ ${i}</li>`).join("");
+                        description += extra.map(i => `<li style="color: black;"> ${i}</li>`).join("");
                     description += `</ul>`
+
                 }
 
                 if (missing.length > 0) {
-                    description += `<p style="color: red; margin-bottom: 10px;">⚠ This plan does not include:</p><ul style="list-style-type: none;">`;
-                        description+= missing.map(i => `<li style="color: black;">✖ ${i}</li>`).join("");
+                    description += `<p style="color: red; margin-bottom: 10px;">❕ This plan does not include:</p><ul style="list-style-type: none;">`;
+                        description+= missing.map(i => `<li style="color: black;">❌ ${i}</li>`).join("");
                     description += `</ul>`
 
-                    description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
-                }
-
+                   /* description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;*/
+                    if (i == 0) {
+                        description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
+                    } else if (i == 1) {
+                        description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]}), they might include these.</p>`;
+                    } else {
+                        description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
+                    } }
 
                 descriptions[planName as PlanName] = description;
             }
 
+
             return descriptions;
         };
+
 
 
     },
@@ -338,6 +347,8 @@ console.log(topPlans)
             const topPlans = state.evaluateTopPlans(state.answers);                                                       //TOP PLANS: результат работы функции "список рекомендуемых планов"
             state.topPlans = topPlans;                                                                                            //здесь результат (topPlans) сохраняется в состояние (state) — в новое свойство topPlans. Проще говоря: Мы сохраняем список подходящих планов в объект состояния, чтобы использовать его дальше (например, показать пользователю).
             const planDescriptions = state.generatePlanDescriptions(state.answers, topPlans);                   //DESCRIPTION: результат работы функции "planDescriptions"
+
+
 
 
             //---------------------------Logic for the carousel -------------------------------------//
@@ -374,7 +385,7 @@ console.log(topPlans)
                         transform: "translateX(-60%) translateY(40px)",
                         opacity: 0.3,
                         /*  zIndex: 5,*/
-                        fontSize: "10px",
+                        fontSize: "11px",
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
@@ -392,7 +403,7 @@ console.log(topPlans)
                         height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "-21px 15px 18px 0px #00000033",
-                        fontSize: "10px",
+                        fontSize: "11px",
                     };
                 } else {
                     return {display: "none"};
@@ -400,7 +411,10 @@ console.log(topPlans)
             };
             //-----------------------------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
+
+
+
+       //----------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
 
             return showResultContainer && m("div", {
                 style: {
@@ -418,7 +432,7 @@ console.log(topPlans)
                 /*m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, /!*state.plan*!/),*/
-                //----------------------------------------------------added carousel here----------------------------------------//
+              //-----------------------------added carousel here----------------------------------------//
                 m("div", {
                     style: {
                         width: "100%",
@@ -458,7 +472,7 @@ console.log(topPlans)
                             //----------------------------------------------------------------------------------------------------------------------------//
 
                         },
-                        //---------------------------------divs on the final pages: recommended and 2 alternatives--------------------------------------//
+                   //---------------------------------Top plans on the final pages: 1 best and 2 alternatives--------------------------------------//
                         [
                             m("div", {                                                                  //right side "alternative"
                                 style: getStyle(0),
@@ -494,11 +508,8 @@ console.log(topPlans)
                                         }, state.topPlans?.[1] || ""),
                                         m("div", {
                                             style: {
-                                                marginTop: "90px",
+                                                marginTop: "60px",
                                                 padding: "20px",
-/*
-                                                fontSize: "10px",
-*/
                                                 color: "#333",
                                                 textAlign: "left"
                                             }
@@ -556,9 +567,8 @@ console.log(topPlans)
                                         }, state.topPlans?.[0] || ""), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
                                         m("div", {
                                             style: {
-                                                marginTop: "90px",
+                                                marginTop: "60px",
                                                 padding: "20px",
-                                                /*fontSize: "14px",*/
                                                 color: "#333",
                                                 textAlign: "left"
                                             }
@@ -579,7 +589,6 @@ console.log(topPlans)
                                         bottom: "50px",
                                     }
                                 }, "Get Started")]),
-
 
 
                             m("div", { //left side "alternative plan"
@@ -616,9 +625,8 @@ console.log(topPlans)
                                         }, state.topPlans?.[2] || ""),
                                         m("div", {
                                             style: {
-                                                marginTop: "90px",
+                                                marginTop: "60px",
                                                 padding: "20px",
-                                                /*fontSize: "10px",*/
                                                 color: "#333",
                                                 textAlign: "left"
                                             }

@@ -1601,8 +1601,8 @@
     {
       question: "How do you intend to use this mailbox \u2014 for business or personal purposes?",
       choices: [
-        { option: "For business purposes", plans: { Essential: 1, Advanced: 1, Unlimited: 1 } },
-        { option: "For personal use", plans: { Free: 1, Revolutionary: 1, Legend: 1 } },
+        { option: "For business purposes", plans: { Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1 } },
+        { option: "For personal use", plans: { Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0 } },
         { option: "I haven\u2019t decided yet.", plans: { Free: 1 } }
       ]
     },
@@ -1663,55 +1663,55 @@
   ];
   var planDetails = {
     Free: {
-      usage: "For personal use",
-      emails: "No additional email addresses",
-      storage: "1 GB storage",
-      domains: "No custom domains",
-      labels: "3 labels",
-      calendars: "\u{1F4C5} One calendar",
-      family: "No Family option"
+      usage: "\u{1F464} For personal use",
+      /*emails: "✉ No additional email addresses",*/
+      storage: "\u{1F5C4}  1 GB storage",
+      /*domains: "No custom domains",*/
+      labels: "\u{1F3F7}\uFE0F 3 labels",
+      calendars: "\u{1F5D3} One calendar"
+      /* family: "No Family option"*/
     },
     Revolutionary: {
-      usage: "For personal use",
-      emails: "15 additional email addresses",
-      storage: "20 GB storage",
-      domains: "3 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels",
-      family: "Family option"
+      usage: "\u{1F464} For personal use",
+      emails: "\u2709\uFE0F 15 additional email addresses",
+      storage: "\u{1F5C4}  20 GB storage",
+      domains: "\u{1F310} 3 custom domains",
+      calendars: "\u{1F5D3} Unlimited calendars",
+      labels: "\u{1F3F7}\uFE0F Unlimited labels",
+      family: "\u{1FAC2} Family option"
     },
     Legend: {
-      usage: "For personal use",
-      emails: "30 additional email addresses",
-      storage: "500 GB storage",
-      domains: "10 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels",
-      family: "Family option"
+      usage: "\u{1F464} For personal use",
+      emails: "\u2709\uFE0F 30 additional email addresses",
+      storage: "\u{1F5C4}  500 GB storage",
+      domains: "\u{1F310} 10 custom domains",
+      calendars: "\u{1F5D3} Unlimited calendars",
+      labels: "\u{1F3F7}\uFE0F Unlimited labels",
+      family: "\u{1FAC2} Family option"
     },
     Essential: {
-      usage: "For business purposes",
-      emails: "15 additional email addresses",
-      storage: "50 GB storage",
-      domains: "3 custom domains",
-      calendars: "  Unlimited calendars",
-      labels: "Unlimited labels"
+      usage: "\u{1F454} For business purposes",
+      emails: "\u2709\uFE0F 15 additional email addresses",
+      storage: "\u{1F5C4}  50 GB storage",
+      domains: "\u{1F310} 3 custom domains",
+      calendars: "\u{1F5D3} Unlimited calendars",
+      labels: "\u{1F3F7}\uFE0F Unlimited labels"
     },
     Advanced: {
-      usage: "For business purposes",
-      emails: "30 additional addresses",
-      storage: "500 GB storage",
-      domains: "10 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels"
+      usage: "\u{1F454} For business purposes",
+      emails: "\u2709\uFE0F 30 additional addresses",
+      storage: "\u{1F5C4}  500 GB storage",
+      domains: "\u{1F310} 10 custom domains",
+      calendars: "\u{1F5D3} Unlimited calendars",
+      labels: "\u{1F3F7}\uFE0F Unlimited labels"
     },
     Unlimited: {
-      usage: "For business purposes",
-      emails: "30 additional addresses",
-      storage: "1000 GB storage",
-      domains: "Unlimited domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels"
+      usage: "\u{1F454} For business purposes",
+      emails: "\u2709\uFE0F 30 additional addresses",
+      storage: "\u{1F5C4}  1000 GB storage",
+      domains: "\u{1F310} Unlimited domains",
+      calendars: "\u{1F5D3} Unlimited calendars",
+      labels: "\u{1F3F7}\uFE0F Unlimited labels"
     }
   };
   var Questionnaire = {
@@ -1790,30 +1790,36 @@
           }
           let description = "";
           if (i == 0) {
-            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4E6} ${topPlans[0]} is a recommended plan for you.</p>`;
+            description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F3AF} ${topPlans[0]} is a recommended plan for you.</p>`;
           } else if (i == 1) {
-            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4E6} ${topPlans[1]} might be a good alternative for you.</p>`;
+            description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F4E6} ${topPlans[1]} might be a good alternative for you.</p>`;
           } else {
-            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4E6} ${topPlans[2]} might be a good alternative for you.</p>`;
+            description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F4E6} ${topPlans[2]} might be a good alternative for you.</p>`;
           }
           console.log(topPlans);
           if (included.size > 0) {
-            description += `<p style="font-weight: bold;">\u2705 Because it includes what you selected:</p>`;
+            description += `<p style="font-weight: bold; color: #410002;">\u2705 Because it includes what you selected:</p>`;
             description += `<ul style="list-style-type: none;">`;
             description += [...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("");
             description += `</ul>`;
           }
           if (extra.length > 0) {
-            description += `<p style="color: blue; margin-bottom: 10px;">\u{1F381} Also includes additional features:</p>`;
+            description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u{1F381} Also includes additional features:</p>`;
             description += `<ul style="list-style-type: none;">`;
-            description += extra.map((i2) => `<li style="color: black;">\u2795 ${i2}</li>`).join("");
+            description += extra.map((i2) => `<li style="color: black;"> ${i2}</li>`).join("");
             description += `</ul>`;
           }
           if (missing.length > 0) {
-            description += `<p style="color: red; margin-bottom: 10px;">\u26A0 This plan does not include:</p><ul style="list-style-type: none;">`;
-            description += missing.map((i2) => `<li style="color: black;">\u2716 ${i2}</li>`).join("");
+            description += `<p style="color: red; margin-bottom: 10px;">\u2755 This plan does not include:</p><ul style="list-style-type: none;">`;
+            description += missing.map((i2) => `<li style="color: black;">\u274C ${i2}</li>`).join("");
             description += `</ul>`;
-            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
+            if (i == 0) {
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
+            } else if (i == 1) {
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]}), they might include these.</p>`;
+            } else {
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
+            }
           }
           descriptions[planName] = description;
         }
@@ -1861,7 +1867,7 @@
               transform: "translateX(-60%) translateY(40px)",
               opacity: 0.3,
               /*  zIndex: 5,*/
-              fontSize: "10px",
+              fontSize: "11px",
               width: "250px",
               height: "600px",
               backgroundColor: "#f8eded",
@@ -1878,7 +1884,7 @@
               height: "600px",
               backgroundColor: "#f8eded",
               boxShadow: "-21px 15px 18px 0px #00000033",
-              fontSize: "10px"
+              fontSize: "11px"
             };
           } else {
             return { display: "none" };
@@ -1900,7 +1906,7 @@
           /*m("p", {
               style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
           }, /!*state.plan*!/),*/
-          //----------------------------------------------------added carousel here----------------------------------------//
+          //-----------------------------added carousel here----------------------------------------//
           (0, import_mithril.default)("div", {
             style: {
               width: "100%",
@@ -1936,7 +1942,7 @@
                 }
                 //----------------------------------------------------------------------------------------------------------------------------//
               },
-              //---------------------------------divs on the final pages: recommended and 2 alternatives--------------------------------------//
+              //---------------------------------Top plans on the final pages: 1 best and 2 alternatives--------------------------------------//
               [
                 (0, import_mithril.default)("div", {
                   style: getStyle(0),
@@ -1972,11 +1978,8 @@
                     }, state.topPlans?.[1] || ""),
                     (0, import_mithril.default)("div", {
                       style: {
-                        marginTop: "90px",
+                        marginTop: "60px",
                         padding: "20px",
-                        /*
-                                                                        fontSize: "10px",
-                        */
                         color: "#333",
                         textAlign: "left"
                       }
@@ -2035,9 +2038,8 @@
                     //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
                     (0, import_mithril.default)("div", {
                       style: {
-                        marginTop: "90px",
+                        marginTop: "60px",
                         padding: "20px",
-                        /*fontSize: "14px",*/
                         color: "#333",
                         textAlign: "left"
                       }
@@ -2094,9 +2096,8 @@
                     }, state.topPlans?.[2] || ""),
                     (0, import_mithril.default)("div", {
                       style: {
-                        marginTop: "90px",
+                        marginTop: "60px",
                         padding: "20px",
-                        /*fontSize: "10px",*/
                         color: "#333",
                         textAlign: "left"
                       }
