@@ -1614,10 +1614,10 @@
          ],
      },*/
     {
-      question: "Would you like to add additional email addresses to your mailbox? If yes, how many do you require?",
+      question: "Would you like to add additional email addresses to your mailbox? If so, how many?",
       choices: [
-        { option: "1-15", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "16-30", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } },
+        { option: "1-15 additional email addresses", plans: { Essential: 1, Revolutionary: 1 } },
+        { option: "16-30 additional email addresses", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } },
         { option: "No, I don\u2019t want to", plans: { Free: 1 } }
       ]
     },
@@ -1634,8 +1634,8 @@
     {
       question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox? If yes, how many would you like to configure?",
       choices: [
-        { option: "1-3", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "4-10", plans: { Legend: 1, Advanced: 1 } },
+        { option: "1-3 custom domains", plans: { Essential: 1, Revolutionary: 1 } },
+        { option: "4-10 custom domains", plans: { Legend: 1, Advanced: 1 } },
         { option: "Unlimited domains", plans: { Unlimited: 1 } },
         { option: "No, I don't need", plans: { Free: 1 } }
       ]
@@ -1653,45 +1653,45 @@
     {
       question: "What is your estimated email storage requirement?",
       choices: [
-        { option: "1 GB", plans: { Free: 1 } },
-        { option: "2-20 GB", plans: { Revolutionary: 1 } },
-        { option: "21-50 GB", plans: { Essential: 1 } },
-        { option: "51-500 GB", plans: { Legend: 1, Advanced: 1 } },
-        { option: "501-1000 GB", plans: { Unlimited: 1 } }
+        { option: "1 GB storage", plans: { Free: 1 } },
+        { option: "2-20 GB storage", plans: { Revolutionary: 1 } },
+        { option: "21-50 GB storage", plans: { Essential: 1 } },
+        { option: "51-500 GB storage", plans: { Legend: 1, Advanced: 1 } },
+        { option: "501-1000 GB storage", plans: { Unlimited: 1 } }
       ]
     }
   ];
   var planDetails = {
     Free: {
       usage: "For personal use",
-      emails: "Extra email addresses",
+      emails: "No additional email addresses",
       storage: "1 GB storage",
-      domains: "Don't include custom domains",
+      domains: "No custom domains",
       labels: "3 labels",
       calendars: "\u{1F4C5} One calendar",
-      family: "Family option is not available"
+      family: "No Family option"
     },
     Revolutionary: {
       usage: "For personal use",
-      emails: "15 extra email addresses",
+      emails: "15 additional email addresses",
       storage: "20 GB storage",
       domains: "3 custom domains",
       calendars: "Unlimited calendars",
       labels: "Unlimited labels",
-      family: "Family option available"
+      family: "Family option"
     },
     Legend: {
       usage: "For personal use",
-      emails: "30 extra email addresses",
+      emails: "30 additional email addresses",
       storage: "500 GB storage",
       domains: "10 custom domains",
       calendars: "Unlimited calendars",
       labels: "Unlimited labels",
-      family: "Family option available"
+      family: "Family option"
     },
     Essential: {
       usage: "For business purposes",
-      emails: "15 extra email addresses",
+      emails: "15 additional email addresses",
       storage: "50 GB storage",
       domains: "3 custom domains",
       calendars: "  Unlimited calendars",
@@ -1699,7 +1699,7 @@
     },
     Advanced: {
       usage: "For business purposes",
-      emails: "30 extra addresses",
+      emails: "30 additional addresses",
       storage: "500 GB storage",
       domains: "10 custom domains",
       calendars: "Unlimited calendars",
@@ -1707,7 +1707,7 @@
     },
     Unlimited: {
       usage: "For business purposes",
-      emails: "30 extra addresses",
+      emails: "30 additional addresses",
       storage: "1000 GB storage",
       domains: "Unlimited domains",
       calendars: "Unlimited calendars",
@@ -1764,11 +1764,9 @@
         for (const answer of answers) {
           selectedOptions.add(answer.option);
         }
-        for (const planName of topPlans) {
-          if (!planDetails[
-            planName
-            /*as PlanName*/
-          ])
+        for (let i = 0; i < topPlans.length; i++) {
+          const planName = topPlans[i];
+          if (!planDetails[planName])
             continue;
           const included = /* @__PURE__ */ new Set();
           const extra = [];
@@ -1790,19 +1788,32 @@
               extra.push(feature);
             }
           }
-          let description = `\u{1F4E6} ${planName} is a recommended plan for you.`;
+          let description = "";
+          if (i == 0) {
+            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4E6} ${topPlans[0]} is a recommended plan for you.</p>`;
+          } else if (i == 1) {
+            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4E6} ${topPlans[1]} might be a good alternative for you.</p>`;
+          } else {
+            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4E6} ${topPlans[2]} might be a good alternative for you.</p>`;
+          }
+          console.log(topPlans);
           if (included.size > 0) {
-            description += `\u2705 Because it includes what you selected:` + [...included].map((i) => `\u2714 ${i}`);
+            description += `<p style="font-weight: bold;">\u2705 Because it includes what you selected:</p>`;
+            description += `<ul style="list-style-type: none;">`;
+            description += [...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("");
+            description += `</ul>`;
           }
           if (extra.length > 0) {
-            description += `\u{1F381}  Also includes additional features:
-` + extra.map((i) => `\u2795 ${i}`);
+            description += `<p style="color: blue; margin-bottom: 10px;">\u{1F381} Also includes additional features:</p>`;
+            description += `<ul style="list-style-type: none;">`;
+            description += extra.map((i2) => `<li style="color: black;">\u2795 ${i2}</li>`).join("");
+            description += `</ul>`;
           }
           if (missing.length > 0) {
-            description += `\u26A0 This plan does not include:
-` + missing.map((i) => `\u2716 ${i}`);
-            description += `\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.
-`;
+            description += `<p style="color: red; margin-bottom: 10px;">\u26A0 This plan does not include:</p><ul style="list-style-type: none;">`;
+            description += missing.map((i2) => `<li style="color: black;">\u2716 ${i2}</li>`).join("");
+            description += `</ul>`;
+            description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
           }
           descriptions[planName] = description;
         }
@@ -1824,7 +1835,7 @@
             transition: "all 0.6s ease",
             borderRadius: "10px",
             textAlign: "center",
-            fontSize: "20px",
+            /*fontSize: "20px",*/
             opacity: 1,
             zIndex: 1,
             display: "flex",
@@ -1839,6 +1850,7 @@
               //above div "next" and "prev"
               width: "400px",
               height: "620px",
+              fontSize: "14px",
               backgroundColor: "#ecd9d9",
               boxShadow: "-5px 1px 37px -13px #00000075"
             };
@@ -1849,6 +1861,7 @@
               transform: "translateX(-60%) translateY(40px)",
               opacity: 0.3,
               /*  zIndex: 5,*/
+              fontSize: "10px",
               width: "250px",
               height: "600px",
               backgroundColor: "#f8eded",
@@ -1864,7 +1877,8 @@
               width: "250px",
               height: "600px",
               backgroundColor: "#f8eded",
-              boxShadow: "-21px 15px 18px 0px #00000033"
+              boxShadow: "-21px 15px 18px 0px #00000033",
+              fontSize: "10px"
             };
           } else {
             return { display: "none" };
@@ -1956,15 +1970,17 @@
                         fontWeight: "normal"
                       }
                     }, state.topPlans?.[1] || ""),
-                    (0, import_mithril.default)("p", {
+                    (0, import_mithril.default)("div", {
                       style: {
-                        marginTop: "120px",
+                        marginTop: "90px",
                         padding: "20px",
-                        fontSize: "14px",
+                        /*
+                                                                        fontSize: "10px",
+                        */
                         color: "#333",
                         textAlign: "left"
                       }
-                    }, planDescriptions[state.topPlans?.[1]])
+                    }, [import_mithril.default.trust(planDescriptions[state.topPlans?.[1]])])
                   ]),
                   (0, import_mithril.default)("a", {
                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
@@ -2017,15 +2033,15 @@
                       }
                     }, state.topPlans?.[0] || ""),
                     //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
-                    (0, import_mithril.default)("p", {
+                    (0, import_mithril.default)("div", {
                       style: {
-                        marginTop: "120px",
+                        marginTop: "90px",
                         padding: "20px",
-                        fontSize: "14px",
+                        /*fontSize: "14px",*/
                         color: "#333",
                         textAlign: "left"
                       }
-                    }, planDescriptions[state.topPlans?.[0]])
+                    }, [import_mithril.default.trust(planDescriptions[state.topPlans?.[0]])])
                   ]),
                   (0, import_mithril.default)("a", {
                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
@@ -2076,15 +2092,15 @@
                         fontWeight: "normal"
                       }
                     }, state.topPlans?.[2] || ""),
-                    (0, import_mithril.default)("p", {
+                    (0, import_mithril.default)("div", {
                       style: {
-                        marginTop: "120px",
+                        marginTop: "90px",
                         padding: "20px",
-                        fontSize: "14px",
+                        /*fontSize: "10px",*/
                         color: "#333",
                         textAlign: "left"
                       }
-                    }, import_mithril.default.trust(planDescriptions[state.topPlans?.[2]]))
+                    }, [import_mithril.default.trust(planDescriptions[state.topPlans?.[2]])])
                   ]),
                   (0, import_mithril.default)("a", {
                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",

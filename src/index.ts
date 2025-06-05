@@ -35,7 +35,7 @@ interface QuestionnaireState {
 
     evaluateTopPlans(answers: Choice[]): string[];    //какой план больше всего подходит? и какие планы на 2-м и 3-м месте по рейтенгу.
     moveToSelected(directionOrIndex: "prev" | "next" | number): void; //показывает результат планов в конце. возвращаемое значение: void (ничего не возвращает), может быть отдельно moveToSelected("prev"), moveToSelected("next") или moveToSelected(3). Но вместе-это проще для API(Application Programming Interface)- "набор команд/входов
-   /* generateDescription(answers: Choice[], topPlans: string[]): string[];*/  //динамические результаты опроса, анализ или в тарифный план входит то что выбрано или предлажить альтернативу.
+    /* generateDescription(answers: Choice[], topPlans: string[]): string[];*/  //динамические результаты опроса, анализ или в тарифный план входит то что выбрано или предлажить альтернативу.
     generatePlanDescriptions: (answers: any, topPlans: PlanName[]) => Record<PlanName, string>;
 }
 
@@ -54,36 +54,36 @@ const questions: Question[] = [
             {option: "I haven’t decided yet.", plans: {Free: 1}}
         ],
     },
-   /* {
-        question: "Would you like to add additional email addresses to this mailbox? If yes, how many do you require?",
-        choices: [
-            {option: "Yes, I’d like to", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
-            {option: "No, I don’t want to", plans: {Free: 1}}
-        ],
-    },*/
+    /* {
+         question: "Would you like to add additional email addresses to this mailbox? If yes, how many do you require?",
+         choices: [
+             {option: "Yes, I’d like to", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
+             {option: "No, I don’t want to", plans: {Free: 1}}
+         ],
+     },*/
     {
-        question: "Would you like to add additional email addresses to your mailbox? If yes, how many do you require?",
+        question: "Would you like to add additional email addresses to your mailbox? If so, how many?",
         choices: [
-            {option: "1-15", plans: {Essential: 1, Revolutionary: 1}},
-            {option: "16-30", plans: {Legend: 1, Unlimited: 1, Advanced: 1,}},
+            {option: "1-15 additional email addresses", plans: {Essential: 1, Revolutionary: 1}},
+            {option: "16-30 additional email addresses", plans: {Legend: 1, Unlimited: 1, Advanced: 1,}},
             {option: "No, I don’t want to", plans: {Free: 1}},
         ],
     },
-   /* {
-        question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?If yes, how many would you like to configure?",
-        choices: [
-            {
-                option: "Yes, please",
-                plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
-            },
-            {option: "No, I don't need", plans: {Free: 1}}
-        ],
-    },*/
+    /* {
+         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?If yes, how many would you like to configure?",
+         choices: [
+             {
+                 option: "Yes, please",
+                 plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
+             },
+             {option: "No, I don't need", plans: {Free: 1}}
+         ],
+     },*/
     {
         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox? If yes, how many would you like to configure?",
         choices: [
-            {option: "1-3", plans: {Essential: 1, Revolutionary: 1}},
-            {option: "4-10", plans: {Legend: 1, Advanced: 1}},
+            {option: "1-3 custom domains", plans: {Essential: 1, Revolutionary: 1}},
+            {option: "4-10 custom domains", plans: {Legend: 1, Advanced: 1}},
             {option: "Unlimited domains", plans: {Unlimited: 1}},
             {option: "No, I don't need", plans: {Free: 1}}
         ],
@@ -101,11 +101,11 @@ const questions: Question[] = [
     {
         question: "What is your estimated email storage requirement?",
         choices: [
-            {option: "1 GB", plans: {Free: 1}},
-            {option: "2-20 GB", plans: {Revolutionary: 1}},
-            {option: "21-50 GB", plans: {Essential: 1}},
-            {option: "51-500 GB", plans: {Legend: 1, Advanced: 1}},
-            {option: "501-1000 GB", plans: {Unlimited: 1}}
+            {option: "1 GB storage", plans: {Free: 1}},
+            {option: "2-20 GB storage", plans: {Revolutionary: 1}},
+            {option: "21-50 GB storage", plans: {Essential: 1}},
+            {option: "51-500 GB storage", plans: {Legend: 1, Advanced: 1}},
+            {option: "501-1000 GB storage", plans: {Unlimited: 1}}
         ],
     }
 ];
@@ -121,10 +121,10 @@ interface PlanFeatures {
     family?: string;
 }
 
-const planDetails: Record<PlanName,PlanFeatures> = {
+const planDetails: Record<PlanName, PlanFeatures> = {
     Free: {
         usage: "For personal use",
-        emails: "No extra email addresses",
+        emails: "No additional email addresses",
         storage: "1 GB storage",
         domains: "No custom domains",
         labels: "3 labels",
@@ -133,25 +133,25 @@ const planDetails: Record<PlanName,PlanFeatures> = {
     },
     Revolutionary: {
         usage: "For personal use",
-        emails: "15 extra email addresses",
+        emails: "15 additional email addresses",
         storage: "20 GB storage",
         domains: "3 custom domains",
         calendars: "Unlimited calendars",
         labels: "Unlimited labels",
-        family: "Family option available"
+        family: "Family option"
     },
     Legend: {
         usage: "For personal use",
-        emails: "30 extra email addresses",
+        emails: "30 additional email addresses",
         storage: "500 GB storage",
         domains: "10 custom domains",
         calendars: "Unlimited calendars",
         labels: "Unlimited labels",
-        family: "Family option available"
+        family: "Family option"
     },
     Essential: {
         usage: "For business purposes",
-        emails: "15 extra email addresses",
+        emails: "15 additional email addresses",
         storage: "50 GB storage",
         domains: "3 custom domains",
         calendars: "  Unlimited calendars",
@@ -159,7 +159,7 @@ const planDetails: Record<PlanName,PlanFeatures> = {
     },
     Advanced: {
         usage: "For business purposes",
-        emails: "30 extra addresses",
+        emails: "30 additional addresses",
         storage: "500 GB storage",
         domains: "10 custom domains",
         calendars: "Unlimited calendars",
@@ -167,17 +167,13 @@ const planDetails: Record<PlanName,PlanFeatures> = {
     },
     Unlimited: {
         usage: "For business purposes",
-        emails: "30 extra addresses",
+        emails: "30 additional addresses",
         storage: "1000 GB storage",
         domains: "Unlimited domains",
         calendars: "Unlimited calendars",
         labels: "Unlimited labels",
     }
 };
-
-
-
-
 
 
 // Компонент Questionnaire
@@ -222,7 +218,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 .sort((a, b) => b[1] - a[1])  //2.Сортирует массив по убыванию очков (то есть по второму элементу в паре):  (.sort() — это встроенный метод массива в JavaScript, который сортирует элементы массива по заданному правилу. a - это например ["Free", 3] и b - может например быть ["Legend", 5])
                 .map(entry => entry[0]);                           //3.Оставляет только названия планов (первый элемент в паре): ["Free", "Revolutionary" ...]
             return sorted.slice(0, 3);                                          //4.Обрезаем массив, чтобы оставить только первые 3 имени.
-          //--------------------------------------------------------------------------------------------------------------------------------------------------//
+            //--------------------------------------------------------------------------------------------------------------------------------------------------//
 
             /* const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
              return result[0]; //название тарифа*/
@@ -249,7 +245,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
         state.generatePlanDescriptions = (answers: Choice[], topPlans: string[]) => {
             const descriptions: Record<PlanName, string> = {};
 
-                                                                                  //1.Соберём option, что выбрал пользователь в selectedOptions например const selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar" ]
+            //1.Соберём option, что выбрал пользователь в selectedOptions например const selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar" ]
             const selectedOptions = new Set<string>();
 
             for (const answer of answers) {                                        // selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar"]
@@ -257,10 +253,11 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             }
 
 
-            for (const planName of topPlans) {                                     //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
-                if (!planDetails[planName /*as PlanName*/]) continue;              //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
+            for (let i = 0; i < topPlans.length; i++) {                                    //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
+                const planName = topPlans[i];
+                if (!planDetails[planName as PlanName]) continue;             //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
 
-                const included= new Set<string>();                                    //4. Создаем контейнеры для:   //included,
+                const included = new Set<string>();                                    //4. Создаем контейнеры для:   //included,
                 const extra: string[] = [];                                                                            //extra,
                 const missing: string[] = [];                                                                              //missing
 
@@ -285,20 +282,41 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 }
 
                 // Составим финальное описание
-                let description = `📦 ${planName} is a recommended plan for you.`;
+
+
+                let description = "";
+                if (i == 0) {
+                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[0]} is a recommended plan for you.</p>`;
+                } else if  (i == 1) {
+                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[1]} might be a good alternative for you.</p>`;
+                } else {
+                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
+                }
+
+console.log(topPlans)
 
                 if (included.size > 0) {
-                    description += `✅ Because it includes what you selected:` + [...included].map(i => `✔ ${i}`);
+                    description += `<p style="font-weight: bold;">✅ Because it includes what you selected:</p>`;
+                       description +=`<ul style="list-style-type: none;">`;
+                    description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
+                    description += `</ul>`
                 }
 
                 if (extra.length > 0) {
-                    description += `🎁  Also includes additional features:\n` + extra.map(i => `➕ ${i}`);
+                    description += `<p style="color: blue; margin-bottom: 10px;">🎁 Also includes additional features:</p>`;
+                    description += `<ul style="list-style-type: none;">`
+                        description += extra.map(i => `<li style="color: black;">➕ ${i}</li>`).join("");
+                    description += `</ul>`
                 }
 
                 if (missing.length > 0) {
-                    description += `⚠ This plan does not include:\n` + missing.map(i => `✖ ${i}`);
-                    description += `💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.\n`;
+                    description += `<p style="color: red; margin-bottom: 10px;">⚠ This plan does not include:</p><ul style="list-style-type: none;">`;
+                        description+= missing.map(i => `<li style="color: black;">✖ ${i}</li>`).join("");
+                    description += `</ul>`
+
+                    description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
                 }
+
 
                 descriptions[planName as PlanName] = description;
             }
@@ -315,13 +333,11 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
         const showResultContainer = state.showResultContainer;
         const showQuestionContainer = state.showQuestionContainer;
 
-           //result to show
+        //result to show
         if (state.currentIndex >= questions.length) {
             const topPlans = state.evaluateTopPlans(state.answers);                                                       //TOP PLANS: результат работы функции "список рекомендуемых планов"
             state.topPlans = topPlans;                                                                                            //здесь результат (topPlans) сохраняется в состояние (state) — в новое свойство topPlans. Проще говоря: Мы сохраняем список подходящих планов в объект состояния, чтобы использовать его дальше (например, показать пользователю).
             const planDescriptions = state.generatePlanDescriptions(state.answers, topPlans);                   //DESCRIPTION: результат работы функции "planDescriptions"
-
-
 
 
             //---------------------------Logic for the carousel -------------------------------------//
@@ -332,7 +348,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     transition: "all 0.6s ease",
                     borderRadius: "10px",
                     textAlign: "center",
-                    fontSize: "20px",
+                    /*fontSize: "20px",*/
                     opacity: 1,
                     zIndex: 1,
                     display: "flex",
@@ -347,6 +363,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         zIndex: 10, //above div "next" and "prev"
                         width: "400px",
                         height: "620px",
+                        fontSize: "14px",
                         backgroundColor: "#ecd9d9",
                         boxShadow: "-5px 1px 37px -13px #00000075",
                     };
@@ -357,6 +374,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         transform: "translateX(-60%) translateY(40px)",
                         opacity: 0.3,
                         /*  zIndex: 5,*/
+                        fontSize: "10px",
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
@@ -374,6 +392,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "-21px 15px 18px 0px #00000033",
+                        fontSize: "10px",
                     };
                 } else {
                     return {display: "none"};
@@ -446,66 +465,67 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                 onclick: () => state.moveToSelected(0)
                             }, [
                                 m("div", {style: {width: "400px", borderRadius: "10px",}},
-                                [m("p", {
-                                    style: {
-                                        background: "#e5a85b",
-                                        position: "absolute",
-                                        /*top: "1%",*/
-                                        width: "100%",
-                                        textAlign: "center",
-                                        fontSize: "18px",
-                                        margin: "0 auto",
-                                        padding: "5px 0",
-                                        borderRadius: "10px 10px 0 0",
-                                        color: "white",
-                                    }
-                                }, "Alternative"),
-                                    m("h3", {
+                                    [m("p", {
                                         style: {
-                                            /*background: "red", */
+                                            background: "#e5a85b",
                                             position: "absolute",
                                             /*top: "1%",*/
                                             width: "100%",
                                             textAlign: "center",
-                                            fontSize: "20px",
-                                            margin: "40px auto 0 auto",
+                                            fontSize: "18px",
+                                            margin: "0 auto",
                                             padding: "5px 0",
-                                            fontWeight: "normal",
+                                            borderRadius: "10px 10px 0 0",
+                                            color: "white",
                                         }
-                                    }, state.topPlans?.[1] || ""),
-                                m("p", {
-                                    style: {
-                                        marginTop: "120px",
-                                        padding: "20px",
-                                        fontSize: "14px",
-                                        color: "#333",
-                                        textAlign: "left"
-                                    }
-                                }, planDescriptions[state.topPlans?.[1] as PlanName])]),
+                                    }, "Alternative"),
+                                        m("h3", {
+                                            style: {
+                                                /*background: "red", */
+                                                position: "absolute",
+                                                /*top: "1%",*/
+                                                width: "100%",
+                                                textAlign: "center",
+                                                fontSize: "20px",
+                                                margin: "40px auto 0 auto",
+                                                padding: "5px 0",
+                                                fontWeight: "normal",
+                                            }
+                                        }, state.topPlans?.[1] || ""),
+                                        m("div", {
+                                            style: {
+                                                marginTop: "90px",
+                                                padding: "20px",
+/*
+                                                fontSize: "10px",
+*/
+                                                color: "#333",
+                                                textAlign: "left"
+                                            }
+                                        }, [m.trust(planDescriptions[state.topPlans?.[1] as PlanName])])]),
                                 m("a", {
-                                href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
-                                target: "_blank",
-                                style: {
-                                    display: "block",
-                                    textAlign: "center",
-                                    color: "#ff0a0a",
-                                    textDecoration: "none",
-                                    cursor: "pointer",
-                                    position:"absolute",
-                                    padding: "10px 50px",
-                                    borderRadius: "10px",
-                                    backgroundColor: "#ffffff",
-                                    bottom:"50px",
-                                    border: "solid 2px",
-                                }
-                            }, "Get Started")]),
-
+                                    href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
+                                    target: "_blank",
+                                    style: {
+                                        display: "block",
+                                        textAlign: "center",
+                                        color: "#ff0a0a",
+                                        textDecoration: "none",
+                                        cursor: "pointer",
+                                        position: "absolute",
+                                        padding: "10px 50px",
+                                        borderRadius: "10px",
+                                        backgroundColor: "#ffffff",
+                                        bottom: "50px",
+                                        border: "solid 2px",
+                                    }
+                                }, "Get Started")]),
 
 
                             m("div", {                                                                     //central plan (top plan)
-                                    style: getStyle(1),
-                                    onclick: () => state.moveToSelected(1)
-                                }, [
+                                style: getStyle(1),
+                                onclick: () => state.moveToSelected(1)
+                            }, [
                                 m("div", {style: {width: "400px", borderRadius: "10px",}},
                                     [m("p", {
                                         style: {
@@ -522,27 +542,27 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         }
                                     }, "The best plan for you"),
                                         m("h3", {
-                                        style: {
-                                            /*background: "red", */
-                                            position: "absolute",
-                                            /*top: "1%",*/
-                                            width: "100%",
-                                            textAlign: "center",
-                                            fontSize: "30px",
-                                            margin: "40px auto 0 auto",
-                                            padding: "5px 0",
-                                            fontWeight:"normal",
-                                        }
-                                    }, state.topPlans?.[0] || ""), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
-                                m("p", {
-                                    style: {
-                                        marginTop: "120px",
-                                        padding: "20px",
-                                        fontSize: "14px",
-                                        color: "#333",
-                                        textAlign: "left"
-                                    }
-                                }, planDescriptions[state.topPlans?.[0] as PlanName])]),
+                                            style: {
+                                                /*background: "red", */
+                                                position: "absolute",
+                                                /*top: "1%",*/
+                                                width: "100%",
+                                                textAlign: "center",
+                                                fontSize: "30px",
+                                                margin: "40px auto 0 auto",
+                                                padding: "5px 0",
+                                                fontWeight: "normal",
+                                            }
+                                        }, state.topPlans?.[0] || ""), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
+                                        m("div", {
+                                            style: {
+                                                marginTop: "90px",
+                                                padding: "20px",
+                                                /*fontSize: "14px",*/
+                                                color: "#333",
+                                                textAlign: "left"
+                                            }
+                                        }, [m.trust(planDescriptions[state.topPlans?.[0] as PlanName])])]),
                                 m("a", {
                                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                     target: "_blank",
@@ -552,11 +572,11 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         color: "white",
                                         textDecoration: "none",
                                         cursor: "pointer",
-                                        position:"absolute",
+                                        position: "absolute",
                                         padding: "10px 50px",
                                         borderRadius: "10px",
                                         backgroundColor: "#ff0a0a",
-                                        bottom:"50px",
+                                        bottom: "50px",
                                     }
                                 }, "Get Started")]),
 
@@ -567,42 +587,42 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                 onclick: () => state.moveToSelected(2)
                             }, [
                                 m("div", {style: {width: "400px", borderRadius: "10px",}},
-                                [m("p", {
-                                    style: {
-                                        background: "#e5a85b",
-                                        position: "absolute",
-                                        /*top: "1%",*/
-                                        width: "100%",
-                                        textAlign: "center",
-                                        fontSize: "18px",
-                                        margin: "0 auto",
-                                        padding: "5px 0",
-                                        borderRadius: "10px 10px 0 0",
-                                        color: "white",
-                                    }
-                                }, "Alternative"),
-                                    m("h3", {
+                                    [m("p", {
                                         style: {
-                                            /*background: "red", */
+                                            background: "#e5a85b",
                                             position: "absolute",
                                             /*top: "1%",*/
                                             width: "100%",
                                             textAlign: "center",
-                                            fontSize: "20px",
-                                            margin: "40px auto 0 auto",
+                                            fontSize: "18px",
+                                            margin: "0 auto",
                                             padding: "5px 0",
-                                            fontWeight: "normal",
+                                            borderRadius: "10px 10px 0 0",
+                                            color: "white",
                                         }
-                                    }, state.topPlans?.[2] || ""),
-                                m("p", {
-                                    style: {
-                                        marginTop: "120px",
-                                        padding: "20px",
-                                        fontSize: "14px",
-                                        color: "#333",
-                                        textAlign: "left"
-                                    }
-                                }, m.trust(planDescriptions[state.topPlans?.[2] as PlanName]))]),
+                                    }, "Alternative"),
+                                        m("h3", {
+                                            style: {
+                                                /*background: "red", */
+                                                position: "absolute",
+                                                /*top: "1%",*/
+                                                width: "100%",
+                                                textAlign: "center",
+                                                fontSize: "20px",
+                                                margin: "40px auto 0 auto",
+                                                padding: "5px 0",
+                                                fontWeight: "normal",
+                                            }
+                                        }, state.topPlans?.[2] || ""),
+                                        m("div", {
+                                            style: {
+                                                marginTop: "90px",
+                                                padding: "20px",
+                                                /*fontSize: "10px",*/
+                                                color: "#333",
+                                                textAlign: "left"
+                                            }
+                                        }, [m.trust(planDescriptions[state.topPlans?.[2] as PlanName])])]),
                                 m("a", {
                                     href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                     target: "_blank",
@@ -612,15 +632,15 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         color: "#ff0a0a",
                                         textDecoration: "none",
                                         cursor: "pointer",
-                                        position:"absolute",
+                                        position: "absolute",
                                         padding: "10px 50px",
                                         borderRadius: "10px",
                                         backgroundColor: "#ffffff",
-                                        bottom:"50px",
+                                        bottom: "50px",
                                         border: "solid 2px",
                                     }
                                 }, "Get Started")])]),
-                //-----------------------------------------------------------------------------------------------------------//
+                    //-----------------------------------------------------------------------------------------------------------//
                 ]),
                 m("button", {
                     style: {
@@ -664,7 +684,8 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         vnode.state.showResultContainer = false;
                     }
                 }, "Close"),
-                             ])}
+            ])
+        }
 
 
 //---------------------------------------------------------------------------------------------Current questions with options-----------------------------------------------------------------------//
@@ -804,9 +825,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 };
 
 
-
-
-
 //  Старт или продолжение
 const App: m.Component<{}, AppState> = {
     oninit(vnode) {
@@ -889,6 +907,7 @@ const App: m.Component<{}, AppState> = {
 // Точка входа
 m.mount(document.body, App);
 
+
 /*
 
 
@@ -896,24 +915,18 @@ const businessPlans = ["Essential", "Advanced", "Unlimited"]
 const privatePlans = ["Free", "Revolutionary", "Legend"]
 const betterDescription = []
 
+const revolutionaryPlan
+
 
 for (const answer of answers) {
     if(answer.option == "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i))) {betterDescription+= "For personal use"
     } else if (
         answer.option == "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i))) {
         betterDescription+= "For business use"
-    } else if (answer.option == "1-15") {betterDescription += "15 extra email addresses"}
-    else if(answer.option == "16-30") {
-        betterDescription += "30 extra email addresses"
-    } else if (answer.option == "No, I don’t want to" && )
-}
+
 
 
 */
-
-
-
-
 
 
 /*

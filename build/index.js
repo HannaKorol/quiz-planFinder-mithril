@@ -17,10 +17,10 @@ const questions = [
          ],
      },*/
     {
-        question: "Would you like to add additional email addresses to your mailbox? If yes, how many do you require?",
+        question: "Would you like to add additional email addresses to your mailbox? If so, how many?",
         choices: [
-            { option: "1-15", plans: { Essential: 1, Revolutionary: 1 } },
-            { option: "16-30", plans: { Legend: 1, Unlimited: 1, Advanced: 1, } },
+            { option: "1-15 additional email addresses", plans: { Essential: 1, Revolutionary: 1 } },
+            { option: "16-30 additional email addresses", plans: { Legend: 1, Unlimited: 1, Advanced: 1, } },
             { option: "No, I don’t want to", plans: { Free: 1 } },
         ],
     },
@@ -37,8 +37,8 @@ const questions = [
     {
         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox? If yes, how many would you like to configure?",
         choices: [
-            { option: "1-3", plans: { Essential: 1, Revolutionary: 1 } },
-            { option: "4-10", plans: { Legend: 1, Advanced: 1 } },
+            { option: "1-3 custom domains", plans: { Essential: 1, Revolutionary: 1 } },
+            { option: "4-10 custom domains", plans: { Legend: 1, Advanced: 1 } },
             { option: "Unlimited domains", plans: { Unlimited: 1 } },
             { option: "No, I don't need", plans: { Free: 1 } }
         ],
@@ -56,45 +56,45 @@ const questions = [
     {
         question: "What is your estimated email storage requirement?",
         choices: [
-            { option: "1 GB", plans: { Free: 1 } },
-            { option: "2-20 GB", plans: { Revolutionary: 1 } },
-            { option: "21-50 GB", plans: { Essential: 1 } },
-            { option: "51-500 GB", plans: { Legend: 1, Advanced: 1 } },
-            { option: "501-1000 GB", plans: { Unlimited: 1 } }
+            { option: "1 GB storage", plans: { Free: 1 } },
+            { option: "2-20 GB storage", plans: { Revolutionary: 1 } },
+            { option: "21-50 GB storage", plans: { Essential: 1 } },
+            { option: "51-500 GB storage", plans: { Legend: 1, Advanced: 1 } },
+            { option: "501-1000 GB storage", plans: { Unlimited: 1 } }
         ],
     }
 ];
 const planDetails = {
     Free: {
         usage: "For personal use",
-        emails: "Extra email addresses",
+        emails: "No additional email addresses",
         storage: "1 GB storage",
-        domains: "Don't include custom domains",
+        domains: "No custom domains",
         labels: "3 labels",
         calendars: "📅 One calendar",
-        family: "Family option is not available"
+        family: "No Family option"
     },
     Revolutionary: {
         usage: "For personal use",
-        emails: "15 extra email addresses",
+        emails: "15 additional email addresses",
         storage: "20 GB storage",
         domains: "3 custom domains",
         calendars: "Unlimited calendars",
         labels: "Unlimited labels",
-        family: "Family option available"
+        family: "Family option"
     },
     Legend: {
         usage: "For personal use",
-        emails: "30 extra email addresses",
+        emails: "30 additional email addresses",
         storage: "500 GB storage",
         domains: "10 custom domains",
         calendars: "Unlimited calendars",
         labels: "Unlimited labels",
-        family: "Family option available"
+        family: "Family option"
     },
     Essential: {
         usage: "For business purposes",
-        emails: "15 extra email addresses",
+        emails: "15 additional email addresses",
         storage: "50 GB storage",
         domains: "3 custom domains",
         calendars: "  Unlimited calendars",
@@ -102,7 +102,7 @@ const planDetails = {
     },
     Advanced: {
         usage: "For business purposes",
-        emails: "30 extra addresses",
+        emails: "30 additional addresses",
         storage: "500 GB storage",
         domains: "10 custom domains",
         calendars: "Unlimited calendars",
@@ -110,7 +110,7 @@ const planDetails = {
     },
     Unlimited: {
         usage: "For business purposes",
-        emails: "30 extra addresses",
+        emails: "30 additional addresses",
         storage: "1000 GB storage",
         domains: "Unlimited domains",
         calendars: "Unlimited calendars",
@@ -182,8 +182,9 @@ const Questionnaire = {
             for (const answer of answers) { // selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar"]
                 selectedOptions.add(answer.option);
             }
-            for (const planName of topPlans) { //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
-                if (!planDetails[planName /*as PlanName*/])
+            for (let i = 0; i < topPlans.length; i++) { //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
+                const planName = topPlans[i];
+                if (!planDetails[planName])
                     continue; //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
                 const included = new Set(); //4. Создаем контейнеры для:   //included,
                 const extra = []; //extra,
@@ -205,16 +206,34 @@ const Questionnaire = {
                     }
                 }
                 // Составим финальное описание
-                let description = `📦 ${planName} is a recommended plan for you.`;
+                let description = "";
+                if (i == 0) {
+                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[0]} is a recommended plan for you.</p>`;
+                }
+                else if (i == 1) {
+                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[1]} might be a good alternative for you.</p>`;
+                }
+                else {
+                    description += `<p style="color: red; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
+                }
+                console.log(topPlans);
                 if (included.size > 0) {
-                    description += `✅ Because it includes what you selected:` + [...included].map(i => `✔ ${i}`);
+                    description += `<p style="font-weight: bold;">✅ Because it includes what you selected:</p>`;
+                    description += `<ul style="list-style-type: none;">`;
+                    description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
+                    description += `</ul>`;
                 }
                 if (extra.length > 0) {
-                    description += `🎁  Also includes additional features:\n` + extra.map(i => `➕ ${i}`);
+                    description += `<p style="color: blue; margin-bottom: 10px;">🎁 Also includes additional features:</p>`;
+                    description += `<ul style="list-style-type: none;">`;
+                    description += extra.map(i => `<li style="color: black;">➕ ${i}</li>`).join("");
+                    description += `</ul>`;
                 }
                 if (missing.length > 0) {
-                    description += `⚠ This plan does not include:\n` + missing.map(i => `✖ ${i}`);
-                    description += `💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.\n`;
+                    description += `<p style="color: red; margin-bottom: 10px;">⚠ This plan does not include:</p><ul style="list-style-type: none;">`;
+                    description += missing.map(i => `<li style="color: black;">✖ ${i}</li>`).join("");
+                    description += `</ul>`;
+                    description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
                 }
                 descriptions[planName] = description;
             }
@@ -238,7 +257,7 @@ const Questionnaire = {
                     transition: "all 0.6s ease",
                     borderRadius: "10px",
                     textAlign: "center",
-                    fontSize: "20px",
+                    /*fontSize: "20px",*/
                     opacity: 1,
                     zIndex: 1,
                     display: "flex",
@@ -252,6 +271,7 @@ const Questionnaire = {
                         zIndex: 10, //above div "next" and "prev"
                         width: "400px",
                         height: "620px",
+                        fontSize: "14px",
                         backgroundColor: "#ecd9d9",
                         boxShadow: "-5px 1px 37px -13px #00000075",
                     };
@@ -263,6 +283,7 @@ const Questionnaire = {
                         transform: "translateX(-60%) translateY(40px)",
                         opacity: 0.3,
                         /*  zIndex: 5,*/
+                        fontSize: "10px",
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
@@ -280,6 +301,7 @@ const Questionnaire = {
                         height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "-21px 15px 18px 0px #00000033",
+                        fontSize: "10px",
                     };
                 }
                 else {
@@ -373,15 +395,17 @@ const Questionnaire = {
                                         fontWeight: "normal",
                                     }
                                 }, state.topPlans?.[1] || ""),
-                                m("p", {
+                                m("div", {
                                     style: {
-                                        marginTop: "120px",
+                                        marginTop: "90px",
                                         padding: "20px",
-                                        fontSize: "14px",
+                                        /*
+                                                                                        fontSize: "10px",
+                                        */
                                         color: "#333",
                                         textAlign: "left"
                                     }
-                                }, planDescriptions[state.topPlans?.[1]])]),
+                                }, [m.trust(planDescriptions[state.topPlans?.[1]])])]),
                             m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",
@@ -431,15 +455,15 @@ const Questionnaire = {
                                         fontWeight: "normal",
                                     }
                                 }, state.topPlans?.[0] || ""), //В view центральная карточка (index === 1) рендерит state.topPlans[0] — лучший тариф.
-                                m("p", {
+                                m("div", {
                                     style: {
-                                        marginTop: "120px",
+                                        marginTop: "90px",
                                         padding: "20px",
-                                        fontSize: "14px",
+                                        /*fontSize: "14px",*/
                                         color: "#333",
                                         textAlign: "left"
                                     }
-                                }, planDescriptions[state.topPlans?.[0]])]),
+                                }, [m.trust(planDescriptions[state.topPlans?.[0]])])]),
                             m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",
@@ -488,15 +512,15 @@ const Questionnaire = {
                                         fontWeight: "normal",
                                     }
                                 }, state.topPlans?.[2] || ""),
-                                m("p", {
+                                m("div", {
                                     style: {
-                                        marginTop: "120px",
+                                        marginTop: "90px",
                                         padding: "20px",
-                                        fontSize: "14px",
+                                        /*fontSize: "10px",*/
                                         color: "#333",
                                         textAlign: "left"
                                     }
-                                }, m.trust(planDescriptions[state.topPlans?.[2]]))]),
+                                }, [m.trust(planDescriptions[state.topPlans?.[2]])])]),
                             m("a", {
                                 href: "https://app.tuta.com/signup#subscription=advanced&type=business&interval=12",
                                 target: "_blank",
@@ -763,3 +787,47 @@ const App = {
 };
 // Точка входа
 m.mount(document.body, App);
+/*
+
+
+const businessPlans = ["Essential", "Advanced", "Unlimited"]
+const privatePlans = ["Free", "Revolutionary", "Legend"]
+const betterDescription = []
+
+const revolutionaryPlan
+
+
+for (const answer of answers) {
+    if(answer.option == "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i))) {betterDescription+= "For personal use"
+    } else if (
+        answer.option == "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i))) {
+        betterDescription+= "For business use"
+
+
+
+*/
+/*
+const businessPlans = ["Essential", "Advanced", "Unlimited"]
+const privatePlans = ["Free", "Revolutionary", "Legend"]
+const betterDescription = []
+
+switch(answer.option) {
+    case "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i)):
+        betterDescription += "For personal use";
+        break;
+
+    case "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i)):
+        betterDescription += "For business use";
+        break;
+
+    case "1-15" :
+        betterDescription += "15 extra email addresses";
+        break;
+
+    case "16-30":
+        betterDescription += "30 extra email addresses"
+        break;
+
+
+}
+*/
