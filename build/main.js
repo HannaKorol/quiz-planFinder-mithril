@@ -1796,15 +1796,10 @@
             description += `<p style="font-weight: bold; color: #410002;">\u2705 This plan includes what you selected:</p>`;
             description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("")}</ul>`;
           }
-          const allKeys = Object.keys(planDetails[topPlanName]).filter((k) => k !== "usage");
-          for (const key of allKeys) {
-            const feature = planDetails[topPlanName][key];
-            if (!feature)
-              continue;
-            const lowerIncluded = [...included].map((s) => s.toLowerCase());
-            const lowerMissing = [...missing].map((s) => s.toLowerCase());
-            const isAlreadyListed = lowerIncluded.includes(feature.toLowerCase()) || lowerMissing.includes(feature.toLowerCase());
-            if (!isAlreadyListed) {
+          const allFeatures = Object.entries(planDetails[topPlanName]).filter(([key]) => key !== "usage").map(([, value]) => typeof value === "string" ? value : null).filter((v) => v !== null);
+          for (const feature of allFeatures) {
+            const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
+            if (!alreadyMentioned) {
               extra.add(feature);
             }
           }

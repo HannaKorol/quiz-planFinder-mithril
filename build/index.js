@@ -234,33 +234,32 @@ const Questionnaire = {
                     description += `<ul style="list-style-type: none;"></ul>`
                 }*/
                 // Сравниваем все фичи из PlanDetails c included + missing
-                /*  const allFeatures = Object.entries(planDetails[topPlanName])                                //need array from the object!
-                      .filter(([key]) => key !== "usage") //исключаем usage
-                      .map(([, value]) => typeof value === "string" ? value : null)
-                      .filter((v): v is string => v !== null);
-  
-  
-                  for (const feature of allFeatures) {
-                      const alreadyMentioned = [...included, ...missing].some(txt =>
-                          feature.toLowerCase().includes(txt.toLowerCase())
-                      );
-  
-                      if (!alreadyMentioned) {
-                          extra.add(feature);
-                      }
-                  }*/
-                const allKeys = Object.keys(planDetails[topPlanName]).filter(k => k !== "usage");
-                for (const key of allKeys) {
-                    const feature = planDetails[topPlanName][key];
-                    if (!feature)
-                        continue;
-                    const lowerIncluded = [...included].map(s => s.toLowerCase());
-                    const lowerMissing = [...missing].map(s => s.toLowerCase());
-                    const isAlreadyListed = lowerIncluded.includes(feature.toLowerCase()) || lowerMissing.includes(feature.toLowerCase());
-                    if (!isAlreadyListed) {
+                const allFeatures = Object.entries(planDetails[topPlanName]) //need array from the object!
+                    .filter(([key]) => key !== "usage") //исключаем usage
+                    .map(([, value]) => typeof value === "string" ? value : null)
+                    .filter((v) => v !== null);
+                for (const feature of allFeatures) {
+                    const alreadyMentioned = [...included, ...missing].some(txt => feature.toLowerCase().includes(txt.toLowerCase()));
+                    if (!alreadyMentioned) {
                         extra.add(feature);
                     }
                 }
+                /*  const allKeys = Object.keys(planDetails[topPlanName]).filter(k => k !== "usage");
+  
+                  for (const key of allKeys) {
+                      const feature = planDetails[topPlanName][key as keyof PlanFeatures];
+                      if (!feature) continue;
+  
+                      const lowerIncluded = [...included].map(s => s.toLowerCase());
+                      const lowerMissing = [...missing].map(s => s.toLowerCase());
+  
+                      const isAlreadyListed = lowerIncluded.includes(feature.toLowerCase()) || lowerMissing.includes(feature.toLowerCase());
+  
+                      if (!isAlreadyListed) {
+                          extra.add(feature);
+                      }
+                  }
+  */
                 if (extra.size > 0) {
                     description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">➕ Extra features:</p>`;
                     description += `<ul style="list-style-type: none;">${[...extra].map(i => `<li style="color: black;"> ${i}</li>`).join("")}</ul>`;

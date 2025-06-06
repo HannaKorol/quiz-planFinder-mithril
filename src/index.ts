@@ -313,7 +313,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 
 
                 // Сравниваем все фичи из PlanDetails c included + missing
-              /*  const allFeatures = Object.entries(planDetails[topPlanName])                                //need array from the object!
+                const allFeatures = Object.entries(planDetails[topPlanName])                                //need array from the object!
                     .filter(([key]) => key !== "usage") //исключаем usage
                     .map(([, value]) => typeof value === "string" ? value : null)
                     .filter((v): v is string => v !== null);
@@ -327,10 +327,10 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     if (!alreadyMentioned) {
                         extra.add(feature);
                     }
-                }*/
+                }
 
 
-                const allKeys = Object.keys(planDetails[topPlanName]).filter(k => k !== "usage");
+              /*  const allKeys = Object.keys(planDetails[topPlanName]).filter(k => k !== "usage");
 
                 for (const key of allKeys) {
                     const feature = planDetails[topPlanName][key as keyof PlanFeatures];
@@ -345,7 +345,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         extra.add(feature);
                     }
                 }
-
+*/
 
                 if (extra.size > 0) {
                     description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">➕ Extra features:</p>`;
