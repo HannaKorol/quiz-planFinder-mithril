@@ -49,8 +49,14 @@ const questions: Question[] = [
     {
         question: "How do you intend to use this mailbox — for business or personal purposes?",
         choices: [
-            {option: "For business purposes", plans: {Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1}},
-            {option: "For personal use", plans: {Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0}},
+            {
+                option: "For business purposes",
+                plans: {Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1}
+            },
+            {
+                option: "For personal use",
+                plans: {Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0}
+            },
             {option: "I haven’t decided yet.", plans: {Free: 1}}
         ],
     },
@@ -123,16 +129,16 @@ interface PlanFeatures {
 
 const planDetails: Record<PlanName, PlanFeatures> = {
     Free: {
-        usage: "👤 For personal use",
+        usage: "for personal use",
         /*emails: "✉ No additional email addresses",*/
         storage: "🗄  1 GB storage",
         /*domains: "No custom domains",*/
         labels: "🏷️ 3 labels",
         calendars: "🗓 One calendar",
-       /* family: "No Family option"*/
+        /* family: "No Family option"*/
     },
     Revolutionary: {
-        usage: "👤 For personal use",
+        usage: "for personal use",
         emails: "✉️ 15 additional email addresses",
         storage: "🗄  20 GB storage",
         domains: "🌐 3 custom domains",
@@ -141,7 +147,7 @@ const planDetails: Record<PlanName, PlanFeatures> = {
         family: "🫂 Family option"
     },
     Legend: {
-        usage: "👤 For personal use",
+        usage: "for personal use",
         emails: "✉️ 30 additional email addresses",
         storage: "🗄  500 GB storage",
         domains: "🌐 10 custom domains",
@@ -150,7 +156,7 @@ const planDetails: Record<PlanName, PlanFeatures> = {
         family: "🫂 Family option"
     },
     Essential: {
-        usage: "👔 For business purposes",
+        usage: "for business purposes",
         emails: "✉️ 15 additional email addresses",
         storage: "🗄  50 GB storage",
         domains: "🌐 3 custom domains",
@@ -158,7 +164,7 @@ const planDetails: Record<PlanName, PlanFeatures> = {
         labels: "🏷️ Unlimited labels",
     },
     Advanced: {
-        usage: "👔 For business purposes",
+        usage: "for business purposes",
         emails: "✉️ 30 additional addresses",
         storage: "🗄  500 GB storage",
         domains: "🌐 10 custom domains",
@@ -166,7 +172,7 @@ const planDetails: Record<PlanName, PlanFeatures> = {
         labels: "🏷️ Unlimited labels",
     },
     Unlimited: {
-        usage: "👔 For business purposes",
+        usage: "for business purposes",
         emails: "✉️ 30 additional addresses",
         storage: "🗄  1000 GB storage",
         domains: "🌐 Unlimited domains",
@@ -252,26 +258,82 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 selectedOptions.add(answer.option);
             }
 
+            const neutralAnswers = new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]);
+
+            for (const answer of answers) {
+                if(neutralAnswers.has(answer.option)) {
+                    for(const plan of topPlans) {
+                        const details = planDetails[plan as PlanName];
+                        if(!details) continue;
+
+                        if(answer.option === "No, I don’t want to" && details.emails ) {
+                            answer.option = details.emails; }
+                        else if (answer.option === "No, I don't need" && details.domains) {
+                            answer.option = details.domains;
+                        }
+                    }
+                }
+            }
 
             for (let i = 0; i < topPlans.length; i++) {                                    //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
-                const planName = topPlans[i];
-                if (!planDetails[planName as PlanName]) continue;             //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
+                const planName = topPlans[i] as PlanName;
+                const planData = planDetails[planName];
+                if (!planData) continue;             //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
 
                 const included = new Set<string>();                                    //4. Создаем контейнеры для:   //included,
                 const extra: string[] = [];                                                                            //extra,
                 const missing: string[] = [];                                                                              //missing
 
 
-                for (const answer of answers) {                                     //5. Сравним выбранное пользователем с тем, что включает тариф
-                    if (answer.plans[planName] > 0) {
+                for (const answer of answers) {      //5. Сравним выбранное пользователем с тем, что включает тариф
+                    const isNeutral = neutralAnswers.has(answer.option);
+                    const isIncluded = answer.plans[planName] > 0;
+
+
+                    if(answer.option === "I haven’t decided yet.") continue;
+
+
+                    if (isIncluded) {
                         included.add(answer.option);                               //5.1. Добавляем опцию  в included если она была выбрана-> пример included = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar" ]
-                    } else {
+                    } else if(!isNeutral){
                         missing.push(answer.option);   //???                         //5.2. Добавляем опцию в missing если она не была выбрана -> пример missing =
                     }
                 }
 
-                // Находим всё, что включено в тариф, но пользователь об этом не просил
-                const allFeatures = Object.values(planDetails[planName /*as PlanName*/]);                                 //need array from the object!
+                //Добавляем usage как отдельный блок
+                let description = "";
+                if (i == 0) {
+                    description += `<p style="color: #410002; margin-bottom: 10px;">🎯 ${topPlans[0]} is a recommended plan for you.</p>`;
+                } else if (i == 1) {
+                    description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[1]} might be a good alternative for you.</p>`;
+                } else {
+                    description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
+                }
+
+                console.log(topPlans)
+
+                if(planData.usage) {
+                    const plainUsage = planData.usage
+                        /*.replace("👤", "for personal use")*/
+                        .replace("👔", "for business purposes");
+                    description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${plainUsage.trim()}</strong>.</p>`;
+                }
+
+
+                if (included.size > 0) {
+                    description += `<p style="font-weight: bold; color: #410002;">✅ Because it includes what you selected:</p>`;
+                    description += `<ul style="list-style-type: none;">`;
+                    description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
+                    description += `</ul>`
+
+                }
+
+
+                // Сравниваем все фичи из PlanDetails c included + missing
+                const allFeatures = Object.entries(planData)                                //need array from the object!
+                    .filter(([key]) => key !== "usage") //исключаем usage
+                    .map(([, value]) => value);
+
                 for (const feature of allFeatures) {
                     const alreadyMentioned = [...included, ...missing].some(txt =>
                         feature.toLowerCase().includes(txt.toLowerCase())
@@ -281,49 +343,32 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     }
                 }
 
-                // Составим финальное описание
-
-
-                let description = "";
-                if (i == 0) {
-                    description += `<p style="color: #410002; margin-bottom: 10px;">🎯 ${topPlans[0]} is a recommended plan for you.</p>`;
-                } else if  (i == 1) {
-                    description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[1]} might be a good alternative for you.</p>`;
-                } else {
-                    description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
-                }
-
-console.log(topPlans)
-
-                if (included.size > 0) {
-                    description += `<p style="font-weight: bold; color: #410002;">✅ Because it includes what you selected:</p>`;
-                       description +=`<ul style="list-style-type: none;">`;
-                    description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
-                    description += `</ul>`
-
-                }
 
                 if (extra.length > 0) {
                     description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">🎁 Also includes additional features:</p>`;
                     description += `<ul style="list-style-type: none;">`
-                        description += extra.map(i => `<li style="color: black;"> ${i}</li>`).join("");
+                    description += extra.map(i => `<li style="color: black;"> ${i}</li>`).join("");
                     description += `</ul>`
 
                 }
 
                 if (missing.length > 0) {
                     description += `<p style="color: red; margin-bottom: 10px;">❕ This plan does not include:</p><ul style="list-style-type: none;">`;
-                        description+= missing.map(i => `<li style="color: black;">❌ ${i}</li>`).join("");
+                    description += missing.map(i => `<li style="color: black;">❌ ${i}</li>`).join("");
                     description += `</ul>`
 
-                   /* description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;*/
+
+
+
+                    /* description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;*/
                     if (i == 0) {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
                     } else if (i == 1) {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]}), they might include these.</p>`;
                     } else {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
-                    } }
+                    }
+                }
 
                 descriptions[planName as PlanName] = description;
             }
@@ -331,7 +376,6 @@ console.log(topPlans)
 
             return descriptions;
         };
-
 
 
     },
@@ -347,8 +391,6 @@ console.log(topPlans)
             const topPlans = state.evaluateTopPlans(state.answers);                                                       //TOP PLANS: результат работы функции "список рекомендуемых планов"
             state.topPlans = topPlans;                                                                                            //здесь результат (topPlans) сохраняется в состояние (state) — в новое свойство topPlans. Проще говоря: Мы сохраняем список подходящих планов в объект состояния, чтобы использовать его дальше (например, показать пользователю).
             const planDescriptions = state.generatePlanDescriptions(state.answers, topPlans);                   //DESCRIPTION: результат работы функции "planDescriptions"
-
-
 
 
             //---------------------------Logic for the carousel -------------------------------------//
@@ -412,9 +454,7 @@ console.log(topPlans)
             //-----------------------------------------------------------------------------------------------//
 
 
-
-
-       //----------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
+            //----------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
 
             return showResultContainer && m("div", {
                 style: {
@@ -432,7 +472,7 @@ console.log(topPlans)
                 /*m("p", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
                 }, /!*state.plan*!/),*/
-              //-----------------------------added carousel here----------------------------------------//
+                //-----------------------------added carousel here----------------------------------------//
                 m("div", {
                     style: {
                         width: "100%",
@@ -472,7 +512,7 @@ console.log(topPlans)
                             //----------------------------------------------------------------------------------------------------------------------------//
 
                         },
-                   //---------------------------------Top plans on the final pages: 1 best and 2 alternatives--------------------------------------//
+                        //---------------------------------Top plans on the final pages: 1 best and 2 alternatives--------------------------------------//
                         [
                             m("div", {                                                                  //right side "alternative"
                                 style: getStyle(0),

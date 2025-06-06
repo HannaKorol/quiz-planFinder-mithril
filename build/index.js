@@ -4,8 +4,14 @@ const questions = [
     {
         question: "How do you intend to use this mailbox — for business or personal purposes?",
         choices: [
-            { option: "For business purposes", plans: { Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1 } },
-            { option: "For personal use", plans: { Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0 } },
+            {
+                option: "For business purposes",
+                plans: { Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1 }
+            },
+            {
+                option: "For personal use",
+                plans: { Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0 }
+            },
             { option: "I haven’t decided yet.", plans: { Free: 1 } }
         ],
     },
@@ -66,7 +72,7 @@ const questions = [
 ];
 const planDetails = {
     Free: {
-        usage: "👤 For personal use",
+        usage: "for personal use",
         /*emails: "✉ No additional email addresses",*/
         storage: "🗄  1 GB storage",
         /*domains: "No custom domains",*/
@@ -75,7 +81,7 @@ const planDetails = {
         /* family: "No Family option"*/
     },
     Revolutionary: {
-        usage: "👤 For personal use",
+        usage: "for personal use",
         emails: "✉️ 15 additional email addresses",
         storage: "🗄  20 GB storage",
         domains: "🌐 3 custom domains",
@@ -84,7 +90,7 @@ const planDetails = {
         family: "🫂 Family option"
     },
     Legend: {
-        usage: "👤 For personal use",
+        usage: "for personal use",
         emails: "✉️ 30 additional email addresses",
         storage: "🗄  500 GB storage",
         domains: "🌐 10 custom domains",
@@ -93,7 +99,7 @@ const planDetails = {
         family: "🫂 Family option"
     },
     Essential: {
-        usage: "👔 For business purposes",
+        usage: "for business purposes",
         emails: "✉️ 15 additional email addresses",
         storage: "🗄  50 GB storage",
         domains: "🌐 3 custom domains",
@@ -101,7 +107,7 @@ const planDetails = {
         labels: "🏷️ Unlimited labels",
     },
     Advanced: {
-        usage: "👔 For business purposes",
+        usage: "for business purposes",
         emails: "✉️ 30 additional addresses",
         storage: "🗄  500 GB storage",
         domains: "🌐 10 custom domains",
@@ -109,7 +115,7 @@ const planDetails = {
         labels: "🏷️ Unlimited labels",
     },
     Unlimited: {
-        usage: "👔 For business purposes",
+        usage: "for business purposes",
         emails: "✉️ 30 additional addresses",
         storage: "🗄  1000 GB storage",
         domains: "🌐 Unlimited domains",
@@ -182,30 +188,43 @@ const Questionnaire = {
             for (const answer of answers) { // selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar"]
                 selectedOptions.add(answer.option);
             }
+            const neutralAnswers = new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]);
+            for (const answer of answers) {
+                if (neutralAnswers.has(answer.option)) {
+                    for (const plan of topPlans) {
+                        const details = planDetails[plan];
+                        if (!details)
+                            continue;
+                        if (answer.option === "No, I don’t want to" && details.emails) {
+                            answer.option = details.emails;
+                        }
+                        else if (answer.option === "No, I don't need" && details.domains) {
+                            answer.option = details.domains;
+                        }
+                    }
+                }
+            }
             for (let i = 0; i < topPlans.length; i++) { //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
                 const planName = topPlans[i];
-                if (!planDetails[planName])
+                const planData = planDetails[planName];
+                if (!planData)
                     continue; //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
                 const included = new Set(); //4. Создаем контейнеры для:   //included,
                 const extra = []; //extra,
                 const missing = []; //missing
                 for (const answer of answers) { //5. Сравним выбранное пользователем с тем, что включает тариф
-                    if (answer.plans[planName] > 0) {
+                    const isIncluded = answer.plans[planName] > 0;
+                    const isNeutral = neutralAnswers.has(answer.option);
+                    if (answer.option === "I haven’t decided yet.")
+                        continue;
+                    if (isIncluded) {
                         included.add(answer.option); //5.1. Добавляем опцию  в included если она была выбрана-> пример included = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar" ]
                     }
-                    else {
+                    else if (!isNeutral) {
                         missing.push(answer.option); //???                         //5.2. Добавляем опцию в missing если она не была выбрана -> пример missing =
                     }
                 }
-                // Находим всё, что включено в тариф, но пользователь об этом не просил
-                const allFeatures = Object.values(planDetails[planName /*as PlanName*/]); //need array from the object!
-                for (const feature of allFeatures) {
-                    const alreadyMentioned = [...included, ...missing].some(txt => feature.toLowerCase().includes(txt.toLowerCase()));
-                    if (!alreadyMentioned) {
-                        extra.push(feature);
-                    }
-                }
-                // Составим финальное описание
+                //Добавляем usage как отдельный блок
                 let description = "";
                 if (i == 0) {
                     description += `<p style="color: #410002; margin-bottom: 10px;">🎯 ${topPlans[0]} is a recommended plan for you.</p>`;
@@ -217,11 +236,27 @@ const Questionnaire = {
                     description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
                 }
                 console.log(topPlans);
+                if (planData.usage) {
+                    const plainUsage = planData.usage
+                        /*.replace("👤", "for personal use")*/
+                        .replace("👔", "for business purposes");
+                    description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${plainUsage.trim()}</strong>.</p>`;
+                }
                 if (included.size > 0) {
                     description += `<p style="font-weight: bold; color: #410002;">✅ Because it includes what you selected:</p>`;
                     description += `<ul style="list-style-type: none;">`;
                     description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
                     description += `</ul>`;
+                }
+                // Сравниваем все фичи из PlanDetails c included + missing
+                const allFeatures = Object.entries(planData) //need array from the object!
+                    .filter(([key]) => key !== "usage") //исключаем usage
+                    .map(([, value]) => value);
+                for (const feature of allFeatures) {
+                    const alreadyMentioned = [...included, ...missing].some(txt => feature.toLowerCase().includes(txt.toLowerCase()));
+                    if (!alreadyMentioned) {
+                        extra.push(feature);
+                    }
                 }
                 if (extra.length > 0) {
                     description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">🎁 Also includes additional features:</p>`;

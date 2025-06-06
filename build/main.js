@@ -1601,8 +1601,14 @@
     {
       question: "How do you intend to use this mailbox \u2014 for business or personal purposes?",
       choices: [
-        { option: "For business purposes", plans: { Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1 } },
-        { option: "For personal use", plans: { Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0 } },
+        {
+          option: "For business purposes",
+          plans: { Free: 0, Revolutionary: 0, Legend: 0, Essential: 1, Advanced: 1, Unlimited: 1 }
+        },
+        {
+          option: "For personal use",
+          plans: { Free: 1, Revolutionary: 1, Legend: 1, Essential: 0, Advanced: 0, Unlimited: 0 }
+        },
         { option: "I haven\u2019t decided yet.", plans: { Free: 1 } }
       ]
     },
@@ -1663,7 +1669,7 @@
   ];
   var planDetails = {
     Free: {
-      usage: "\u{1F464} For personal use",
+      usage: "for personal use",
       /*emails: "✉ No additional email addresses",*/
       storage: "\u{1F5C4}  1 GB storage",
       /*domains: "No custom domains",*/
@@ -1672,7 +1678,7 @@
       /* family: "No Family option"*/
     },
     Revolutionary: {
-      usage: "\u{1F464} For personal use",
+      usage: "for personal use",
       emails: "\u2709\uFE0F 15 additional email addresses",
       storage: "\u{1F5C4}  20 GB storage",
       domains: "\u{1F310} 3 custom domains",
@@ -1681,7 +1687,7 @@
       family: "\u{1FAC2} Family option"
     },
     Legend: {
-      usage: "\u{1F464} For personal use",
+      usage: "for personal use",
       emails: "\u2709\uFE0F 30 additional email addresses",
       storage: "\u{1F5C4}  500 GB storage",
       domains: "\u{1F310} 10 custom domains",
@@ -1690,7 +1696,7 @@
       family: "\u{1FAC2} Family option"
     },
     Essential: {
-      usage: "\u{1F454} For business purposes",
+      usage: "for business purposes",
       emails: "\u2709\uFE0F 15 additional email addresses",
       storage: "\u{1F5C4}  50 GB storage",
       domains: "\u{1F310} 3 custom domains",
@@ -1698,7 +1704,7 @@
       labels: "\u{1F3F7}\uFE0F Unlimited labels"
     },
     Advanced: {
-      usage: "\u{1F454} For business purposes",
+      usage: "for business purposes",
       emails: "\u2709\uFE0F 30 additional addresses",
       storage: "\u{1F5C4}  500 GB storage",
       domains: "\u{1F310} 10 custom domains",
@@ -1706,7 +1712,7 @@
       labels: "\u{1F3F7}\uFE0F Unlimited labels"
     },
     Unlimited: {
-      usage: "\u{1F454} For business purposes",
+      usage: "for business purposes",
       emails: "\u2709\uFE0F 30 additional addresses",
       storage: "\u{1F5C4}  1000 GB storage",
       domains: "\u{1F310} Unlimited domains",
@@ -1764,28 +1770,38 @@
         for (const answer of answers) {
           selectedOptions.add(answer.option);
         }
+        const neutralAnswers = /* @__PURE__ */ new Set(["I haven\u2019t decided yet.", "No, I don't need", "No, I don\u2019t want to"]);
+        for (const answer of answers) {
+          if (neutralAnswers.has(answer.option)) {
+            for (const plan of topPlans) {
+              const details = planDetails[plan];
+              if (!details)
+                continue;
+              if (answer.option === "No, I don\u2019t want to" && details.emails) {
+                answer.option = details.emails;
+              } else if (answer.option === "No, I don't need" && details.domains) {
+                answer.option = details.domains;
+              }
+            }
+          }
+        }
         for (let i = 0; i < topPlans.length; i++) {
           const planName = topPlans[i];
-          if (!planDetails[planName])
+          const planData = planDetails[planName];
+          if (!planData)
             continue;
           const included = /* @__PURE__ */ new Set();
           const extra = [];
           const missing = [];
           for (const answer of answers) {
-            if (answer.plans[planName] > 0) {
+            const isIncluded = answer.plans[planName] > 0;
+            const isNeutral = neutralAnswers.has(answer.option);
+            if (answer.option === "I haven\u2019t decided yet.")
+              continue;
+            if (isIncluded) {
               included.add(answer.option);
-            } else {
+            } else if (!isNeutral) {
               missing.push(answer.option);
-            }
-          }
-          const allFeatures = Object.values(planDetails[
-            planName
-            /*as PlanName*/
-          ]);
-          for (const feature of allFeatures) {
-            const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
-            if (!alreadyMentioned) {
-              extra.push(feature);
             }
           }
           let description = "";
@@ -1797,11 +1813,22 @@
             description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F4E6} ${topPlans[2]} might be a good alternative for you.</p>`;
           }
           console.log(topPlans);
+          if (planData.usage) {
+            const plainUsage = planData.usage.replace("\u{1F454}", "for business purposes");
+            description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${plainUsage.trim()}</strong>.</p>`;
+          }
           if (included.size > 0) {
             description += `<p style="font-weight: bold; color: #410002;">\u2705 Because it includes what you selected:</p>`;
             description += `<ul style="list-style-type: none;">`;
             description += [...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("");
             description += `</ul>`;
+          }
+          const allFeatures = Object.entries(planData).filter(([key]) => key !== "usage").map(([, value]) => value);
+          for (const feature of allFeatures) {
+            const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
+            if (!alreadyMentioned) {
+              extra.push(feature);
+            }
           }
           if (extra.length > 0) {
             description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u{1F381} Also includes additional features:</p>`;
