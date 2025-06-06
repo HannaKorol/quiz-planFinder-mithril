@@ -15,36 +15,19 @@ const questions = [
             { option: "I haven’t decided yet.", plans: { Free: 1 } }
         ],
     },
-    /* {
-         question: "Would you like to add additional email addresses to this mailbox? If yes, how many do you require?",
-         choices: [
-             {option: "Yes, I’d like to", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
-             {option: "No, I don’t want to", plans: {Free: 1}}
-         ],
-     },*/
     {
         question: "Would you like to add additional email addresses to your mailbox? If so, how many?",
         choices: [
-            { option: "1-15 additional email addresses", plans: { Essential: 1, Revolutionary: 1 } },
-            { option: "16-30 additional email addresses", plans: { Legend: 1, Unlimited: 1, Advanced: 1, } },
+            { option: "15 additional email addresses", plans: { Essential: 1, Revolutionary: 1 } },
+            { option: "30 additional email addresses", plans: { Legend: 1, Unlimited: 1, Advanced: 1, } },
             { option: "No, I don’t want to", plans: { Free: 1 } },
         ],
     },
-    /* {
-         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?If yes, how many would you like to configure?",
-         choices: [
-             {
-                 option: "Yes, please",
-                 plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
-             },
-             {option: "No, I don't need", plans: {Free: 1}}
-         ],
-     },*/
     {
         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox? If yes, how many would you like to configure?",
         choices: [
-            { option: "1-3 custom domains", plans: { Essential: 1, Revolutionary: 1 } },
-            { option: "4-10 custom domains", plans: { Legend: 1, Advanced: 1 } },
+            { option: "3 custom domains", plans: { Essential: 1, Revolutionary: 1 } },
+            { option: "10 custom domains", plans: { Legend: 1, Advanced: 1 } },
             { option: "Unlimited domains", plans: { Unlimited: 1 } },
             { option: "No, I don't need", plans: { Free: 1 } }
         ],
@@ -63,10 +46,10 @@ const questions = [
         question: "What is your estimated email storage requirement?",
         choices: [
             { option: "1 GB storage", plans: { Free: 1 } },
-            { option: "2-20 GB storage", plans: { Revolutionary: 1 } },
-            { option: "21-50 GB storage", plans: { Essential: 1 } },
-            { option: "51-500 GB storage", plans: { Legend: 1, Advanced: 1 } },
-            { option: "501-1000 GB storage", plans: { Unlimited: 1 } }
+            { option: "20 GB storage", plans: { Revolutionary: 1 } },
+            { option: "50 GB storage", plans: { Essential: 1 } },
+            { option: "500 GB storage", plans: { Legend: 1, Advanced: 1 } },
+            { option: "1000 GB storage", plans: { Unlimited: 1 } }
         ],
     }
 ];
@@ -74,7 +57,7 @@ const planDetails = {
     Free: {
         usage: "for personal use",
         /*emails: "✉ No additional email addresses",*/
-        storage: "🗄  1 GB storage",
+        storage: "🗄 1 GB storage",
         /*domains: "No custom domains",*/
         labels: "🏷️ 3 labels",
         calendars: "🗓 One calendar",
@@ -83,7 +66,7 @@ const planDetails = {
     Revolutionary: {
         usage: "for personal use",
         emails: "✉️ 15 additional email addresses",
-        storage: "🗄  20 GB storage",
+        storage: "🗄 20 GB storage",
         domains: "🌐 3 custom domains",
         calendars: "🗓 Unlimited calendars",
         labels: "🏷️ Unlimited labels",
@@ -117,7 +100,7 @@ const planDetails = {
     Unlimited: {
         usage: "for business purposes",
         emails: "✉️ 30 additional addresses",
-        storage: "🗄  1000 GB storage",
+        storage: "🗄 1000 GB storage",
         domains: "🌐 Unlimited domains",
         calendars: "🗓 Unlimited calendars",
         labels: "🏷️ Unlimited labels",
@@ -152,24 +135,22 @@ const Questionnaire = {
             for (const answer of answers) { //1.Проходим по каждому ответу - answers:Choice[]= [{option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}}]
                 for (const plan in answer.plans) { //2. Проходим по каждому плану в ответах - например Essential: 1
                     if (plan in score) { //3. проверяем: есть ли такое имя тарифа в объекте score.
-                        score[plan] += answer.plans[plan]; // Добавляем баллы текущего ответа к общему счёту для этого тарифа.
+                        score[plan] += answer.plans[plan]; //4. Добавляем баллы текущего ответа к общему счёту для этого тарифа.
                     }
                 }
             }
             //-------------------------------------------------------------------Определяем кто является победителем по опросу------------------------------------------------------------//
-            const sorted = Object.entries(score) //1.Преобразует объект в массив пар с Object.entries() как [ключ, значение]: [["Free", 3], ["Revolutionary", 2]..]
-                .sort((a, b) => b[1] - a[1]) //2.Сортирует массив по убыванию очков (то есть по второму элементу в паре):  (.sort() — это встроенный метод массива в JavaScript, который сортирует элементы массива по заданному правилу. a - это например ["Free", 3] и b - может например быть ["Legend", 5])
-                .map(entry => entry[0]); //3.Оставляет только названия планов (первый элемент в паре): ["Free", "Revolutionary" ...]
-            return sorted.slice(0, 3); //4.Обрезаем массив, чтобы оставить только первые 3 имени.
+            const sorted = Object.entries(score) //1. Преобразует объект в массив пар с Object.entries() как [ключ, значение]: [["Free", 3], ["Revolutionary", 2]..]
+                .sort((a, b) => b[1] - a[1]) //2. Сортирует массив по убыванию очков (то есть по второму элементу в паре):  (.sort() — это встроенный метод массива в JavaScript, который сортирует элементы массива по заданному правилу. a - это например ["Free", 3] и b - может например быть ["Legend", 5])
+                .map(entry => entry[0]); //3. Оставляет только названия планов (первый элемент в паре): ["Free", "Revolutionary" ...]
+            return sorted.slice(0, 3); //4. Обрезаем массив, чтобы оставить только первые 3 имени.
             //--------------------------------------------------------------------------------------------------------------------------------------------------//
-            /* const result = Object.entries(score).reduce((max, curr) => curr[1] > max[1] ? curr : max);
-             return result[0]; //название тарифа*/
         };
         //--------------------------------------------------------------------Final page: function to switch between "prev" and "next" or number------------------------------------------------//
         state.moveToSelected = (directionOrIndex) => {
-            let newIndex = vnode.state.selectedIndex;
-            if (directionOrIndex === "prev") {
-                newIndex = Math.max(0, newIndex - 1);
+            let newIndex = vnode.state.selectedIndex; //2. Записываем выбранный пользователем путь в newIndex.
+            if (directionOrIndex === "prev") { //3. Если выбранный путь "prev" то
+                newIndex = Math.max(0, newIndex - 1); // меняем наш
             }
             else if (directionOrIndex == "next") {
                 newIndex = Math.min(2, newIndex + 1);
@@ -183,48 +164,53 @@ const Questionnaire = {
         //-----------------------------------------------------------Function for the description generation----------------------------------------------------------------------------------------------//
         state.generatePlanDescriptions = (answers, topPlans) => {
             const descriptions = {};
-            //1.Соберём option, что выбрал пользователь в selectedOptions например const selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar" ]
-            const selectedOptions = new Set();
-            for (const answer of answers) { // selectedOptions = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar"]
-                selectedOptions.add(answer.option);
-            }
-            const neutralAnswers = new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]);
-            for (const answer of answers) {
-                if (neutralAnswers.has(answer.option)) {
-                    for (const plan of topPlans) {
-                        const details = planDetails[plan];
-                        if (!details)
-                            continue;
-                        if (answer.option === "No, I don’t want to" && details.emails) {
-                            answer.option = details.emails;
-                        }
-                        else if (answer.option === "No, I don't need" && details.domains) {
-                            answer.option = details.domains;
+            //----------------------------------------------------2. Обработка ответов "I haven’t decided yet.", "No, I don't need", "No, I don’t want to" --------------------------------------------------------------------------------//
+            const neutralAnswers = new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]); //1.Создаем сет ответов new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"].
+            /*for (const answer of answers) {                                                                            //2. Проходим по ответах пользователя
+                if(neutralAnswers.has(answer.option)) {                                                                //3. Если наш сет ответов(neutralAnswers) имеют тот же ответ, что дал пользователь (answer.option), то
+                    for(const plan of topPlans) {                                                                                //4. Проходим по каждому плану в топ планах, что у нас получился по ответах пользователя и
+                        if(!planDetails[plan]) continue;                                                                                 //5. Если нет карточки плана в planDetails, то игнорим и идем дальше
+
+                        if(answer.option === "No, I don’t want to" && planDetails[plan].emails ) {                                       //6. Если ответ "No, I don’t want to" и карточка плана в planDetails имеет emails
+                            answer.option = planDetails[plan].emails; }
+                        else if (answer.option === "No, I don't need" && planDetails[plan].domains) {
+                            answer.option = planDetails[plan].domains;
                         }
                     }
                 }
-            }
-            for (let i = 0; i < topPlans.length; i++) { //2. Проверяем какие тарифные планы у нас в топ 3 по опросу нп. topPlans:PlanName[] = ["Free", "Revolutionary", "Advanced"]
-                const planName = topPlans[i];
-                const planData = planDetails[planName];
-                if (!planData)
-                    continue; //3. Проверяем или эти топ 3 плана у нас в planDetails и если нет то продолжаем проверку.
+            }*/
+            for (let i = 0; i < topPlans.length; i++) { //2. Проходим по topPlans например:PlanName[] = ["Free", "Revolutionary", "Advanced"]
+                const topPlanName = topPlans[i]; //(получаем имя плана)
+                if (!planDetails[topPlanName])
+                    continue; //3. Проверяем или есть один из планов в нашей карточки планов planDetails.
                 const included = new Set(); //4. Создаем контейнеры для:   //included,
-                const extra = []; //extra,
-                const missing = []; //missing
-                for (const answer of answers) { //5. Сравним выбранное пользователем с тем, что включает тариф
-                    const isIncluded = answer.plans[planName] > 0;
-                    const isNeutral = neutralAnswers.has(answer.option);
+                const extra = new Set(); //extra,
+                const missing = new Set(); //missing
+                for (const answer of answers) { //5. Проходим по ответах
+                    const isNeutral = neutralAnswers.has(answer.option); //6. Есть ли среди (["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]) ответ пользователя.
+                    const isIncluded = answer.plans[topPlanName] > 0; //7. Есть ли среди ответов наш топ план ["Free", "Revolutionary", "Advanced"]
                     if (answer.option === "I haven’t decided yet.")
+                        continue; //8. Если ответ пользователя "I haven’t decided yet." - Игнорируем
+                    if (isNeutral && isIncluded) { //9. Если 6. и 7.
+                        if (answer.option === "No, I don’t want to" && planDetails[topPlanName].emails) { //10. Есть ли ответ "No, I don’t want to" и emails в топ плане в его карточке.
+                            extra.add(planDetails[topPlanName].emails); //11. Тогда добавляем колисечтво емейлов в карточке топ плана в екстра
+                        }
+                        else if (answer.option === "No, I don't need" && planDetails[topPlanName].domains) { //12. Также если ответ "No, I don't need" и в карточке топ плана есть домены тогда
+                            extra.add(planDetails[topPlanName].domains); //13. добавить домены этого топ плана в екстра
+                        }
                         continue;
-                    if (isIncluded) {
-                        included.add(answer.option); //5.1. Добавляем опцию  в included если она была выбрана-> пример included = [option: "I haven’t decided yet.", option: "No, I don’t want to", option: "No, I don't need", option: "One calendar" ]
                     }
-                    else if (!isNeutral) {
-                        missing.push(answer.option); //???                         //5.2. Добавляем опцию в missing если она не была выбрана -> пример missing =
+                    if (isNeutral && !isIncluded) {
+                        continue;
+                    }
+                    if (!isNeutral && isIncluded) {
+                        included.add(answer.option);
+                    }
+                    if (!isNeutral && !isIncluded) {
+                        missing.add(answer.option);
                     }
                 }
-                //Добавляем usage как отдельный блок
+                //-------------------------------------------------------------------Добавляем usage как отдельный блок-----------------------------------------------------------------------------------------------------//
                 let description = "";
                 if (i == 0) {
                     description += `<p style="color: #410002; margin-bottom: 10px;">🎯 ${topPlans[0]} is a recommended plan for you.</p>`;
@@ -235,40 +221,55 @@ const Questionnaire = {
                 else {
                     description += `<p style="color: #410002; margin-bottom: 10px;">📦 ${topPlans[2]} might be a good alternative for you.</p>`;
                 }
-                console.log(topPlans);
-                if (planData.usage) {
-                    const plainUsage = planData.usage
-                        /*.replace("👤", "for personal use")*/
-                        .replace("👔", "for business purposes");
-                    description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${plainUsage.trim()}</strong>.</p>`;
+                //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                if (planDetails[topPlanName].usage) {
+                    planDetails[topPlanName].usage.replace("👔", "for business purposes");
+                    description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${planDetails[topPlanName].usage.trim()}</strong>.</p>`;
                 }
+                //-------------------------------------------------INCLUDED, EXTRA, MISSING--------------------------------------------------//
                 if (included.size > 0) {
-                    description += `<p style="font-weight: bold; color: #410002;">✅ Because it includes what you selected:</p>`;
-                    description += `<ul style="list-style-type: none;">`;
-                    description += [...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("");
-                    description += `</ul>`;
-                }
+                    description += `<p style="font-weight: bold; color: #410002;">✅ This plan includes what you selected:</p>`;
+                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("")}</ul>`;
+                } /*else if(included.size == null) {
+                    description += `<ul style="list-style-type: none;"></ul>`
+                }*/
                 // Сравниваем все фичи из PlanDetails c included + missing
-                const allFeatures = Object.entries(planData) //need array from the object!
-                    .filter(([key]) => key !== "usage") //исключаем usage
-                    .map(([, value]) => value);
-                for (const feature of allFeatures) {
-                    const alreadyMentioned = [...included, ...missing].some(txt => feature.toLowerCase().includes(txt.toLowerCase()));
-                    if (!alreadyMentioned) {
-                        extra.push(feature);
+                /*  const allFeatures = Object.entries(planDetails[topPlanName])                                //need array from the object!
+                      .filter(([key]) => key !== "usage") //исключаем usage
+                      .map(([, value]) => typeof value === "string" ? value : null)
+                      .filter((v): v is string => v !== null);
+  
+  
+                  for (const feature of allFeatures) {
+                      const alreadyMentioned = [...included, ...missing].some(txt =>
+                          feature.toLowerCase().includes(txt.toLowerCase())
+                      );
+  
+                      if (!alreadyMentioned) {
+                          extra.add(feature);
+                      }
+                  }*/
+                const allKeys = Object.keys(planDetails[topPlanName]).filter(k => k !== "usage");
+                for (const key of allKeys) {
+                    const feature = planDetails[topPlanName][key];
+                    if (!feature)
+                        continue;
+                    const lowerIncluded = [...included].map(s => s.toLowerCase());
+                    const lowerMissing = [...missing].map(s => s.toLowerCase());
+                    const isAlreadyListed = lowerIncluded.includes(feature.toLowerCase()) || lowerMissing.includes(feature.toLowerCase());
+                    if (!isAlreadyListed) {
+                        extra.add(feature);
                     }
                 }
-                if (extra.length > 0) {
-                    description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">🎁 Also includes additional features:</p>`;
-                    description += `<ul style="list-style-type: none;">`;
-                    description += extra.map(i => `<li style="color: black;"> ${i}</li>`).join("");
-                    description += `</ul>`;
+                if (extra.size > 0) {
+                    description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">➕ Extra features:</p>`;
+                    description += `<ul style="list-style-type: none;">${[...extra].map(i => `<li style="color: black;"> ${i}</li>`).join("")}</ul>`;
                 }
-                if (missing.length > 0) {
-                    description += `<p style="color: red; margin-bottom: 10px;">❕ This plan does not include:</p><ul style="list-style-type: none;">`;
-                    description += missing.map(i => `<li style="color: black;">❌ ${i}</li>`).join("");
-                    description += `</ul>`;
-                    /* description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;*/
+                //--------------------------------------------------------------------MISSING---------------------------------------------------------------------------//
+                if (missing.size > 0) {
+                    description += `<p style="color: red; margin-bottom: 10px;">❕ Unfortunately, this plan does not <strong>include</strong>:</p>`;
+                    description += `<ul style="list-style-type: none;">${[...missing].map(i => `<li style="color: black;">❌ ${i}</li>`).join("")}</ul>`;
+                    //--------------------------------------------------------------------------Alternatives to consider---------------------------------------------------------------------------------//
                     if (i == 0) {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
                     }
@@ -278,8 +279,10 @@ const Questionnaire = {
                     else {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
                     }
+                    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                    // ------------------------------------------------------------------------------------------------------------------------------------------------------------//
                 }
-                descriptions[planName] = description;
+                descriptions[topPlanName] = description;
             }
             return descriptions;
         };
@@ -471,9 +474,8 @@ const Questionnaire = {
                         }, [
                             m("div", { style: { width: "400px", borderRadius: "10px", } }, [m("p", {
                                     style: {
-                                        background: "red",
+                                        background: "#d93951",
                                         position: "absolute",
-                                        /*top: "1%",*/
                                         width: "100%",
                                         textAlign: "center",
                                         fontSize: "18px",
@@ -485,9 +487,7 @@ const Questionnaire = {
                                 }, "The best plan for you"),
                                 m("h3", {
                                     style: {
-                                        /*background: "red", */
                                         position: "absolute",
-                                        /*top: "1%",*/
                                         width: "100%",
                                         textAlign: "center",
                                         fontSize: "30px",

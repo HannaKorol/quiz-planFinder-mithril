@@ -1612,36 +1612,19 @@
         { option: "I haven\u2019t decided yet.", plans: { Free: 1 } }
       ]
     },
-    /* {
-         question: "Would you like to add additional email addresses to this mailbox? If yes, how many do you require?",
-         choices: [
-             {option: "Yes, I’d like to", plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}},
-             {option: "No, I don’t want to", plans: {Free: 1}}
-         ],
-     },*/
     {
       question: "Would you like to add additional email addresses to your mailbox? If so, how many?",
       choices: [
-        { option: "1-15 additional email addresses", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "16-30 additional email addresses", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } },
+        { option: "15 additional email addresses", plans: { Essential: 1, Revolutionary: 1 } },
+        { option: "30 additional email addresses", plans: { Legend: 1, Unlimited: 1, Advanced: 1 } },
         { option: "No, I don\u2019t want to", plans: { Free: 1 } }
       ]
     },
-    /* {
-         question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox?If yes, how many would you like to configure?",
-         choices: [
-             {
-                 option: "Yes, please",
-                 plans: {Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1}
-             },
-             {option: "No, I don't need", plans: {Free: 1}}
-         ],
-     },*/
     {
       question: "Would you like to use your own domain (e.g., yourcompany.com) with this mailbox? If yes, how many would you like to configure?",
       choices: [
-        { option: "1-3 custom domains", plans: { Essential: 1, Revolutionary: 1 } },
-        { option: "4-10 custom domains", plans: { Legend: 1, Advanced: 1 } },
+        { option: "3 custom domains", plans: { Essential: 1, Revolutionary: 1 } },
+        { option: "10 custom domains", plans: { Legend: 1, Advanced: 1 } },
         { option: "Unlimited domains", plans: { Unlimited: 1 } },
         { option: "No, I don't need", plans: { Free: 1 } }
       ]
@@ -1660,10 +1643,10 @@
       question: "What is your estimated email storage requirement?",
       choices: [
         { option: "1 GB storage", plans: { Free: 1 } },
-        { option: "2-20 GB storage", plans: { Revolutionary: 1 } },
-        { option: "21-50 GB storage", plans: { Essential: 1 } },
-        { option: "51-500 GB storage", plans: { Legend: 1, Advanced: 1 } },
-        { option: "501-1000 GB storage", plans: { Unlimited: 1 } }
+        { option: "20 GB storage", plans: { Revolutionary: 1 } },
+        { option: "50 GB storage", plans: { Essential: 1 } },
+        { option: "500 GB storage", plans: { Legend: 1, Advanced: 1 } },
+        { option: "1000 GB storage", plans: { Unlimited: 1 } }
       ]
     }
   ];
@@ -1671,7 +1654,7 @@
     Free: {
       usage: "for personal use",
       /*emails: "✉ No additional email addresses",*/
-      storage: "\u{1F5C4}  1 GB storage",
+      storage: "\u{1F5C4} 1 GB storage",
       /*domains: "No custom domains",*/
       labels: "\u{1F3F7}\uFE0F 3 labels",
       calendars: "\u{1F5D3} One calendar"
@@ -1680,7 +1663,7 @@
     Revolutionary: {
       usage: "for personal use",
       emails: "\u2709\uFE0F 15 additional email addresses",
-      storage: "\u{1F5C4}  20 GB storage",
+      storage: "\u{1F5C4} 20 GB storage",
       domains: "\u{1F310} 3 custom domains",
       calendars: "\u{1F5D3} Unlimited calendars",
       labels: "\u{1F3F7}\uFE0F Unlimited labels",
@@ -1714,7 +1697,7 @@
     Unlimited: {
       usage: "for business purposes",
       emails: "\u2709\uFE0F 30 additional addresses",
-      storage: "\u{1F5C4}  1000 GB storage",
+      storage: "\u{1F5C4} 1000 GB storage",
       domains: "\u{1F310} Unlimited domains",
       calendars: "\u{1F5D3} Unlimited calendars",
       labels: "\u{1F3F7}\uFE0F Unlimited labels"
@@ -1766,42 +1749,35 @@
       };
       state.generatePlanDescriptions = (answers, topPlans) => {
         const descriptions = {};
-        const selectedOptions = /* @__PURE__ */ new Set();
-        for (const answer of answers) {
-          selectedOptions.add(answer.option);
-        }
         const neutralAnswers = /* @__PURE__ */ new Set(["I haven\u2019t decided yet.", "No, I don't need", "No, I don\u2019t want to"]);
-        for (const answer of answers) {
-          if (neutralAnswers.has(answer.option)) {
-            for (const plan of topPlans) {
-              const details = planDetails[plan];
-              if (!details)
-                continue;
-              if (answer.option === "No, I don\u2019t want to" && details.emails) {
-                answer.option = details.emails;
-              } else if (answer.option === "No, I don't need" && details.domains) {
-                answer.option = details.domains;
-              }
-            }
-          }
-        }
         for (let i = 0; i < topPlans.length; i++) {
-          const planName = topPlans[i];
-          const planData = planDetails[planName];
-          if (!planData)
+          const topPlanName = topPlans[i];
+          if (!planDetails[topPlanName])
             continue;
           const included = /* @__PURE__ */ new Set();
-          const extra = [];
-          const missing = [];
+          const extra = /* @__PURE__ */ new Set();
+          const missing = /* @__PURE__ */ new Set();
           for (const answer of answers) {
-            const isIncluded = answer.plans[planName] > 0;
             const isNeutral = neutralAnswers.has(answer.option);
+            const isIncluded = answer.plans[topPlanName] > 0;
             if (answer.option === "I haven\u2019t decided yet.")
               continue;
-            if (isIncluded) {
+            if (isNeutral && isIncluded) {
+              if (answer.option === "No, I don\u2019t want to" && planDetails[topPlanName].emails) {
+                extra.add(planDetails[topPlanName].emails);
+              } else if (answer.option === "No, I don't need" && planDetails[topPlanName].domains) {
+                extra.add(planDetails[topPlanName].domains);
+              }
+              continue;
+            }
+            if (isNeutral && !isIncluded) {
+              continue;
+            }
+            if (!isNeutral && isIncluded) {
               included.add(answer.option);
-            } else if (!isNeutral) {
-              missing.push(answer.option);
+            }
+            if (!isNeutral && !isIncluded) {
+              missing.add(answer.option);
             }
           }
           let description = "";
@@ -1812,34 +1788,33 @@
           } else {
             description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F4E6} ${topPlans[2]} might be a good alternative for you.</p>`;
           }
-          console.log(topPlans);
-          if (planData.usage) {
-            const plainUsage = planData.usage.replace("\u{1F454}", "for business purposes");
-            description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${plainUsage.trim()}</strong>.</p>`;
+          if (planDetails[topPlanName].usage) {
+            planDetails[topPlanName].usage.replace("\u{1F454}", "for business purposes");
+            description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${planDetails[topPlanName].usage.trim()}</strong>.</p>`;
           }
           if (included.size > 0) {
-            description += `<p style="font-weight: bold; color: #410002;">\u2705 Because it includes what you selected:</p>`;
-            description += `<ul style="list-style-type: none;">`;
-            description += [...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("");
-            description += `</ul>`;
+            description += `<p style="font-weight: bold; color: #410002;">\u2705 This plan includes what you selected:</p>`;
+            description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("")}</ul>`;
           }
-          const allFeatures = Object.entries(planData).filter(([key]) => key !== "usage").map(([, value]) => value);
-          for (const feature of allFeatures) {
-            const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
-            if (!alreadyMentioned) {
-              extra.push(feature);
+          const allKeys = Object.keys(planDetails[topPlanName]).filter((k) => k !== "usage");
+          for (const key of allKeys) {
+            const feature = planDetails[topPlanName][key];
+            if (!feature)
+              continue;
+            const lowerIncluded = [...included].map((s) => s.toLowerCase());
+            const lowerMissing = [...missing].map((s) => s.toLowerCase());
+            const isAlreadyListed = lowerIncluded.includes(feature.toLowerCase()) || lowerMissing.includes(feature.toLowerCase());
+            if (!isAlreadyListed) {
+              extra.add(feature);
             }
           }
-          if (extra.length > 0) {
-            description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u{1F381} Also includes additional features:</p>`;
-            description += `<ul style="list-style-type: none;">`;
-            description += extra.map((i2) => `<li style="color: black;"> ${i2}</li>`).join("");
-            description += `</ul>`;
+          if (extra.size > 0) {
+            description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u2795 Extra features:</p>`;
+            description += `<ul style="list-style-type: none;">${[...extra].map((i2) => `<li style="color: black;"> ${i2}</li>`).join("")}</ul>`;
           }
-          if (missing.length > 0) {
-            description += `<p style="color: red; margin-bottom: 10px;">\u2755 This plan does not include:</p><ul style="list-style-type: none;">`;
-            description += missing.map((i2) => `<li style="color: black;">\u274C ${i2}</li>`).join("");
-            description += `</ul>`;
+          if (missing.size > 0) {
+            description += `<p style="color: red; margin-bottom: 10px;">\u2755 Unfortunately, this plan does not <strong>include</strong>:</p>`;
+            description += `<ul style="list-style-type: none;">${[...missing].map((i2) => `<li style="color: black;">\u274C ${i2}</li>`).join("")}</ul>`;
             if (i == 0) {
               description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
             } else if (i == 1) {
@@ -1848,7 +1823,7 @@
               description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
             }
           }
-          descriptions[planName] = description;
+          descriptions[topPlanName] = description;
         }
         return descriptions;
       };
@@ -2037,9 +2012,8 @@
                   (0, import_mithril.default)("div", { style: { width: "400px", borderRadius: "10px" } }, [
                     (0, import_mithril.default)("p", {
                       style: {
-                        background: "red",
+                        background: "#d93951",
                         position: "absolute",
-                        /*top: "1%",*/
                         width: "100%",
                         textAlign: "center",
                         fontSize: "18px",
@@ -2051,9 +2025,7 @@
                     }, "The best plan for you"),
                     (0, import_mithril.default)("h3", {
                       style: {
-                        /*background: "red", */
                         position: "absolute",
-                        /*top: "1%",*/
                         width: "100%",
                         textAlign: "center",
                         fontSize: "30px",
