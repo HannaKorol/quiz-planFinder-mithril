@@ -1632,7 +1632,7 @@
     {
       question: "How many calendars do you plan to use?",
       choices: [
-        { option: "One calendar", plans: { Free: 1 } },
+        { option: "1 calendar", plans: { Free: 1 } },
         {
           option: "Unlimited calendars",
           plans: { Revolutionary: 1, Legend: 1, Essential: 1, Advanced: 1, Unlimited: 1 }
@@ -1653,54 +1653,54 @@
   var planDetails = {
     Free: {
       usage: "for personal use",
-      /*emails: "✉ No additional email addresses",*/
-      storage: "\u{1F5C4} 1 GB storage",
+      /*emails: "No additional email addresses",*/
+      storage: "1 GB storage",
       /*domains: "No custom domains",*/
-      labels: "\u{1F3F7}\uFE0F 3 labels",
-      calendars: "\u{1F5D3} One calendar"
+      labels: "3 labels",
+      calendars: "1 calendar"
       /* family: "No Family option"*/
     },
     Revolutionary: {
       usage: "for personal use",
-      emails: "\u2709\uFE0F 15 additional email addresses",
-      storage: "\u{1F5C4} 20 GB storage",
-      domains: "\u{1F310} 3 custom domains",
-      calendars: "\u{1F5D3} Unlimited calendars",
-      labels: "\u{1F3F7}\uFE0F Unlimited labels",
-      family: "\u{1FAC2} Family option"
+      emails: "15 additional email addresses",
+      storage: "20 GB storage",
+      domains: "3 custom domains",
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels",
+      family: "Family option"
     },
     Legend: {
       usage: "for personal use",
-      emails: "\u2709\uFE0F 30 additional email addresses",
-      storage: "\u{1F5C4}  500 GB storage",
-      domains: "\u{1F310} 10 custom domains",
-      calendars: "\u{1F5D3} Unlimited calendars",
-      labels: "\u{1F3F7}\uFE0F Unlimited labels",
-      family: "\u{1FAC2} Family option"
+      emails: "30 additional email addresses",
+      storage: "500 GB storage",
+      domains: "10 custom domains",
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels",
+      family: "Family option"
     },
     Essential: {
       usage: "for business purposes",
-      emails: "\u2709\uFE0F 15 additional email addresses",
-      storage: "\u{1F5C4}  50 GB storage",
-      domains: "\u{1F310} 3 custom domains",
-      calendars: "\u{1F5D3} Unlimited calendars",
-      labels: "\u{1F3F7}\uFE0F Unlimited labels"
+      emails: "15 additional email addresses",
+      storage: "50 GB storage",
+      domains: "3 custom domains",
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels"
     },
     Advanced: {
       usage: "for business purposes",
-      emails: "\u2709\uFE0F 30 additional addresses",
-      storage: "\u{1F5C4}  500 GB storage",
-      domains: "\u{1F310} 10 custom domains",
-      calendars: "\u{1F5D3} Unlimited calendars",
-      labels: "\u{1F3F7}\uFE0F Unlimited labels"
+      emails: "30 additional email addresses",
+      storage: "500 GB storage",
+      domains: "10 custom domains",
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels"
     },
     Unlimited: {
       usage: "for business purposes",
-      emails: "\u2709\uFE0F 30 additional addresses",
-      storage: "\u{1F5C4} 1000 GB storage",
-      domains: "\u{1F310} Unlimited domains",
-      calendars: "\u{1F5D3} Unlimited calendars",
-      labels: "\u{1F3F7}\uFE0F Unlimited labels"
+      emails: "30 additional addresses",
+      storage: "1000 GB storage",
+      domains: "Unlimited domains",
+      calendars: "Unlimited calendars",
+      labels: "Unlimited labels"
     }
   };
   var Questionnaire = {
@@ -1749,7 +1749,18 @@
       };
       state.generatePlanDescriptions = (answers, topPlans) => {
         const descriptions = {};
-        const neutralAnswers = /* @__PURE__ */ new Set(["I haven\u2019t decided yet.", "No, I don't need", "No, I don\u2019t want to"]);
+        const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const compareValues = (planValue, selectedValue) => {
+          const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");
+          const selectedNumber = parseInt(selectedValue.match(/\d+/)?.[0] || "0");
+          if (planNumber > selectedNumber) {
+            return `more than selected: ${selectedNumber}`;
+          } else if (planNumber < selectedNumber) {
+            return `less then selected: ${selectedNumber}`;
+          } else {
+            return "";
+          }
+        };
         for (let i = 0; i < topPlans.length; i++) {
           const topPlanName = topPlans[i];
           if (!planDetails[topPlanName])
@@ -1758,6 +1769,7 @@
           const extra = /* @__PURE__ */ new Set();
           const missing = /* @__PURE__ */ new Set();
           for (const answer of answers) {
+            const neutralAnswers = /* @__PURE__ */ new Set(["I haven\u2019t decided yet.", "No, I don't need", "No, I don\u2019t want to"]);
             const isNeutral = neutralAnswers.has(answer.option);
             const isIncluded = answer.plans[topPlanName] > 0;
             if (answer.option === "I haven\u2019t decided yet.")
@@ -1789,18 +1801,33 @@
             description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F4E6} ${topPlans[2]} might be a good alternative for you.</p>`;
           }
           if (planDetails[topPlanName].usage) {
-            planDetails[topPlanName].usage.replace("\u{1F454}", "for business purposes");
             description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${planDetails[topPlanName].usage.trim()}</strong>.</p>`;
           }
           if (included.size > 0) {
             description += `<p style="font-weight: bold; color: #410002;">\u2705 This plan includes what you selected:</p>`;
             description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("")}</ul>`;
           }
-          const allFeatures = Object.entries(planDetails[topPlanName]).filter(([key]) => key !== "usage").map(([, value]) => typeof value === "string" ? value : null).filter((v) => v !== null);
+          const allFeatures = Object.entries(planDetails[topPlanName]).filter(([key]) => key !== "usage").map(([, value]) => value);
           for (const feature of allFeatures) {
-            const alreadyMentioned = [...included, ...missing].some((txt) => feature.toLowerCase().includes(txt.toLowerCase()));
-            if (!alreadyMentioned) {
+            const alreadyMentioned = [...included, ...missing].some((txt) => (
+              //Проверяем, если в included или missing уже есть схожие строки
+              normalize(feature).includes(normalize(txt))
+            ));
+            const alreadyMentionedInExtra = [...extra].some((txt) => normalize(feature).includes(normalize(txt)));
+            if (!alreadyMentioned && !alreadyMentionedInExtra) {
               extra.add(feature);
+            }
+            if (normalize(feature).includes("emailaddresses")) {
+              for (const includedItem of included) {
+                if (normalize(includedItem).includes("emailaddresses")) {
+                  const comparisonResult = compareValues(feature, includedItem);
+                  if (comparisonResult && !alreadyMentionedInExtra || !alreadyMentioned) {
+                    extra.add(`${feature} (${comparisonResult})`);
+                  } else {
+                    included.add(includedItem);
+                  }
+                }
+              }
             }
           }
           if (extra.size > 0) {
