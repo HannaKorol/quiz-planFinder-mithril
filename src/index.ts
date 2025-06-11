@@ -224,10 +224,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
         //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 
-
-
-
-
         //-----------------------------------------------------------Function for the description generation----------------------------------------------------------------------------------------------//
 
         state.generatePlanDescriptions = (answers: Choice[], topPlans: PlanName[]) => {
@@ -250,8 +246,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     return "";                                                                                                 // Если нет числа, возвращаем пустую строку
                 }
             }
-
-
 
 
             for (let i = 0; i < topPlans.length; i++) {                                    //2. Проходим по topPlans например:PlanName[] = ["Legend", "Revolutionary", "Advanced"]
@@ -296,9 +290,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 }
 
 
-
-
-
                 //-------------------------------------------------------------------Добавляем "...recommended/alternative for you" как отдельный блок-----------------------------------------------------------------------------------------------------//
                 let description = "";
 
@@ -320,27 +311,31 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 //-------------------------------------------------INCLUDED, EXTRA, MISSING--------------------------------------------------//
                 if (included.size > 0) {
                     description += `<p style="font-weight: bold; color: #410002;">✅ This plan includes what you selected:</p>`;
-                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("")}</ul>`
+                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;">✔ ${i}</li>`).join("")}</ul>`
                 }
 
 
                 // Сравниваем все фичи из PlanDetails c included + missing
                 const allFeatures = Object.entries(planDetails[topPlanName])                                //Преобразует объект в массив пар [ключ, значение]: ["storage", "100GB"], ]
-            .filter(([key]) => key !== "usage")                                                //Исключаем пару где ключ "usage"
+                    .filter(([key]) => key !== "usage")                                                //Исключаем пару где ключ "usage"
                     .map(([, value]) => value)                                                    //Извлекает значения из каждой пары например ["100GB"],
-                    /*.filter((v): v is string => v !== null);  */
+                /*.filter((v): v is string => v !== null);  */
 
 
                 for (const feature of allFeatures) {
                     /*const featureLower = normalize(feature);    */                                           // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
 
 
+                    const comparisonKeys = ["emailaddresses", "customdomains", "storage"];
+
+                    const isSameCategory = (a: string,  b: string) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
+
 
                     const alreadyMentioned = [...included, ...missing].some(txt =>                 //Проверяем, если в included или missing уже есть схожие строки
-                        normalize(feature).includes(normalize(txt))
-                    );
+                        isSameCategory(feature, txt));
 
-                    const alreadyMentionedInExtra = [...extra].some(txt => normalize(feature).includes(normalize(txt)))
+
+                    const alreadyMentionedInExtra = [...extra].some(txt => isSameCategory(feature, txt));
 
                     if (!alreadyMentioned && !alreadyMentionedInExtra) {
                         extra.add(feature);                                                                       //Добавляем в extra те елементы, которые не были упомянуты                                                                   //extra
@@ -351,22 +346,27 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     /*const normalizeFeature = (feature: string) => feature.toLowerCase().replace(/[^a-z0-9]/g, "");*/
 
 
-                if(normalize(feature).includes("emailaddresses") /*|| normalize(feature).includes("customdomains")*/ /*|| normalize(feature).includes("storage")*/) {                    //
-                    for(const includedItem of included) {
-                        if(normalize(includedItem).includes("emailaddresses") /*|| normalize(includedItem).includes("customdomains")*/ /*|| normalize(includedItem).includes("storage")*/) {
+                  /*  const isKeyMatch = (str1: string, str2: string) =>
+                        comparisonKeys.some(key => normalize(str1).includes(key) && normalize(str2).includes(key));*/
 
-                          const comparisonResult = compareValues(feature, includedItem);
 
-                          if(comparisonResult && !alreadyMentionedInExtra || !alreadyMentioned) {
-                              extra.add(`${feature} (${comparisonResult})`);
-                          } else {
-                              included.add(includedItem);
-                          }
+
+                    if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) {                    //
+                        for (const includedItem of included) {
+                            if (normalize(includedItem).includes("emailaddresses") || normalize(includedItem).includes("customdomains") || normalize(includedItem).includes("storage")) {
+
+                                const comparisonResult = compareValues(feature, includedItem);
+
+                                if (comparisonResult && (!alreadyMentionedInExtra && !alreadyMentioned)) {
+                                    extra.add(`${feature} (${comparisonResult})`);
+                                } else {
+                                    included.add(includedItem);
+                                }
+                            }
                         }
                     }
                 }
-                }
-                    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 
                 if (extra.size > 0) {
@@ -395,11 +395,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             return descriptions;
         };
     },
-
-
-
-
-
 
 
     view: function (vnode) {
@@ -972,10 +967,6 @@ const App: m.Component<{}, AppState> = {
 
 // Точка входа
 m.mount(document.body, App);
-
-
-
-
 
 
 /*

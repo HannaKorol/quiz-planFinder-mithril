@@ -229,7 +229,7 @@ const Questionnaire = {
                 //-------------------------------------------------INCLUDED, EXTRA, MISSING--------------------------------------------------//
                 if (included.size > 0) {
                     description += `<p style="font-weight: bold; color: #410002;">✅ This plan includes what you selected:</p>`;
-                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;>✔ ${i}</li>`).join("")}</ul>`;
+                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;">✔ ${i}</li>`).join("")}</ul>`;
                 }
                 // Сравниваем все фичи из PlanDetails c included + missing
                 const allFeatures = Object.entries(planDetails[topPlanName]) //Преобразует объект в массив пар [ключ, значение]: ["storage", "100GB"], ]
@@ -238,19 +238,23 @@ const Questionnaire = {
                 /*.filter((v): v is string => v !== null);  */
                 for (const feature of allFeatures) {
                     /*const featureLower = normalize(feature);    */ // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
+                    const comparisonKeys = ["emailaddresses", "customdomains", "storage"];
+                    const isSameCategory = (a, b) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
                     const alreadyMentioned = [...included, ...missing].some(txt => //Проверяем, если в included или missing уже есть схожие строки
-                     normalize(feature).includes(normalize(txt)));
-                    const alreadyMentionedInExtra = [...extra].some(txt => normalize(feature).includes(normalize(txt)));
+                     isSameCategory(feature, txt));
+                    const alreadyMentionedInExtra = [...extra].some(txt => isSameCategory(feature, txt));
                     if (!alreadyMentioned && !alreadyMentionedInExtra) {
                         extra.add(feature); //Добавляем в extra те елементы, которые не были упомянуты                                                                   //extra
                     }
                     //-----------------------------------------------------------------------Проверка для элементов с числовыми значениями (например, "additional email addresses")---------------------------------------------------------------------------//
                     /*const normalizeFeature = (feature: string) => feature.toLowerCase().replace(/[^a-z0-9]/g, "");*/
-                    if (normalize(feature).includes("emailaddresses") /*|| normalize(feature).includes("customdomains")*/ /*|| normalize(feature).includes("storage")*/) { //
+                    /*  const isKeyMatch = (str1: string, str2: string) =>
+                          comparisonKeys.some(key => normalize(str1).includes(key) && normalize(str2).includes(key));*/
+                    if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) { //
                         for (const includedItem of included) {
-                            if (normalize(includedItem).includes("emailaddresses") /*|| normalize(includedItem).includes("customdomains")*/ /*|| normalize(includedItem).includes("storage")*/) {
+                            if (normalize(includedItem).includes("emailaddresses") || normalize(includedItem).includes("customdomains") || normalize(includedItem).includes("storage")) {
                                 const comparisonResult = compareValues(feature, includedItem);
-                                if (comparisonResult && !alreadyMentionedInExtra || !alreadyMentioned) {
+                                if (comparisonResult && (!alreadyMentionedInExtra && !alreadyMentioned)) {
                                     extra.add(`${feature} (${comparisonResult})`);
                                 }
                                 else {

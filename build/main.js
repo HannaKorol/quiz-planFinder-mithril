@@ -1805,23 +1805,25 @@
           }
           if (included.size > 0) {
             description += `<p style="font-weight: bold; color: #410002;">\u2705 This plan includes what you selected:</p>`;
-            description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;>\u2714 ${i2}</li>`).join("")}</ul>`;
+            description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;">\u2714 ${i2}</li>`).join("")}</ul>`;
           }
           const allFeatures = Object.entries(planDetails[topPlanName]).filter(([key]) => key !== "usage").map(([, value]) => value);
           for (const feature of allFeatures) {
+            const comparisonKeys = ["emailaddresses", "customdomains", "storage"];
+            const isSameCategory = (a, b) => comparisonKeys.some((key) => normalize(a).includes(key) && normalize(b).includes(key));
             const alreadyMentioned = [...included, ...missing].some((txt) => (
               //Проверяем, если в included или missing уже есть схожие строки
-              normalize(feature).includes(normalize(txt))
+              isSameCategory(feature, txt)
             ));
-            const alreadyMentionedInExtra = [...extra].some((txt) => normalize(feature).includes(normalize(txt)));
+            const alreadyMentionedInExtra = [...extra].some((txt) => isSameCategory(feature, txt));
             if (!alreadyMentioned && !alreadyMentionedInExtra) {
               extra.add(feature);
             }
-            if (normalize(feature).includes("emailaddresses")) {
+            if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) {
               for (const includedItem of included) {
-                if (normalize(includedItem).includes("emailaddresses")) {
+                if (normalize(includedItem).includes("emailaddresses") || normalize(includedItem).includes("customdomains") || normalize(includedItem).includes("storage")) {
                   const comparisonResult = compareValues(feature, includedItem);
-                  if (comparisonResult && !alreadyMentionedInExtra || !alreadyMentioned) {
+                  if (comparisonResult && (!alreadyMentionedInExtra && !alreadyMentioned)) {
                     extra.add(`${feature} (${comparisonResult})`);
                   } else {
                     included.add(includedItem);
