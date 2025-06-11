@@ -1754,9 +1754,9 @@
           const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");
           const selectedNumber = parseInt(selectedValue.match(/\d+/)?.[0] || "0");
           if (planNumber > selectedNumber) {
-            return `more than selected: ${selectedNumber}`;
+            return `<span style="color: #298f26; margin-bottom: 10px;">(more than you selected: ${selectedNumber})</span>`;
           } else if (planNumber < selectedNumber) {
-            return `less then selected: ${selectedNumber}`;
+            return `<span style="color: #88090d; margin-bottom: 10px;">(less than you selected: ${selectedNumber})</span>`;
           } else {
             return "";
           }
@@ -1805,31 +1805,21 @@
           }
           if (included.size > 0) {
             description += `<p style="font-weight: bold; color: #410002;">\u2705 This plan includes what you selected:</p>`;
-            description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;">\u2714 ${i2}</li>`).join("")}</ul>`;
+            description += `<ul style="list-style-type: none;">${[...included].map((i2) => `<li style="color: green;"> \u2714${i2}</li>`).join("")}</ul>`;
           }
           const allFeatures = Object.entries(planDetails[topPlanName]).filter(([key]) => key !== "usage").map(([, value]) => value);
           for (const feature of allFeatures) {
-            const comparisonKeys = ["emailaddresses", "customdomains", "storage"];
+            const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar"];
             const isSameCategory = (a, b) => comparisonKeys.some((key) => normalize(a).includes(key) && normalize(b).includes(key));
-            const alreadyMentioned = [...included, ...missing].some((txt) => (
-              //Проверяем, если в included или missing уже есть схожие строки
-              isSameCategory(feature, txt)
-            ));
-            const alreadyMentionedInExtra = [...extra].some((txt) => isSameCategory(feature, txt));
-            if (!alreadyMentioned && !alreadyMentionedInExtra) {
-              extra.add(feature);
-            }
-            if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) {
-              for (const includedItem of included) {
-                if (normalize(includedItem).includes("emailaddresses") || normalize(includedItem).includes("customdomains") || normalize(includedItem).includes("storage")) {
-                  const comparisonResult = compareValues(feature, includedItem);
-                  if (comparisonResult && (!alreadyMentionedInExtra && !alreadyMentioned)) {
-                    extra.add(`${feature} (${comparisonResult})`);
-                  } else {
-                    included.add(includedItem);
-                  }
-                }
+            for (const missingElem of missing) {
+              if (isSameCategory(missingElem, feature)) {
+                extra.add(`${feature} ${compareValues(feature, missingElem)}`);
               }
+            }
+            const alreadyMentioned = [...included, ...missing, ...extra];
+            const isAlreadyCovered = alreadyMentioned.some((elem) => isSameCategory(elem, feature));
+            if (!isAlreadyCovered) {
+              extra.add(feature);
             }
           }
           if (extra.size > 0) {
@@ -1845,6 +1835,14 @@
               description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]}), they might include these.</p>`;
             } else {
               description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
+            }
+          } else if (missing.size == 0) {
+            if (i == 0) {
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]})</p>`;
+            } else if (i == 1) {
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]})</p>`;
+            } else {
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]})</p>`;
             }
           }
           descriptions[topPlanName] = description;

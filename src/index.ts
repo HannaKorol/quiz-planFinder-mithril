@@ -229,9 +229,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
         state.generatePlanDescriptions = (answers: Choice[], topPlans: PlanName[]) => {
             const descriptions: Record<PlanName, string> = {};  // Это пустой объект, куда будут записываться описания в конце. descriptions[topPlanName] = description;
 
-
             const normalize = (str: string): string => str.toLowerCase().replace(/[^a-z0-9]/g, "");              //Функция для нормализации строк (например, убираем пробелы и символы) например "30additionalemailaddresses"
-
 
             const compareValues = (planValue: string, selectedValue: string): string => {        //Функция для сравнения числовых значений в строках (например  "30 additional email addresses" и "15 additional email addresses")
                 const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");                                         // в карточке плана: Находим строку с числом например "30" и переобразуем его в число 30 или если нет числа то вернем 0.
@@ -239,9 +237,9 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 
 
                 if (planNumber > selectedNumber) {                                                                             // Если число больше в плане чем в ответах,
-                    return `more than selected: ${selectedNumber}`;                                                                      // Bозвращаем сообщение "more than selected: "в ответах" "
+                    return `<span style="color: #298f26; margin-bottom: 10px;">(more than you selected: ${selectedNumber})</span>`;                                                                      // Bозвращаем сообщение "more than selected: "в ответах" "
                 } else if (planNumber < selectedNumber) {                                                                     // Если число меньше в плане чем в ответах,
-                    return `less then selected: ${selectedNumber}`;                                                                     //  Bозвращаем сообщение "less then selected: "в ответах" "
+                    return `<span style="color: #88090d; margin-bottom: 10px;">(less than you selected: ${selectedNumber})</span>`;                                                                     //  Bозвращаем сообщение "less then selected: "в ответах" "
                 } else {
                     return "";                                                                                                 // Если нет числа, возвращаем пустую строку
                 }
@@ -289,6 +287,12 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     }
                 }
 
+                /*    console.log("included: ")
+                    console.table(included)
+                    console.log("extra: ")
+                    console.table(extra)
+                    console.log("missing: ")
+                    console.table(missing)*/
 
                 //-------------------------------------------------------------------Добавляем "...recommended/alternative for you" как отдельный блок-----------------------------------------------------------------------------------------------------//
                 let description = "";
@@ -309,62 +313,105 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 
 
                 //-------------------------------------------------INCLUDED, EXTRA, MISSING--------------------------------------------------//
+
                 if (included.size > 0) {
                     description += `<p style="font-weight: bold; color: #410002;">✅ This plan includes what you selected:</p>`;
-                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;">✔ ${i}</li>`).join("")}</ul>`
+                    description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;"> ✔${i}</li>`).join("")}</ul>`
                 }
 
-
                 // Сравниваем все фичи из PlanDetails c included + missing
-                const allFeatures = Object.entries(planDetails[topPlanName])                                //Преобразует объект в массив пар [ключ, значение]: ["storage", "100GB"], ]
+                const allFeatures = Object.entries(planDetails[topPlanName])                                //Преобразует объект в массив пар [ключ, значение]: ["15 additional email addresses", "100GB"], ]
                     .filter(([key]) => key !== "usage")                                                //Исключаем пару где ключ "usage"
                     .map(([, value]) => value)                                                    //Извлекает значения из каждой пары например ["100GB"],
-                /*.filter((v): v is string => v !== null);  */
 
 
                 for (const feature of allFeatures) {
                     /*const featureLower = normalize(feature);    */                                           // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
 
+                    const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar"];
 
-                    const comparisonKeys = ["emailaddresses", "customdomains", "storage"];
-
-                    const isSameCategory = (a: string,  b: string) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
-
-
-                    const alreadyMentioned = [...included, ...missing].some(txt =>                 //Проверяем, если в included или missing уже есть схожие строки
-                        isSameCategory(feature, txt));
+                    const isSameCategory = (a: string, b: string) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
 
 
-                    const alreadyMentionedInExtra = [...extra].some(txt => isSameCategory(feature, txt));
+                    /*       const alreadyMentioned = [...included, ...missing].some(answer =>                 //Проверяем, если в included или missing уже есть схожие строки
+                               isSameCategory(feature, answer));*/
 
-                    if (!alreadyMentioned && !alreadyMentionedInExtra) {
-                        extra.add(feature);                                                                       //Добавляем в extra те елементы, которые не были упомянуты                                                                   //extra
+
+                    /*const alreadyMentionedInExtra = [...extra].some(answer => isSameCategory(feature, answer));*/
+
+
+                    /* if (!alreadyMentioned && !alreadyMentionedInExtra) {
+                         extra.add(feature);                                                                       //Добавляем в extra те елементы, которые не были упомянуты                                                                   //extra
+                     }*/
+
+
+                    /* if(!alreadyMentioned || !alreadyMentionedInExtra) {*/
+
+
+                    for (const missingElem of missing) {
+                        if (isSameCategory(missingElem, feature)) {
+                            extra.add(`${feature} ${compareValues(feature, missingElem)}`);
+                        }
                     }
+
+
+                    // 2. Если такая категория ещё нигде не упоминалась — добавить как новую
+                    const alreadyMentioned = [...included, ...missing, ...extra];
+                    const isAlreadyCovered = alreadyMentioned.some(elem => isSameCategory(elem, feature));
+
+                    if (!isAlreadyCovered) {
+                        extra.add(feature);
+                    }
+
+                    /*if(normalize(feature) === "forpersonaluse" && included.has("For personal use")) {
+                        included.delete("for personal use")
+                    }
+
+                    if(feature === "forbusinessuse" && included.has("for business use")) {
+                        included.delete("for business use")
+                    }*/
+
+
+
+
+                    /*if(!included.has(feature) && !missing.has(feature)) {
+                        if()
+                        extra.add(feature)
+                    }*/
+
+
+                    /* for (const answer of answers) {
+                         console.log(answer)
+                         if (/!*compareValues(feature, includedItem) &&*!/ alreadyMentioned) {
+                             if (compareValues(feature, answer.option)) {
+                                 extra.add(`${feature} (${compareValues(feature, answer.option)})`);
+                             } else {
+                                 included.add(answer.option);
+                             }
+                         }
+                     }*/
+
+
+                    /*}*/
 
 
                     //-----------------------------------------------------------------------Проверка для элементов с числовыми значениями (например, "additional email addresses")---------------------------------------------------------------------------//
-                    /*const normalizeFeature = (feature: string) => feature.toLowerCase().replace(/[^a-z0-9]/g, "");*/
 
 
-                  /*  const isKeyMatch = (str1: string, str2: string) =>
-                        comparisonKeys.some(key => normalize(str1).includes(key) && normalize(str2).includes(key));*/
+                    /* if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) {                    //
+                         for (const includedItem of included) {
+                             if (normalize(includedItem).includes("emailaddresses") || normalize(includedItem).includes("customdomains") || normalize(includedItem).includes("storage")) {
 
+                                 const comparisonResult = compareValues(feature, includedItem);
 
-
-                    if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) {                    //
-                        for (const includedItem of included) {
-                            if (normalize(includedItem).includes("emailaddresses") || normalize(includedItem).includes("customdomains") || normalize(includedItem).includes("storage")) {
-
-                                const comparisonResult = compareValues(feature, includedItem);
-
-                                if (comparisonResult && (!alreadyMentionedInExtra && !alreadyMentioned)) {
-                                    extra.add(`${feature} (${comparisonResult})`);
-                                } else {
-                                    included.add(includedItem);
-                                }
-                            }
-                        }
-                    }
+                                 if (comparisonResult && (!alreadyMentionedInExtra && !alreadyMentioned)) {
+                                     extra.add(`${feature} (${comparisonResult})`);
+                                 } else {
+                                     included.add(includedItem);
+                                 }
+                             }
+                         }
+                     }*/
                 }
                 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
@@ -388,6 +435,14 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     }
                     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
                     // ------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                }  else if (missing.size == 0) {
+                    if (i == 0) {
+                        description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]})</p>`;
+                    } else if (i == 1) {
+                        description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]})</p>`;
+                    } else {
+                        description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]})</p>`;
+                    }
                 }
 
                 descriptions[topPlanName] = description;
