@@ -5,33 +5,109 @@ package backend; // Указываем пакет, в котором наход�
 
 
 //Импорт библиотек Jetty:
-import org.eclipse.jetty.server.Server;  //основной класс для создания сервера.
-import org.eclipse.jetty.server.ServerConnector; //класс для установки подключения сервера, определяет, на каком порту сервер будет слушать запросы.
-import org.eclipse.jetty.http.HttpHeader; // класс для работы с HTTP-заголовками.
-import org.eclipse.jetty.io.Content; //классы, помогающие записывать контент в ответ и:
-import org.eclipse.jetty.util.Callback; //обрабатывать асинхронные задачи.
 import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.util.Callback;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 public class App {
-	public String getGreeting() {  //метод, который возвращает строку "Hello World!". Он не выводит ничего в консоль, а лишь возвращает эту строку.
+	/*public String getGreeting() {  //метод, который возвращает строку "Hello World!". Он не выводит ничего в консоль, а лишь возвращает эту строку.
 		return "Hello World!";
-	}
+	}*/
 
-	public static void main(String[] args)throws Exception {
-		System.out.println(new App().getGreeting());               //System.out.println()-  выводит строку "Hello World!" в консоль. Метод getGreeting() возвращает строку "Hello World!".
-
-
+	public static void main(String[] args) throws Exception {
+		/*System.out.println(new App().getGreeting()); */              //System.out.println()-  выводит строку "Hello World!" в консоль. Метод getGreeting() возвращает строку "Hello World!".
 
 		//Создаем сервер на порту 9999
-		var server = new Server(9999);  //создание нового объекта сервера, который будет слушать порт 9999.
+		Server server = new Server(9999);  //создание нового объекта сервера, который будет слушать порт 9999.
 		ServerConnector connector = new ServerConnector(server);  // создается соединение с сервером.
-
 		server.addConnector(connector); //подключаем созданный connector к серверу, чтобы сервер начал принимать запросы через этот соединитель.
 
 
+//Установка обработчика
+		server.setHandler(new PlanDetailsHandler());
+		server.start();
+		server.join();
+	}
 
-		class ExampleHandler extends Handler.Wrapper{ //Handler.Wrapper — это базовый класс для обработки HTTP-запросов.
+	 public static class PlanDetailsHandler extends Handler.Abstract.NonBlocking {
+		@Override
+		public boolean handle(Request request, Response response, Callback callback) throws Exception {
+		String method = request.getMethod();
+			String path = String.valueOf(request.getHttpURI());
+
+			if ("GET".equalsIgnoreCase(method) && "/api/plan-details".equals(path)) {
+				String json = """
+						{
+						                          "Free": {
+						                            "usage": "for personal use",
+						                            "storage": "1 GB storage",
+						                            "labels": "3 labels",
+						                            "calendars": "1 calendar"
+						                          },
+						                          "Revolutionary": {
+						                            "usage": "for personal use",
+						                            "emails": "15 additional email addresses",
+						                            "storage": "20 GB storage",
+						                            "domains": "3 custom domains",
+						                            "calendars": "Unlimited calendars",
+						                            "labels": "Unlimited labels",
+						                            "family": "Family option"
+						                          },
+						                          "Legend": {
+						                            "usage": "for personal use",
+						                            "emails": "30 additional email addresses",
+						                            "storage": "500 GB storage",
+						                            "domains": "10 custom domains",
+						                            "calendars": "Unlimited calendars",
+						                            "labels": "Unlimited labels",
+						                            "family": "Family option"
+						                          },
+						                          "Essential": {
+						                            "usage": "for business purposes",
+						                            "emails": "15 additional email addresses",
+						                            "storage": "50 GB storage",
+						                            "domains": "3 custom domains",
+						                            "calendars": "Unlimited calendars",
+						                            "labels": "Unlimited labels"
+						                          },
+						                          "Advanced": {
+						                            "usage": "for business purposes",
+						                            "emails": "30 additional email addresses",
+						                            "storage": "500 GB storage",
+						                            "domains": "10 custom domains",
+						                            "calendars": "Unlimited calendars",
+						                            "labels": "Unlimited labels"
+						                          },
+						                          "Unlimited": {
+						                            "usage": "for business purposes",
+						                            "emails": "30 additional addresses",
+						                            "storage": "1000 GB storage",
+						                            "domains": "Unlimited domains",
+						                            "calendars": "Unlimited calendars",
+						                            "labels": "Unlimited labels"
+						                          }
+						                        }
+						""";
+				response.setStatus(200);
+				response.getHeaders().put("Content-Type", "application/json; charset=UTF-8");
+				response.write(true, ByteBuffer.wrap(json.getBytes(StandardCharsets.UTF_8)), callback);
+				return true;
+			}
+
+			// 404 Not Found
+			response.setStatus(404);
+			response.getHeaders().put("Content-Type", "text/plain; charset=UTF-8");
+			response.write(true, ByteBuffer.wrap("Not Found".getBytes(StandardCharsets.UTF_8)), callback);
+			return true;
+		}
+	}
+}
+
+
+		/*class ExampleHandler extends Handler.Wrapper{ //Handler.Wrapper — это базовый класс для обработки HTTP-запросов.
 
 			@Override
 			public boolean handle(Request request, Response response, Callback callback) throws Exception{
@@ -55,12 +131,10 @@ public class App {
 			}
 
 		}
-		server.setHandler(new ExampleHandler());
+		server.setHandler(new ExampleHandler());*/
 
 		//Когда все настроено, вы запускаете сервер Jetty через Gradle, и он будет слушать HTTP-запросы на порту, например, localhost:8080.
 
 
-		server.start();
-		server.join();
-	}
-}
+
+
