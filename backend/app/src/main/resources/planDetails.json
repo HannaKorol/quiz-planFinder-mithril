@@ -1,0 +1,50 @@
+{
+  "Free": {
+    "usage": "for personal use",
+    "storage": "1 GB storage",
+    "labels": "3 labels",
+    "calendars": "1 calendar"
+  },
+  "Revolutionary": {
+    "usage": "for personal use",
+    "emails": "15 additional email addresses",
+    "storage": "20 GB storage",
+    "domains": "3 custom domains",
+    "calendars": "Unlimited calendars",
+    "labels": "Unlimited labels",
+    "family": "Family option"
+  },
+  "Legend": {
+    "usage": "for personal use",
+    "emails": "30 additional email addresses",
+    "storage": "500 GB storage",
+    "domains": "10 custom domains",
+    "calendars": "Unlimited calendars",
+    "labels": "Unlimited labels",
+    "family": "Family option"
+  },
+  "Essential": {
+    "usage": "for business purposes",
+    "emails": "15 additional email addresses",
+    "storage": "50 GB storage",
+    "domains": "3 custom domains",
+    "calendars": "Unlimited calendars",
+    "labels": "Unlimited labels"
+  },
+  "Advanced": {
+    "usage": "for business purposes",
+    "emails": "30 additional email addresses",
+    "storage": "500 GB storage",
+    "domains": "10 custom domains",
+    "calendars": "Unlimited calendars",
+    "labels": "Unlimited labels"
+  },
+  "Unlimited": {
+    "usage": "for business purposes",
+    "emails": "30 additional addresses",
+    "storage": "1000 GB storage",
+    "domains": "Unlimited domains",
+    "calendars": "Unlimited calendars",
+    "labels": "Unlimited labels"
+  }
+}
