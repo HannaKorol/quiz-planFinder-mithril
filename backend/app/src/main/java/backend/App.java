@@ -42,6 +42,7 @@ public class App {
 		public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 			resp.setStatus(HttpServletResponse.SC_OK);
 			resp.setHeader("Access-Control-Allow-Origin", "*");
+			resp.setHeader("Access-Control-Allow-Methods", "GET");
 			resp.setContentType("application/json; charset=UTF-8");
 
 			String json = """
