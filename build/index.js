@@ -53,15 +53,16 @@ const questions = [
         ],
     }
 ];
-const planDetails = {
+/*
+const planDetails: Record<PlanName, PlanFeatures> = {
     Free: {
         usage: "for personal use",
-        /*emails: "No additional email addresses",*/
+        /!*emails: "No additional email addresses",*!/
         storage: "1 GB storage",
-        /*domains: "No custom domains",*/
+        /!*domains: "No custom domains",*!/
         labels: "3 labels",
         calendars: "1 calendar",
-        /* family: "No Family option"*/
+        /!* family: "No Family option"*!/
     },
     Revolutionary: {
         usage: "for personal use",
@@ -106,12 +107,13 @@ const planDetails = {
         labels: "Unlimited labels",
     }
 };
-// Компонент Questionnaire
+*/
+// -------------------------------------------------------------------------------------------Component Questionnaire---------------------------------------------------------------------------------------------------------------------//
 const Questionnaire = {
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
     // vnode.state — объект состояния, типизирован как QuestionnaireState.
     // vnode.attrs — если бы были входные параметры (но в моем случае их нет — {}).
-    oninit(vnode) {
+    oninit: (vnode) => {
         const state = vnode.state;
         state.currentIndex = 0;
         state.answers = [];
@@ -121,7 +123,21 @@ const Questionnaire = {
         state.showQuestionContainer = true;
         state.selectedIndex = 1;
         state.topPlans = [];
-        //------------------------------------------------------------------------Score for every plan------------------------------//
+        state.planDetails = {};
+        //-----------------------------------------------------------------------------------------------Loading plans from backends---------------------------------------------------------------------------------------------------------------//
+        m.request({
+            method: "GET",
+            url: "http://localhost:9999/plan-details",
+        })
+            .then((result) => {
+            // @ts-ignore
+            state.planDetails = result;
+            console.log("Loaded plans:", state.planDetails);
+        })
+            .catch((error) => {
+            console.error("Error loading plans:", error);
+        });
+        //------------------------------------------------------------------------------------------------Score for every plan--------------------------------------------------------------------------------------------------------------------//
         state.evaluateTopPlans = (answers) => {
             // Найдём 3 тариф с наибольшим количеством баллов
             const score = {
@@ -146,7 +162,7 @@ const Questionnaire = {
             return sorted.slice(0, 3); //4. Обрезаем массив, чтобы оставить только первые 3 имени.
             //--------------------------------------------------------------------------------------------------------------------------------------------------//
         };
-        //--------------------------------------------------------------------Final page: function to switch between "prev" and "next" or number------------------------------------------------//
+        //----------------------------------------------------------------------------------Final page: function to switch between "prev" and "next" or number------------------------------------------------------------------------------------//
         state.moveToSelected = (directionOrIndex) => {
             let newIndex = vnode.state.selectedIndex; //2. Записываем выбранный пользователем путь в newIndex.
             if (directionOrIndex === "prev") { //3. Если выбранный путь "prev" то
@@ -164,6 +180,7 @@ const Questionnaire = {
         //-----------------------------------------------------------Function for the description generation----------------------------------------------------------------------------------------------//
         state.generatePlanDescriptions = (answers, topPlans) => {
             const descriptions = {}; // Это пустой объект, куда будут записываться описания в конце. descriptions[topPlanName] = description;
+            const planDetails = state.planDetails;
             const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, ""); //Функция для нормализации строк (например, убираем пробелы и символы) например "30additionalemailaddresses"
             const compareValues = (planValue, selectedValue) => {
                 const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0"); // в карточке плана: Находим строку с числом например "30" и переобразуем его в число 30 или если нет числа то вернем 0.
@@ -191,7 +208,7 @@ const Questionnaire = {
                     const isNeutral = neutralAnswers.has(answer.option); //6. Есть ли среди (["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]) ответ пользователя записываем в переменную isNeutral.
                     const isIncluded = answer.plans[topPlanName] > 0; //7. Есть ли среди ответов наш топ план ["Free", "Revolutionary", "Advanced"] записываем в переменную isIncluded.
                     if (answer.option === "I haven’t decided yet.")
-                        continue; //???                //8. Если ответ пользователя "I haven’t decided yet." - Игнорируем
+                        continue; //dont work ???                                   //8. Если ответ пользователя "I haven’t decided yet." - Игнорируем
                     if (isNeutral && isIncluded) { //9. Если 6. и 7.
                         if (answer.option === "No, I don’t want to" && planDetails[topPlanName].emails) { //10. Есть ли ответ "No, I don’t want to" и emails в топ плане в его карточке.
                             extra.add(planDetails[topPlanName].emails); //11. Тогда добавляем колисечтво емейлов в карточке топ плана в екстра                                               //extra
@@ -201,22 +218,20 @@ const Questionnaire = {
                         }
                         continue;
                     }
-                    if (isNeutral && !isIncluded) { //Если ответ  нейтральный и план не выбран, эта опция игнорится.
+                    if (isNeutral && !isIncluded) {
                         continue;
-                    }
+                    } //Если ответ  нейтральный и план не выбран, эта опция игнорится.
+                    if (answer.option == planDetails[topPlanName].usage)
+                        continue;
                     if (!isNeutral && isIncluded) { //Если ответ не нейтральный и план выбран, то этот ответ добавляется в included.
-                        included.add(answer.option); //included
+                        if (normalize(answer.option) !== normalize(planDetails[topPlanName].usage)) {
+                            included.add(answer.option);
+                        }
                     }
                     if (!isNeutral && !isIncluded) { //Если ответ не нейтральный и план не выбран, эта опция добавляется в missing.
                         missing.add(answer.option); //missing
                     }
                 }
-                /*    console.log("included: ")
-                    console.table(included)
-                    console.log("extra: ")
-                    console.table(extra)
-                    console.log("missing: ")
-                    console.table(missing)*/
                 //-------------------------------------------------------------------Добавляем "...recommended/alternative for you" как отдельный блок-----------------------------------------------------------------------------------------------------//
                 let description = "";
                 if (i == 0) {
@@ -232,7 +247,7 @@ const Questionnaire = {
                 if (planDetails[topPlanName].usage) {
                     description += `<p style="margin-top: -10px; margin-bottom: 10px;">This plan is <strong>${planDetails[topPlanName].usage.trim()}</strong>.</p>`;
                 }
-                //-------------------------------------------------INCLUDED, EXTRA, MISSING--------------------------------------------------//
+                //-------------------------------------------------INCLUDED, EXTRA, MISSING-------------------------------------------------------------------------------------------------------------------------------------------------------------//
                 if (included.size > 0) {
                     description += `<p style="font-weight: bold; color: #410002;">✅ This plan includes what you selected:</p>`;
                     description += `<ul style="list-style-type: none;">${[...included].map(i => `<li style="color: green;"> ✔${i}</li>`).join("")}</ul>`;
@@ -245,13 +260,6 @@ const Questionnaire = {
                     /*const featureLower = normalize(feature);    */ // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
                     const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar"];
                     const isSameCategory = (a, b) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
-                    /*       const alreadyMentioned = [...included, ...missing].some(answer =>                 //Проверяем, если в included или missing уже есть схожие строки
-                               isSameCategory(feature, answer));*/
-                    /*const alreadyMentionedInExtra = [...extra].some(answer => isSameCategory(feature, answer));*/
-                    /* if (!alreadyMentioned && !alreadyMentionedInExtra) {
-                         extra.add(feature);                                                                       //Добавляем в extra те елементы, которые не были упомянуты                                                                   //extra
-                     }*/
-                    /* if(!alreadyMentioned || !alreadyMentionedInExtra) {*/
                     for (const missingElem of missing) {
                         if (isSameCategory(missingElem, feature)) {
                             extra.add(`${feature} ${compareValues(feature, missingElem)}`);
@@ -263,28 +271,6 @@ const Questionnaire = {
                     if (!isAlreadyCovered) {
                         extra.add(feature);
                     }
-                    /*if(normalize(feature) === "forpersonaluse" && included.has("For personal use")) {
-                        included.delete("for personal use")
-                    }
-
-                    if(feature === "forbusinessuse" && included.has("for business use")) {
-                        included.delete("for business use")
-                    }*/
-                    /*if(!included.has(feature) && !missing.has(feature)) {
-                        if()
-                        extra.add(feature)
-                    }*/
-                    /* for (const answer of answers) {
-                         console.log(answer)
-                         if (/!*compareValues(feature, includedItem) &&*!/ alreadyMentioned) {
-                             if (compareValues(feature, answer.option)) {
-                                 extra.add(`${feature} (${compareValues(feature, answer.option)})`);
-                             } else {
-                                 included.add(answer.option);
-                             }
-                         }
-                     }*/
-                    /*}*/
                     //-----------------------------------------------------------------------Проверка для элементов с числовыми значениями (например, "additional email addresses")---------------------------------------------------------------------------//
                     /* if (normalize(feature).includes("emailaddresses") || normalize(feature).includes("customdomains") || normalize(feature).includes("storage")) {                    //
                          for (const includedItem of included) {
@@ -301,16 +287,16 @@ const Questionnaire = {
                          }
                      }*/
                 }
-                //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                //----------------------------------------------------------------------------------------------------EXTRA---------------------------------------------------------------------------------------------------------------------//
                 if (extra.size > 0) {
                     description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">➕ Extra features:</p>`;
-                    description += `<ul style="list-style-type: none;">${[...extra].map(i => `<li style="color: black;"> ${i}</li>`).join("")}</ul>`;
+                    description += `<ul style="list-style-type: none;">${[...extra].map(i => `<li style="color: black;">➕ ${i}</li>`).join("")}</ul>`;
                 }
-                //--------------------------------------------------------------------MISSING---------------------------------------------------------------------------//
+                //---------------------------------------------------------------------------------------------------MISSING-------------------------------------------------------------------------------------------------------------------//
                 if (missing.size > 0) {
-                    description += `<p style="color: red; margin-bottom: 10px;">❕ Unfortunately, this plan does not <strong>include</strong>:</p>`;
+                    description += `<p style="color: red; margin-bottom: 10px;">❕ Unfortunately, this plan is not or does not <strong>include</strong>:</p>`;
                     description += `<ul style="list-style-type: none;">${[...missing].map(i => `<li style="color: black;">❌ ${i}</li>`).join("")}</ul>`;
-                    //--------------------------------------------------------------------------Alternatives to consider---------------------------------------------------------------------------------//
+                    //--------------------------------------------------------------------------Alternatives to consider--------------------------------------------------------------------------------------------------------------------//
                     if (i == 0) {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
                     }
@@ -320,8 +306,8 @@ const Questionnaire = {
                     else {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
                     }
-                    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
-                    // ------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+                    // ---------------------------------------------------------------CONSIDER OTHER PLANS-----------------------------------------------------------------------------------------------------------------------------------//
                 }
                 else if (missing.size == 0) {
                     if (i == 0) {
@@ -339,6 +325,7 @@ const Questionnaire = {
             return descriptions;
         };
     },
+    //-----------------------------------------------------------------------------------------------VIEW SECTION----------------------------------------------------------------------------------------------------------------------------------------//
     view: function (vnode) {
         const state = vnode.state;
         const showResultContainer = state.showResultContainer;
@@ -356,7 +343,6 @@ const Questionnaire = {
                     transition: "all 0.6s ease",
                     borderRadius: "10px",
                     textAlign: "center",
-                    /*fontSize: "20px",*/
                     opacity: 1,
                     zIndex: 1,
                     display: "flex",
@@ -382,7 +368,7 @@ const Questionnaire = {
                         transform: "translateX(-60%) translateY(40px)",
                         opacity: 0.3,
                         /*  zIndex: 5,*/
-                        fontSize: "11px",
+                        fontSize: "9px",
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
@@ -395,12 +381,11 @@ const Questionnaire = {
                         left: "80%",
                         transform: "translateX(-40%) translateY(40px)",
                         opacity: 0.3,
-                        /*      zIndex: 5,*/
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "-21px 15px 18px 0px #00000033",
-                        fontSize: "11px",
+                        fontSize: "9px",
                     };
                 }
                 else {
@@ -408,7 +393,7 @@ const Questionnaire = {
                 }
             };
             //-----------------------------------------------------------------------------------------------//
-            //----------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
+            //----------------------The result page for the 3-Top plans------------------------------------------------------------------------------------------------------------//
             return showResultContainer && m("div", {
                 style: {
                     maxWidth: "800px",
@@ -422,9 +407,6 @@ const Questionnaire = {
                 m("h2", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, "Recommended plan is:"),
-                /*m("p", {
-                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
-                }, /!*state.plan*!/),*/
                 //-----------------------------added carousel here----------------------------------------//
                 m("div", {
                     style: {
@@ -442,7 +424,7 @@ const Questionnaire = {
                         style: {
                             position: "relative",
                             width: "100%",
-                            height: "100%"
+                            height: "700px"
                         },
                         oncreate: ({ dom }) => {
                             //-------------------------------mouseWheel to move sliders on the result page-------------------------------------------//
@@ -515,7 +497,7 @@ const Questionnaire = {
                                     padding: "10px 50px",
                                     borderRadius: "10px",
                                     backgroundColor: "#ffffff",
-                                    bottom: "50px",
+                                    bottom: "40px",
                                     border: "solid 2px",
                                 }
                             }, "Get Started")
@@ -569,7 +551,7 @@ const Questionnaire = {
                                     padding: "10px 50px",
                                     borderRadius: "10px",
                                     backgroundColor: "#ff0a0a",
-                                    bottom: "50px",
+                                    bottom: "40px",
                                 }
                             }, "Get Started")
                         ]),
@@ -581,7 +563,6 @@ const Questionnaire = {
                                     style: {
                                         background: "#e5a85b",
                                         position: "absolute",
-                                        /*top: "1%",*/
                                         width: "100%",
                                         textAlign: "center",
                                         fontSize: "18px",
@@ -593,9 +574,7 @@ const Questionnaire = {
                                 }, "Alternative"),
                                 m("h3", {
                                     style: {
-                                        /*background: "red", */
                                         position: "absolute",
-                                        /*top: "1%",*/
                                         width: "100%",
                                         textAlign: "center",
                                         fontSize: "20px",
@@ -625,7 +604,7 @@ const Questionnaire = {
                                     padding: "10px 50px",
                                     borderRadius: "10px",
                                     backgroundColor: "#ffffff",
-                                    bottom: "50px",
+                                    bottom: "40px",
                                     border: "solid 2px",
                                 }
                             }, "Get Started")
@@ -651,8 +630,6 @@ const Questionnaire = {
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
-                        /*  state.plan = "";*/
-                        /*for(let key in score) score[key as keyof typeof score]=0;*/
                     }
                 }, "Try test again"),
                 m("button", {
@@ -671,7 +648,6 @@ const Questionnaire = {
                         height: "50px",
                     },
                     onclick: () => {
-                        /* "this.parentNode.style.display = 'none';"*/
                         vnode.state.showResultContainer = false;
                     }
                 }, "Close"),
@@ -802,6 +778,8 @@ const Questionnaire = {
         ]);
     },
 };
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------APP-COMPONENT--------------------------------------------------------------------------------------------------------------------------------------//
 //  Старт или продолжение
 const App = {
     oninit(vnode) {
@@ -811,7 +789,6 @@ const App = {
             margin: "0",
             padding: "0",
             background: "#eee",
-            /* background: "#fff2ea",*/
             fontFamily: "sans-serif",
             boxSizing: "border-box"
         }); //styles to body
@@ -876,49 +853,6 @@ const App = {
         ]);
     }
 };
-// Точка входа
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+// -------------------------------------------------------------------------------------------------Entry point---------------------------------------------------------------------------------------------------------------------------------------//
 m.mount(document.body, App);
-/*
-
-
-const businessPlans = ["Essential", "Advanced", "Unlimited"]
-const privatePlans = ["Free", "Revolutionary", "Legend"]
-const betterDescription = []
-
-const revolutionaryPlan
-
-
-for (const answer of answers) {
-    if(answer.option == "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i))) {betterDescription+= "For personal use"
-    } else if (
-        answer.option == "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i))) {
-        betterDescription+= "For business use"
-
-
-
-*/
-/*
-const businessPlans = ["Essential", "Advanced", "Unlimited"]
-const privatePlans = ["Free", "Revolutionary", "Legend"]
-const betterDescription = []
-
-switch(answer.option) {
-    case "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i)):
-        betterDescription += "For personal use";
-        break;
-
-    case "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i)):
-        betterDescription += "For business use";
-        break;
-
-    case "1-15" :
-        betterDescription += "15 extra email addresses";
-        break;
-
-    case "16-30":
-        betterDescription += "30 extra email addresses"
-        break;
-
-
-}
-*/

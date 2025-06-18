@@ -14,12 +14,11 @@ type Choice = {
     plans: Record<PlanName, PlanScore>;       // Define a type for a choice of plans, where the keys (PlanName) are strings and the values (PlanScore) are plan objects
 }
 
+//interface - это тип, который задается в TypeScript
 interface Question {
     question: string;
     choices: Choice[];
 }
-
-//interface - это тип которий задается в TypeScript для QuestionnaireState
 interface QuestionnaireState {
     currentIndex: number;
     answers: Choice[];
@@ -32,15 +31,26 @@ interface QuestionnaireState {
     selectedIndex: number;
     topPlans: PlanName[];
 
+    planDetails: Record<PlanName, PlanFeatures>;
+
     evaluateTopPlans(answers: Choice[]): string[];    //какой план больше всего подходит? и какие планы на 2-м и 3-м месте по рейтингу.
     moveToSelected(directionOrIndex: "prev" | "next" | number): void; //Показывает результат планов в конце. Возвращаемое значение: void (ничего не возвращает), может быть отдельно moveToSelected("prev"), moveToSelected("next") или moveToSelected(3). Но вместе-это проще для API(Application Programming Interface)- "набор команд/входов
     generatePlanDescriptions: (answers: Choice[], topPlans: PlanName[]) => Record<PlanName, string>; //динамические результаты опроса, анализ или в тарифный план входит то что выбрано или предложить альтернативу.
 }
-
+interface PlanFeatures {
+    usage: string;
+    storage: string;
+    emails?: string;
+    domains?: string;
+    calendars: string;
+    labels?: string;
+    family?: string;
+}
 interface AppState {
     started: boolean;
     animation: boolean;
 }
+
 
 // Вопросы
 const questions: Question[] = [
@@ -98,25 +108,16 @@ const questions: Question[] = [
 ];
 
 
-interface PlanFeatures {
-    usage: string;
-    storage: string;
-    emails?: string;
-    domains?: string;
-    calendars: string;
-    labels?: string;
-    family?: string;
-}
-
+/*
 const planDetails: Record<PlanName, PlanFeatures> = {
     Free: {
         usage: "for personal use",
-        /*emails: "No additional email addresses",*/
+        /!*emails: "No additional email addresses",*!/
         storage: "1 GB storage",
-        /*domains: "No custom domains",*/
+        /!*domains: "No custom domains",*!/
         labels: "3 labels",
         calendars: "1 calendar",
-        /* family: "No Family option"*/
+        /!* family: "No Family option"*!/
     },
     Revolutionary: {
         usage: "for personal use",
@@ -161,15 +162,16 @@ const planDetails: Record<PlanName, PlanFeatures> = {
         labels: "Unlimited labels",
     }
 };
+*/
 
 
-// Компонент Questionnaire
+
+  // -------------------------------------------------------------------------------------------Component Questionnaire---------------------------------------------------------------------------------------------------------------------//
 const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, QuestionnaireState> - это тип в TypeScript, описывающий компонент Mithril. У этого компонента нет входных параметров (пустой объект {}).Он использует состояние с типом QuestionnaireState. (m.Component<Attrs, State> - Attrs-Тип входных параметров (данные "снаружи"), State-Тип внутреннего состояния, которое будет доступно в компоненте(данные "внутри")).
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
     // vnode.state — объект состояния, типизирован как QuestionnaireState.
     // vnode.attrs — если бы были входные параметры (но в моем случае их нет — {}).
-
-    oninit(vnode) {
+    oninit:  (vnode) => {
         const state = vnode.state
         state.currentIndex = 0;
         state.answers = [];
@@ -180,7 +182,24 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
         state.selectedIndex = 1;
         state.topPlans = [];
 
-        //------------------------------------------------------------------------Score for every plan------------------------------//
+        state.planDetails = {};
+
+        //-----------------------------------------------------------------------------------------------Loading plans from backends---------------------------------------------------------------------------------------------------------------//
+        m.request({
+            method: "GET",
+            url:"http://localhost:9999/plan-details",
+        })
+            .then((result) => {
+                // @ts-ignore
+                state.planDetails = result;
+                console.log("Loaded plans:", state.planDetails);
+            })
+            .catch((error) => {
+                console.error("Error loading plans:", error);
+            });
+
+
+        //------------------------------------------------------------------------------------------------Score for every plan--------------------------------------------------------------------------------------------------------------------//
         state.evaluateTopPlans = (answers: Choice[]): string[] => {
             // Найдём 3 тариф с наибольшим количеством баллов
             const score: Record<PlanName, PlanScore> = {
@@ -195,7 +214,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             for (const answer of answers) {                                              //1.Проходим по каждому ответу - answers:Choice[]= [{option: "For business purposes", plans: {Essential: 1, Advanced: 1, Unlimited: 1}}]
                 for (const plan in answer.plans) {                                       //2. Проходим по каждому плану в ответах - например Essential: 1
                     if (plan in score) {                                                 //3. Проверяем: есть ли такое имя тарифа в объекте score.
-                        score[plan] += answer.plans[plan];       //4. Добавляем баллы текущего ответа к общему счёту для этого тарифа.
+                        score[plan] += answer.plans[plan];                               //4. Добавляем баллы текущего ответа к общему счёту для этого тарифа.
                     }
                 }
             }
@@ -208,7 +227,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             //--------------------------------------------------------------------------------------------------------------------------------------------------//
         };
 
-        //--------------------------------------------------------------------Final page: function to switch between "prev" and "next" or number------------------------------------------------//
+        //----------------------------------------------------------------------------------Final page: function to switch between "prev" and "next" or number------------------------------------------------------------------------------------//
         state.moveToSelected = (directionOrIndex: "prev" | "next" | number) => {                     //1. Выбираем путь: если в лево-"prev", по центру- number, в право - "prev"
             let newIndex = vnode.state.selectedIndex;                                              //2. Записываем выбранный пользователем путь в newIndex.
 
@@ -228,6 +247,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
 
         state.generatePlanDescriptions = (answers: Choice[], topPlans: PlanName[]) => {
             const descriptions: Record<PlanName, string> = {};  // Это пустой объект, куда будут записываться описания в конце. descriptions[topPlanName] = description;
+            const planDetails = state.planDetails;
 
             const normalize = (str: string): string => str.toLowerCase().replace(/[^a-z0-9]/g, "");              //Функция для нормализации строк (например, убираем пробелы и символы) например "30additionalemailaddresses"
 
@@ -246,40 +266,45 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             }
 
 
-            for (let i = 0; i < topPlans.length; i++) {                                    //2. Проходим по topPlans например:PlanName[] = ["Legend", "Revolutionary", "Advanced"]
-                const topPlanName = topPlans[i];                                                   //(получаем имя плана)
-                if (!planDetails[topPlanName]) continue;                                                        //3. Проверяем или есть один из планов в нашей карточки планов planDetails. Если нет, цикл переходит к следующему плану.*/
+            for (let i = 0; i < topPlans.length; i++) {                                                              //2. Проходим по topPlans например:PlanName[] = ["Legend", "Revolutionary", "Advanced"]
+                const topPlanName = topPlans[i];                                                                       //(получаем имя плана)
+                if (!planDetails[topPlanName]) continue;                                                                     //3. Проверяем или есть один из планов в нашей карточки планов planDetails. Если нет, цикл переходит к следующему плану.*/
 
-                const included = new Set<string>();                                                            //4. Создаем контейнеры для:   //included,
-                const extra = new Set<string>();                                                                                                        //extra,
-                const missing = new Set<string>();                                                                                                           //missing
+                const included = new Set<string>();                                                                          //4. Создаем контейнеры для:   //included,
+                const extra = new Set<string>();                                                                                                                    //extra,
+                const missing = new Set<string>();                                                                                                                       //missing
 
 //----------------------------------------------------1. Обработка ответов "I haven’t decided yet.", "No, I don't need", "No, I don’t want to" --------------------------------------------------------------------------------//
 
 
-                for (const answer of answers) {                                                   //5. Проходим по ответах пользователя
+                for (const answer of answers) {                                                                                 //5. Проходим по ответах пользователя
                     const neutralAnswers = new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]);     //1.Создаем сет ответов new Set(["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"].
-                    const isNeutral = neutralAnswers.has(answer.option);                         //6. Есть ли среди (["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]) ответ пользователя записываем в переменную isNeutral.
-                    const isIncluded = answer.plans[topPlanName] > 0;                            //7. Есть ли среди ответов наш топ план ["Free", "Revolutionary", "Advanced"] записываем в переменную isIncluded.
+                    const isNeutral = neutralAnswers.has(answer.option);                                              //6. Есть ли среди (["I haven’t decided yet.", "No, I don't need", "No, I don’t want to"]) ответ пользователя записываем в переменную isNeutral.
+                    const isIncluded = answer.plans[topPlanName] > 0;                                                 //7. Есть ли среди ответов наш топ план ["Free", "Revolutionary", "Advanced"] записываем в переменную isIncluded.
 
 
-                    if (answer.option === "I haven’t decided yet.") continue;         //???                //8. Если ответ пользователя "I haven’t decided yet." - Игнорируем
+                    if (answer.option === "I haven’t decided yet.") continue;         //dont work ???                                   //8. Если ответ пользователя "I haven’t decided yet." - Игнорируем
 
-                    if (isNeutral && isIncluded) {                                                   //9. Если 6. и 7.
-                        if (answer.option === "No, I don’t want to" && planDetails[topPlanName].emails) {  //10. Есть ли ответ "No, I don’t want to" и emails в топ плане в его карточке.
-                            extra.add(planDetails[topPlanName].emails);                                      //11. Тогда добавляем колисечтво емейлов в карточке топ плана в екстра                                               //extra
-                        } else if (answer.option === "No, I don't need" && planDetails[topPlanName].domains) {  //12. Также если ответ "No, I don't need" и в карточке топ плана есть домены тогда
-                            extra.add(planDetails[topPlanName].domains);                                            //13. добавить домены этого топ плана в екстра                                                                //extra
+                    if (isNeutral && isIncluded) {                                                                            //9. Если 6. и 7.
+                        if (answer.option === "No, I don’t want to" && planDetails[topPlanName].emails) {                     //10. Есть ли ответ "No, I don’t want to" и emails в топ плане в его карточке.
+                            extra.add(planDetails[topPlanName].emails);                                                       //11. Тогда добавляем колисечтво емейлов в карточке топ плана в екстра                                               //extra
+                        } else if (answer.option === "No, I don't need" && planDetails[topPlanName].domains) {                //12. Также если ответ "No, I don't need" и в карточке топ плана есть домены тогда
+                            extra.add(planDetails[topPlanName].domains);                                                      //13. добавить домены этого топ плана в екстра                                                                //extra
                         }
                         continue;
                     }
 
-                    if (isNeutral && !isIncluded) { //Если ответ  нейтральный и план не выбран, эта опция игнорится.
+                    if (isNeutral && !isIncluded) {
                         continue;
-                    }
+                    }   //Если ответ  нейтральный и план не выбран, эта опция игнорится.
+
+                    if(answer.option == planDetails[topPlanName].usage)
+                        continue;
 
                     if (!isNeutral && isIncluded) {   //Если ответ не нейтральный и план выбран, то этот ответ добавляется в included.
-                        included.add(answer.option);                                                                                                                                                                             //included
+                        if (normalize(answer.option) !== normalize(planDetails[topPlanName].usage)){
+                            included.add(answer.option);
+                        }
                     }
 
                     if (!isNeutral && !isIncluded) {  //Если ответ не нейтральный и план не выбран, эта опция добавляется в missing.
@@ -287,12 +312,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     }
                 }
 
-                /*    console.log("included: ")
-                    console.table(included)
-                    console.log("extra: ")
-                    console.table(extra)
-                    console.log("missing: ")
-                    console.table(missing)*/
 
                 //-------------------------------------------------------------------Добавляем "...recommended/alternative for you" как отдельный блок-----------------------------------------------------------------------------------------------------//
                 let description = "";
@@ -312,7 +331,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 }
 
 
-                //-------------------------------------------------INCLUDED, EXTRA, MISSING--------------------------------------------------//
+                //-------------------------------------------------INCLUDED, EXTRA, MISSING-------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
                 if (included.size > 0) {
                     description += `<p style="font-weight: bold; color: #410002;">✅ This plan includes what you selected:</p>`;
@@ -320,33 +339,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 }
 
                 // Сравниваем все фичи из PlanDetails c included + missing
-                const allFeatures = Object.entries(planDetails[topPlanName])                                //Преобразует объект в массив пар [ключ, значение]: ["15 additional email addresses", "100GB"], ]
+                const allFeatures = Object.entries(planDetails[topPlanName])                                         //Преобразует объект в массив пар [ключ, значение]: ["15 additional email addresses", "100GB"], ]
                     .filter(([key]) => key !== "usage")                                                //Исключаем пару где ключ "usage"
-                    .map(([, value]) => value)                                                    //Извлекает значения из каждой пары например ["100GB"],
-
+                    .map(([, value]) => value)                                                           //Извлекает значения из каждой пары например ["100GB"],
 
                 for (const feature of allFeatures) {
-                    /*const featureLower = normalize(feature);    */                                           // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
+                    /*const featureLower = normalize(feature);    */                                                     // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
 
                     const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar"];
 
                     const isSameCategory = (a: string, b: string) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
-
-
-                    /*       const alreadyMentioned = [...included, ...missing].some(answer =>                 //Проверяем, если в included или missing уже есть схожие строки
-                               isSameCategory(feature, answer));*/
-
-
-                    /*const alreadyMentionedInExtra = [...extra].some(answer => isSameCategory(feature, answer));*/
-
-
-                    /* if (!alreadyMentioned && !alreadyMentionedInExtra) {
-                         extra.add(feature);                                                                       //Добавляем в extra те елементы, которые не были упомянуты                                                                   //extra
-                     }*/
-
-
-                    /* if(!alreadyMentioned || !alreadyMentionedInExtra) {*/
-
 
                     for (const missingElem of missing) {
                         if (isSameCategory(missingElem, feature)) {
@@ -362,37 +364,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     if (!isAlreadyCovered) {
                         extra.add(feature);
                     }
-
-                    /*if(normalize(feature) === "forpersonaluse" && included.has("For personal use")) {
-                        included.delete("for personal use")
-                    }
-
-                    if(feature === "forbusinessuse" && included.has("for business use")) {
-                        included.delete("for business use")
-                    }*/
-
-
-
-
-                    /*if(!included.has(feature) && !missing.has(feature)) {
-                        if()
-                        extra.add(feature)
-                    }*/
-
-
-                    /* for (const answer of answers) {
-                         console.log(answer)
-                         if (/!*compareValues(feature, includedItem) &&*!/ alreadyMentioned) {
-                             if (compareValues(feature, answer.option)) {
-                                 extra.add(`${feature} (${compareValues(feature, answer.option)})`);
-                             } else {
-                                 included.add(answer.option);
-                             }
-                         }
-                     }*/
-
-
-                    /*}*/
 
 
                     //-----------------------------------------------------------------------Проверка для элементов с числовыми значениями (например, "additional email addresses")---------------------------------------------------------------------------//
@@ -413,19 +384,17 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                          }
                      }*/
                 }
-                //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-
+                //----------------------------------------------------------------------------------------------------EXTRA---------------------------------------------------------------------------------------------------------------------//
                 if (extra.size > 0) {
                     description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">➕ Extra features:</p>`;
-                    description += `<ul style="list-style-type: none;">${[...extra].map(i => `<li style="color: black;"> ${i}</li>`).join("")}</ul>`
+                    description += `<ul style="list-style-type: none;">${[...extra].map(i => `<li style="color: black;">➕ ${i}</li>`).join("")}</ul>`
                 }
-                //--------------------------------------------------------------------MISSING---------------------------------------------------------------------------//
+                //---------------------------------------------------------------------------------------------------MISSING-------------------------------------------------------------------------------------------------------------------//
                 if (missing.size > 0) {
-                    description += `<p style="color: red; margin-bottom: 10px;">❕ Unfortunately, this plan does not <strong>include</strong>:</p>`;
+                    description += `<p style="color: red; margin-bottom: 10px;">❕ Unfortunately, this plan is not or does not <strong>include</strong>:</p>`;
                     description += `<ul style="list-style-type: none;">${[...missing].map(i => `<li style="color: black;">❌ ${i}</li>`).join("")}</ul>`
 
-                    //--------------------------------------------------------------------------Alternatives to consider---------------------------------------------------------------------------------//
+                    //--------------------------------------------------------------------------Alternatives to consider--------------------------------------------------------------------------------------------------------------------//
                     if (i == 0) {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
                     } else if (i == 1) {
@@ -433,9 +402,10 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     } else {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
                     }
-                    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
-                    // ------------------------------------------------------------------------------------------------------------------------------------------------------------//
-                }  else if (missing.size == 0) {
+                    //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+                    // ---------------------------------------------------------------CONSIDER OTHER PLANS-----------------------------------------------------------------------------------------------------------------------------------//
+                } else if (missing.size == 0) {
                     if (i == 0) {
                         description += `<p style="color: red; margin-bottom: 10px;">💡 Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]})</p>`;
                     } else if (i == 1) {
@@ -450,8 +420,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             return descriptions;
         };
     },
-
-
+  //-----------------------------------------------------------------------------------------------VIEW SECTION----------------------------------------------------------------------------------------------------------------------------------------//
     view: function (vnode) {
         const state = vnode.state;
         const showResultContainer = state.showResultContainer;
@@ -472,7 +441,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     transition: "all 0.6s ease",
                     borderRadius: "10px",
                     textAlign: "center",
-                    /*fontSize: "20px",*/
                     opacity: 1,
                     zIndex: 1,
                     display: "flex",
@@ -484,39 +452,38 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         ...base,
                         left: "50%",
                         transform: "translateX(-50%) translateY(0)",
-                        zIndex: 10, //above div "next" and "prev"
+                        zIndex: 10,                                    //above div "next" and "prev"
                         width: "400px",
                         height: "620px",
                         fontSize: "14px",
                         backgroundColor: "#ecd9d9",
                         boxShadow: "-5px 1px 37px -13px #00000075",
                     };
-                } else if (index === state.selectedIndex - 1) { // prev
+                } else if (index === state.selectedIndex - 1) {        // prev
                     return {
                         ...base,
                         left: "20%",
                         transform: "translateX(-60%) translateY(40px)",
                         opacity: 0.3,
                         /*  zIndex: 5,*/
-                        fontSize: "11px",
+                        fontSize: "9px",
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "10px 10px 5px #00000033",
 
                     };
-                } else if (index === state.selectedIndex + 1) { //next
+                } else if (index === state.selectedIndex + 1) {           //next
                     return {
                         ...base,
                         left: "80%",
                         transform: "translateX(-40%) translateY(40px)",
                         opacity: 0.3,
-                        /*      zIndex: 5,*/
                         width: "250px",
                         height: "600px",
                         backgroundColor: "#f8eded",
                         boxShadow: "-21px 15px 18px 0px #00000033",
-                        fontSize: "11px",
+                        fontSize: "9px",
                     };
                 } else {
                     return {display: "none"};
@@ -525,7 +492,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             //-----------------------------------------------------------------------------------------------//
 
 
-            //----------------------The result page for the 3Top plans------------------------------------------------------------------------------------------------------------//
+            //----------------------The result page for the 3-Top plans------------------------------------------------------------------------------------------------------------//
 
             return showResultContainer && m("div", {
                 style: {
@@ -540,9 +507,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 m("h2", {
                     style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
                 }, "Recommended plan is:"),
-                /*m("p", {
-                    style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
-                }, /!*state.plan*!/),*/
+
                 //-----------------------------added carousel here----------------------------------------//
                 m("div", {
                     style: {
@@ -560,7 +525,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                             style: {
                                 position: "relative",
                                 width: "100%",
-                                height: "100%"
+                                height: "700px"
                             },
                             oncreate: ({dom}) => {
 
@@ -638,7 +603,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         padding: "10px 50px",
                                         borderRadius: "10px",
                                         backgroundColor: "#ffffff",
-                                        bottom: "50px",
+                                        bottom: "40px",
                                         border: "solid 2px",
                                     }
                                 }, "Get Started")]),
@@ -694,7 +659,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         padding: "10px 50px",
                                         borderRadius: "10px",
                                         backgroundColor: "#ff0a0a",
-                                        bottom: "50px",
+                                        bottom: "40px",
                                     }
                                 }, "Get Started")]),
 
@@ -708,7 +673,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         style: {
                                             background: "#e5a85b",
                                             position: "absolute",
-                                            /*top: "1%",*/
                                             width: "100%",
                                             textAlign: "center",
                                             fontSize: "18px",
@@ -720,9 +684,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                     }, "Alternative"),
                                         m("h3", {
                                             style: {
-                                                /*background: "red", */
                                                 position: "absolute",
-                                                /*top: "1%",*/
                                                 width: "100%",
                                                 textAlign: "center",
                                                 fontSize: "20px",
@@ -752,7 +714,7 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                                         padding: "10px 50px",
                                         borderRadius: "10px",
                                         backgroundColor: "#ffffff",
-                                        bottom: "50px",
+                                        bottom: "40px",
                                         border: "solid 2px",
                                     }
                                 }, "Get Started")])]),
@@ -776,8 +738,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                     onclick: () => {
                         state.currentIndex = 0;
                         state.answers = [];
-                        /*  state.plan = "";*/
-                        /*for(let key in score) score[key as keyof typeof score]=0;*/
                     }
                 }, "Try test again"),
                 m("button", {
@@ -796,7 +756,6 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                         height: "50px",
                     },
                     onclick: () => {
-                        /* "this.parentNode.style.display = 'none';"*/
                         vnode.state.showResultContainer = false;
                     }
                 }, "Close"),
@@ -899,16 +858,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                             },
                             onclick: () => {
                                 state.selectedId = inputId;
-                                state.animation = true; // старт исчезновения
+                                state.animation = true;         // старт исчезновения
                                 m.redraw();
 
                                 setTimeout(() => {
                                     state.answers.push(choice);
                                     state.currentIndex++;
                                     state.selectedId = null;
-                                    state.animation = false; //появление нового вопроса
+                                    state.animation = false;     //появление нового вопроса
                                     m.redraw();
-                                }, 500) // синхронизировано с transition: 0.5s
+                                }, 500)                         // синхронизировано с transition: 0.5s
                             }
                         }),
                             m("", {
@@ -939,8 +898,13 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 })])]);
     },
 };
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 
+
+
+
+//------------------------------------------------------------------------------------------------APP-COMPONENT--------------------------------------------------------------------------------------------------------------------------------------//
 //  Старт или продолжение
 const App: m.Component<{}, AppState> = {
     oninit(vnode) {
@@ -950,7 +914,6 @@ const App: m.Component<{}, AppState> = {
             margin: "0",
             padding: "0",
             background: "#eee",
-            /* background: "#fff2ea",*/
             fontFamily: "sans-serif",
             boxSizing: "border-box"
         });    //styles to body
@@ -1009,66 +972,22 @@ const App: m.Component<{}, AppState> = {
 
                                 setTimeout(() => {
                                     vnode.state.started = true;
-                                    vnode.state.animation = false; // сброс
-                                    m.redraw(); // показать Questionnaire
-                                }, 600); // время анимации должно совпадать с transition
+                                    vnode.state.animation = false;       // сброс
+                                    m.redraw();                         // показать Questionnaire
+                                }, 600);                               // время анимации должно совпадать с transition
                             }
                         }, "Start Now")
                     ])
         ]);
     }
 };
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 
 
-// Точка входа
+
+
+// -------------------------------------------------------------------------------------------------Entry point---------------------------------------------------------------------------------------------------------------------------------------//
 m.mount(document.body, App);
 
-
-/*
-
-
-const businessPlans = ["Essential", "Advanced", "Unlimited"]
-const privatePlans = ["Free", "Revolutionary", "Legend"]
-const betterDescription = []
-
-const revolutionaryPlan
-
-
-for (const answer of answers) {
-    if(answer.option == "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i))) {betterDescription+= "For personal use"
-    } else if (
-        answer.option == "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i))) {
-        betterDescription+= "For business use"
-
-
-
-*/
-
-
-/*
-const businessPlans = ["Essential", "Advanced", "Unlimited"]
-const privatePlans = ["Free", "Revolutionary", "Legend"]
-const betterDescription = []
-
-switch(answer.option) {
-    case "I haven’t decided yet." && topPlans.some(i => privatePlans.includes(i)):
-        betterDescription += "For personal use";
-        break;
-
-    case "I haven’t decided yet." && topPlans.some(i => businessPlans.includes(i)):
-        betterDescription += "For business use";
-        break;
-
-    case "1-15" :
-        betterDescription += "15 extra email addresses";
-        break;
-
-    case "16-30":
-        betterDescription += "30 extra email addresses"
-        break;
-
-
-}
-*/
 
 

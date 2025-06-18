@@ -1650,64 +1650,11 @@
       ]
     }
   ];
-  var planDetails = {
-    Free: {
-      usage: "for personal use",
-      /*emails: "No additional email addresses",*/
-      storage: "1 GB storage",
-      /*domains: "No custom domains",*/
-      labels: "3 labels",
-      calendars: "1 calendar"
-      /* family: "No Family option"*/
-    },
-    Revolutionary: {
-      usage: "for personal use",
-      emails: "15 additional email addresses",
-      storage: "20 GB storage",
-      domains: "3 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels",
-      family: "Family option"
-    },
-    Legend: {
-      usage: "for personal use",
-      emails: "30 additional email addresses",
-      storage: "500 GB storage",
-      domains: "10 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels",
-      family: "Family option"
-    },
-    Essential: {
-      usage: "for business purposes",
-      emails: "15 additional email addresses",
-      storage: "50 GB storage",
-      domains: "3 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels"
-    },
-    Advanced: {
-      usage: "for business purposes",
-      emails: "30 additional email addresses",
-      storage: "500 GB storage",
-      domains: "10 custom domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels"
-    },
-    Unlimited: {
-      usage: "for business purposes",
-      emails: "30 additional addresses",
-      storage: "1000 GB storage",
-      domains: "Unlimited domains",
-      calendars: "Unlimited calendars",
-      labels: "Unlimited labels"
-    }
-  };
   var Questionnaire = {
     //Зачем нужен oninit: 1. Инициализация состояния компонента, 2. Подготовка переменных, флагов, логики до того, как компонент появится на экране. 3. Сброс или очистка данных при повторной инициализации (например, при переходах)
     // vnode.state — объект состояния, типизирован как QuestionnaireState.
     // vnode.attrs — если бы были входные параметры (но в моем случае их нет — {}).
-    oninit(vnode) {
+    oninit: (vnode) => {
       const state = vnode.state;
       state.currentIndex = 0;
       state.answers = [];
@@ -1717,6 +1664,16 @@
       state.showQuestionContainer = true;
       state.selectedIndex = 1;
       state.topPlans = [];
+      state.planDetails = {};
+      import_mithril.default.request({
+        method: "GET",
+        url: "http://localhost:9999/plan-details"
+      }).then((result) => {
+        state.planDetails = result;
+        console.log("Loaded plans:", state.planDetails);
+      }).catch((error) => {
+        console.error("Error loading plans:", error);
+      });
       state.evaluateTopPlans = (answers) => {
         const score = {
           Free: 0,
@@ -1749,6 +1706,7 @@
       };
       state.generatePlanDescriptions = (answers, topPlans) => {
         const descriptions = {};
+        const planDetails = state.planDetails;
         const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
         const compareValues = (planValue, selectedValue) => {
           const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");
@@ -1785,8 +1743,12 @@
             if (isNeutral && !isIncluded) {
               continue;
             }
+            if (answer.option == planDetails[topPlanName].usage)
+              continue;
             if (!isNeutral && isIncluded) {
-              included.add(answer.option);
+              if (normalize(answer.option) !== normalize(planDetails[topPlanName].usage)) {
+                included.add(answer.option);
+              }
             }
             if (!isNeutral && !isIncluded) {
               missing.add(answer.option);
@@ -1824,10 +1786,10 @@
           }
           if (extra.size > 0) {
             description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u2795 Extra features:</p>`;
-            description += `<ul style="list-style-type: none;">${[...extra].map((i2) => `<li style="color: black;"> ${i2}</li>`).join("")}</ul>`;
+            description += `<ul style="list-style-type: none;">${[...extra].map((i2) => `<li style="color: black;">\u2795 ${i2}</li>`).join("")}</ul>`;
           }
           if (missing.size > 0) {
-            description += `<p style="color: red; margin-bottom: 10px;">\u2755 Unfortunately, this plan does not <strong>include</strong>:</p>`;
+            description += `<p style="color: red; margin-bottom: 10px;">\u2755 Unfortunately, this plan is not or does not <strong>include</strong>:</p>`;
             description += `<ul style="list-style-type: none;">${[...missing].map((i2) => `<li style="color: black;">\u274C ${i2}</li>`).join("")}</ul>`;
             if (i == 0) {
               description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
@@ -1850,6 +1812,7 @@
         return descriptions;
       };
     },
+    //-----------------------------------------------------------------------------------------------VIEW SECTION----------------------------------------------------------------------------------------------------------------------------------------//
     view: function(vnode) {
       const state = vnode.state;
       const showResultContainer = state.showResultContainer;
@@ -1865,7 +1828,6 @@
             transition: "all 0.6s ease",
             borderRadius: "10px",
             textAlign: "center",
-            /*fontSize: "20px",*/
             opacity: 1,
             zIndex: 1,
             display: "flex",
@@ -1891,7 +1853,7 @@
               transform: "translateX(-60%) translateY(40px)",
               opacity: 0.3,
               /*  zIndex: 5,*/
-              fontSize: "11px",
+              fontSize: "9px",
               width: "250px",
               height: "600px",
               backgroundColor: "#f8eded",
@@ -1903,12 +1865,11 @@
               left: "80%",
               transform: "translateX(-40%) translateY(40px)",
               opacity: 0.3,
-              /*      zIndex: 5,*/
               width: "250px",
               height: "600px",
               backgroundColor: "#f8eded",
               boxShadow: "-21px 15px 18px 0px #00000033",
-              fontSize: "11px"
+              fontSize: "9px"
             };
           } else {
             return { display: "none" };
@@ -1927,9 +1888,6 @@
           (0, import_mithril.default)("h2", {
             style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center;"
           }, "Recommended plan is:"),
-          /*m("p", {
-              style: "max-width: 800px; padding: 10px; margin: 0 auto; text-align: center; font-size: 25px;"
-          }, /!*state.plan*!/),*/
           //-----------------------------added carousel here----------------------------------------//
           (0, import_mithril.default)("div", {
             style: {
@@ -1949,7 +1907,7 @@
                 style: {
                   position: "relative",
                   width: "100%",
-                  height: "100%"
+                  height: "700px"
                 },
                 oncreate: ({ dom }) => {
                   const onWheel = (event) => {
@@ -2022,7 +1980,7 @@
                       padding: "10px 50px",
                       borderRadius: "10px",
                       backgroundColor: "#ffffff",
-                      bottom: "50px",
+                      bottom: "40px",
                       border: "solid 2px"
                     }
                   }, "Get Started")
@@ -2079,7 +2037,7 @@
                       padding: "10px 50px",
                       borderRadius: "10px",
                       backgroundColor: "#ff0a0a",
-                      bottom: "50px"
+                      bottom: "40px"
                     }
                   }, "Get Started")
                 ]),
@@ -2092,7 +2050,6 @@
                       style: {
                         background: "#e5a85b",
                         position: "absolute",
-                        /*top: "1%",*/
                         width: "100%",
                         textAlign: "center",
                         fontSize: "18px",
@@ -2104,9 +2061,7 @@
                     }, "Alternative"),
                     (0, import_mithril.default)("h3", {
                       style: {
-                        /*background: "red", */
                         position: "absolute",
-                        /*top: "1%",*/
                         width: "100%",
                         textAlign: "center",
                         fontSize: "20px",
@@ -2137,7 +2092,7 @@
                       padding: "10px 50px",
                       borderRadius: "10px",
                       backgroundColor: "#ffffff",
-                      bottom: "50px",
+                      bottom: "40px",
                       border: "solid 2px"
                     }
                   }, "Get Started")
@@ -2320,7 +2275,6 @@
         margin: "0",
         padding: "0",
         background: "#eee",
-        /* background: "#fff2ea",*/
         fontFamily: "sans-serif",
         boxSizing: "border-box"
       });
