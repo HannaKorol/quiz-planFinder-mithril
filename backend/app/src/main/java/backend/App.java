@@ -41,7 +41,7 @@ public class App {
 		@Override
 		public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 			resp.setStatus(HttpServletResponse.SC_OK);
-			resp.setHeader("Access-Control-Allow-Origin", "*");
+			resp.setHeader("Access-Control-Allow-Origin", "*"); //Доступ для всіх (публічний API)
 			resp.setHeader("Access-Control-Allow-Methods", "GET");
 			resp.setContentType("application/json; charset=UTF-8");
 
@@ -89,7 +89,7 @@ public class App {
 					                          },
 					                          "Unlimited": {
 					                            "usage": "for business purposes",
-					                            "emails": "30 additional addresses",
+					                            "emails": "30 additional email addresses",
 					                            "storage": "1000 GB storage",
 					                            "domains": "Unlimited domains",
 					                            "calendars": "Unlimited calendars",
