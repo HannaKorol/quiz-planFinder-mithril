@@ -1709,8 +1709,9 @@
         const planDetails = state.planDetails;
         const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
         const compareValues = (planValue, selectedValue) => {
-          const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");
-          const selectedNumber = parseInt(selectedValue.match(/\d+/)?.[0] || "0");
+          const parseNumber = (val) => val.toLowerCase().includes("unlimited") ? Infinity : parseInt(val.match(/\d+/)?.[0] || "0");
+          const planNumber = parseNumber(planValue);
+          const selectedNumber = parseNumber(selectedValue);
           if (planNumber > selectedNumber) {
             return `<span style="color: #298f26; margin-bottom: 10px;">(more than you selected: ${selectedNumber})</span>`;
           } else if (planNumber < selectedNumber) {
@@ -1771,7 +1772,7 @@
           }
           const allFeatures = Object.entries(planDetails[topPlanName]).filter(([key]) => key !== "usage").map(([, value]) => value);
           for (const feature of allFeatures) {
-            const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar"];
+            const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar", "unlimitedemailaddresses", "unlimitedcustomdomains", "unlimitedcalendar"];
             const isSameCategory = (a, b) => comparisonKeys.some((key) => normalize(a).includes(key) && normalize(b).includes(key));
             for (const missingElem of missing) {
               if (isSameCategory(missingElem, feature)) {

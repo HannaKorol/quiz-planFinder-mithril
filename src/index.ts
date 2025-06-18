@@ -252,9 +252,16 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
             const normalize = (str: string): string => str.toLowerCase().replace(/[^a-z0-9]/g, "");              //Функция для нормализации строк (например, убираем пробелы и символы) например "30additionalemailaddresses"
 
             const compareValues = (planValue: string, selectedValue: string): string => {        //Функция для сравнения числовых значений в строках (например  "30 additional email addresses" и "15 additional email addresses")
-                const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");                                         // в карточке плана: Находим строку с числом например "30" и переобразуем его в число 30 или если нет числа то вернем 0.
-                const selectedNumber = parseInt(selectedValue.match(/\d+/)?.[0] || "0");                                // в ответах: Находим строку с числом например "15" и переобразуем его в число 15 или если нет числа то вернем 0.
+               /* const planNumber = parseInt(planValue.match(/\d+/)?.[0] || "0");                                         // в карточке плана: Находим строку с числом например "30" и переобразуем его в число 30 или если нет числа то вернем 0.
+                const selectedNumber = parseInt(selectedValue.match(/\d+/)?.[0] || "0");   */                             // в ответах: Находим строку с числом например "15" и переобразуем его в число 15 или если нет числа то вернем 0.
 
+                const parseNumber = (val: string): number =>
+                    val.toLowerCase().includes("unlimited")
+                        ? Infinity
+                        : parseInt(val.match(/\d+/)?.[0] || "0");
+
+                const planNumber = parseNumber(planValue);
+                const selectedNumber = parseNumber(selectedValue);
 
                 if (planNumber > selectedNumber) {                                                                             // Если число больше в плане чем в ответах,
                     return `<span style="color: #298f26; margin-bottom: 10px;">(more than you selected: ${selectedNumber})</span>`;                                                                      // Bозвращаем сообщение "more than selected: "в ответах" "
@@ -346,15 +353,24 @@ const Questionnaire: m.Component<{}, QuestionnaireState> = { //m.Component<{}, Q
                 for (const feature of allFeatures) {
                     /*const featureLower = normalize(feature);    */                                                     // все строки без пробелов например ["100GB", "30additionalemailaddresses",]
 
-                    const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar"];
+                    const comparisonKeys = ["emailaddresses", "customdomains", "storage", "calendar", "unlimitedemailaddresses", "unlimitedcustomdomains", "unlimitedcalendar"];
 
                     const isSameCategory = (a: string, b: string) => comparisonKeys.some(key => normalize(a).includes(key) && normalize(b).includes(key));
 
+
                     for (const missingElem of missing) {
+
+                       /* if(feature.includes("Unlimited")) {
+                             feature.replace("Unlimited", "1000")
+                        }*/
+
                         if (isSameCategory(missingElem, feature)) {
                             extra.add(`${feature} ${compareValues(feature, missingElem)}`);
                         }
+
                     }
+
+
 
 
                     // 2. Если такая категория ещё нигде не упоминалась — добавить как новую
