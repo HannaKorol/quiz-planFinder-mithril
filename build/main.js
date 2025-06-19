@@ -1795,9 +1795,9 @@
             if (i == 0) {
               description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider ${topPlans[1]} or ${topPlans[2]} as alternatives\u2014they may include these options.</p>`;
             } else if (i == 1) {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider ${topPlans[0]} or ${topPlans[2]} as alternatives\u2014they may include these options.</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider <strong>${topPlans[0]}</strong> or <strong>${topPlans[2]}</strong> as alternatives\u2014they may include these options.</p>`;
             } else {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider ${topPlans[0]} or ${topPlans[1]} as alternatives\u2014they may include these options.</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider <strong>${topPlans[0]}</strong> or <strong>${topPlans[1]}</strong> as alternatives\u2014they may include these options.</p>`;
             }
           } else if (missing.size == 0) {
             if (i == 0) {
