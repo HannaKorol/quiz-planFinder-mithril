@@ -1757,7 +1757,7 @@
           }
           let description = "";
           if (i == 0) {
-            description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F3AF} ${topPlans[0]} is a recommended plan for you.</p>`;
+            description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F3AF} ${topPlans[0]} is our recommended plan for you.</p>`;
           } else if (i == 1) {
             description += `<p style="color: #410002; margin-bottom: 10px;">\u{1F4E6} ${topPlans[1]} might be a good alternative for you.</p>`;
           } else {
@@ -1786,26 +1786,26 @@
             }
           }
           if (extra.size > 0) {
-            description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u2795 Extra features:</p>`;
+            description += `<p style="color: #410002; font-weight: bold; margin-bottom: 10px; ">\u2795 Additional features: </p>`;
             description += `<ul style="list-style-type: none;">${[...extra].map((i2) => `<li style="color: black;">\u2795 ${i2}</li>`).join("")}</ul>`;
           }
           if (missing.size > 0) {
-            description += `<p style="color: red; margin-bottom: 10px;">\u2755 Unfortunately, this plan is not or does not <strong>include</strong>:</p>`;
+            description += `<p style="color: red; margin-bottom: 10px;">\u2755 Unfortunately, this plan is not or does <strong>not include</strong>:</p>`;
             description += `<ul style="list-style-type: none;">${[...missing].map((i2) => `<li style="color: black;">\u274C ${i2}</li>`).join("")}</ul>`;
             if (i == 0) {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]}), they might include these.</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider ${topPlans[1]} or ${topPlans[2]} as alternatives\u2014they may include these options.</p>`;
             } else if (i == 1) {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]}), they might include these.</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider ${topPlans[0]} or ${topPlans[2]} as alternatives\u2014they may include these options.</p>`;
             } else {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]}), they might include these.</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider ${topPlans[0]} or ${topPlans[1]} as alternatives\u2014they may include these options.</p>`;
             }
           } else if (missing.size == 0) {
             if (i == 0) {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[1]} or ${topPlans[2]})</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Tip: You might also want to explore our <strong>${topPlans[1]}</strong> or <strong>${topPlans[2]}</strong> plans to find the perfect fit.</p>`;
             } else if (i == 1) {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[2]})</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Tip: You might also want to explore our <strong>${topPlans[0]}</strong> or <strong>${topPlans[2]}</strong> plans to find the perfect fit.</p>`;
             } else {
-              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Consider looking at alternatives (${topPlans[0]} or ${topPlans[1]})</p>`;
+              description += `<p style="color: red; margin-bottom: 10px;">\u{1F4A1} Tip: You might also want to explore our <strong>${topPlans[0]}</strong> or <strong>${topPlans[1]}</strong> plans to find the perfect fit.</p>`;
             }
           }
           descriptions[topPlanName] = description;
@@ -1893,7 +1893,7 @@
           (0, import_mithril.default)("div", {
             style: {
               width: "100%",
-              height: "750px",
+              height: "700px",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -2110,7 +2110,7 @@
               padding: "10px 0",
               background: "linear-gradient(45deg, #ff1f4f, #d2002d 100%)",
               borderRadius: "100px",
-              margin: "0 10px",
+              margin: "0 10px 20px 10px",
               cursor: "pointer",
               fontSize: "17px",
               textAlign: "center",
