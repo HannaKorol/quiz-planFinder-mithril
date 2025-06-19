@@ -5,7 +5,6 @@
  *  we’ll include  jakarta.servlet-api
  */
 
-
 package backend;                                                                 // ты положил свой документ в папку backend на компьютере, и теперь знаешь, где его искать.
 
 //Импорт библиотек Jetty:

@@ -505,7 +505,7 @@ const Questionnaire = {
                                     padding: "10px 50px",
                                     borderRadius: "10px",
                                     backgroundColor: "#ffffff",
-                                    bottom: "40px",
+                                    bottom: "30px",
                                     border: "solid 2px",
                                 }
                             }, "Get Started")
@@ -559,7 +559,7 @@ const Questionnaire = {
                                     padding: "10px 50px",
                                     borderRadius: "10px",
                                     backgroundColor: "#ff0a0a",
-                                    bottom: "40px",
+                                    bottom: "30px",
                                 }
                             }, "Get Started")
                         ]),
@@ -612,7 +612,7 @@ const Questionnaire = {
                                     padding: "10px 50px",
                                     borderRadius: "10px",
                                     backgroundColor: "#ffffff",
-                                    bottom: "40px",
+                                    bottom: "30px",
                                     border: "solid 2px",
                                 }
                             }, "Get Started")
